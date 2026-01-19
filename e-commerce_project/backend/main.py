@@ -98,7 +98,7 @@ def load_html_files():
     """
     logger.info(f"Pre-loading frontend assets from: {FRONTEND_DIR}")
     
-    pages = ["index.html", "product.html", "cart.html", "profile.html", "checkout.html", "login.html", "register.html"]
+    pages = ["index.html", "product.html", "cart.html", "profile.html", "checkout.html", "auth.html"]
     
     if not os.path.exists(FRONTEND_DIR):
         logger.critical(f"CRITICAL: Frontend directory not found at {FRONTEND_DIR}")
