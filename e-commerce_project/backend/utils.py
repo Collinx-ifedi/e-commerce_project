@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 # Enum is imported to keep type hints clean, assuming it's available or we treat purpose as string
 # If OTPPurpose is strictly needed for type hinting, import it. Otherwise use str.
-from models_schemas import OTPPurpose
+from .models_schemas import OTPPurpose
 
 # ======================================================
 # CONFIGURATION & VALIDATION
