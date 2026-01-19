@@ -22,8 +22,8 @@ from sqlalchemy.future import select
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import ValidationError, Field
 
-from db import get_db
-from models_schemas import User, Admin, AdminRole
+from .db import get_db
+from .models_schemas import User, Admin, AdminRole
 
 # ======================================================
 # 0. DYNAMIC PATH RESOLUTION
