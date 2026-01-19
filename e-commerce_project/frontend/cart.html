@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - KeyVault</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6); z-index: 9999;
+        }
+        .progress-bar.loading { animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .cart-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: #EF4444; color: white; font-size: 11px; font-weight: 600;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .cart-item {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-item-image {
+            width: 120px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            background: #F1F5F9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover { background: #E2E8F0; }
+
+        .quantity-input {
+            width: 40px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .quantity-input:focus { outline: none; }
+
+        .remove-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #FEF2F2;
+            color: #EF4444;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .remove-btn:hover { background: #EF4444; color: white; }
+
+        .summary-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 100px;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 18px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-checkout:hover { background: #1D4ED8; transform: translateY(-2px); }
+        .btn-checkout:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .empty-cart {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-cart-icon {
+            width: 120px;
+            height: 120px;
+            background: #F1F5F9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .footer { background: #1E293B; color: #94A3B8; padding: 60px 0 30px; }
+        .footer a { color: #94A3B8; text-decoration: none; transition: color 0.2s; }
+        .footer a:hover { color: #FFFFFF; }
+
+        .social-icon {
+            width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .social-icon:hover { background: #2563EB; color: white; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-secondary">KeyVault</span>
+                </a>
+
+                <div class="flex items-center gap-4">
+                    <div id="guestActions" class="flex items-center gap-3">
+                        <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+                        <a href="/auth.html?tab=register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
+                    </div>
+                    <div id="userActions" class="hidden items-center gap-4">
+                        <a href="/profile.html" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+                            <i class="fas fa-wallet"></i>
+                            <span id="walletBalance">$0.00</span>
+                        </a>
+                        <button onclick="logout()" class="text-sm text-gray-500 hover:text-danger transition">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                    <a href="/cart.html" class="relative p-2">
+                        <i class="fas fa-shopping-cart text-xl text-primary"></i>
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-secondary mb-8">Shopping Cart</h1>
+
+        <div id="cartContent">
+            <!-- Content rendered via JS -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Your trusted source for premium digital keys.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/profile.html">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/faq.html">FAQ</a></li>
+                        <li><a href="/terms.html">Terms</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================
+        // UTILITIES
+        // =========================================================
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+        const showLoader = () => document.getElementById('progressBar').classList.add('loading');
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        // =========================================================
+        // CART MANAGER
+        // =========================================================
+        const cart = {
+            KEY: 'cart',
+            getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
+            saveItems: (items) => { localStorage.setItem(cart.KEY, JSON.stringify(items)); window.dispatchEvent(new Event('cartUpdated')); },
+            removeItem: (id) => { const items = cart.getItems().filter(i => i.id !== id); cart.saveItems(items); renderCart(); },
+            updateQty: (id, qty) => {
+                const items = cart.getItems();
+                const item = items.find(i => i.id === id);
+                if (item) { item.quantity = Math.max(1, qty); cart.saveItems(items); renderCart(); }
+            },
+            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.final_price * item.quantity), 0),
+            getCount: () => cart.getItems().reduce((sum, item) => sum + item.quantity, 0),
+            clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
+        };
+
+        const updateCartBadge = () => {
+            const count = cart.getCount();
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        };
+
+        window.addEventListener('cartUpdated', updateCartBadge);
+
+        // =========================================================
+        // AUTH STATE
+        // =========================================================
+        const checkAuthState = () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+            }
+        };
+
+        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
+
+        // =========================================================
+        // RENDER CART
+        // =========================================================
+        const renderCart = () => {
+            const items = cart.getItems();
+            const container = document.getElementById('cartContent');
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">
+                            <i class="fas fa-shopping-cart text-5xl text-gray-300"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-secondary mb-4">Your cart is empty</h2>
+                        <p class="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
+                        <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-blue-700 transition">
+                            <i class="fas fa-arrow-left"></i>
+                            Continue Shopping
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            const subtotal = cart.getTotal();
+            const fees = 0;
+            const total = subtotal + fees;
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Cart Items -->
+                    <div class="lg:col-span-2">
+                        ${items.map(item => `
+                            <div class="cart-item">
+                                <img src="${item.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=200'}" 
+                                     alt="${item.name}" 
+                                     class="cart-item-image"
+                                     onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=200'">
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${item.platform}</span>
+                                            <h3 class="font-semibold text-secondary mt-2">${item.name}</h3>
+                                        </div>
+                                        <button class="remove-btn" onclick="cart.removeItem(${item.id})">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-4">
+                                        <div class="quantity-selector">
+                                            <button class="quantity-btn" onclick="cart.updateQty(${item.id}, ${item.quantity - 1})">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
+                                                   onchange="cart.updateQty(${item.id}, parseInt(this.value))">
+                                            <button class="quantity-btn" onclick="cart.updateQty(${item.id}, ${item.quantity + 1})">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <span class="text-xl font-bold text-primary">${formatCurrency(item.final_price * item.quantity)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+
+                        <a href="/" class="inline-flex items-center gap-2 text-primary font-medium hover:underline mt-4">
+                            <i class="fas fa-arrow-left"></i>
+                            Continue Shopping
+                        </a>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div>
+                        <div class="summary-card">
+                            <h2 class="text-xl font-bold text-secondary mb-6">Order Summary</h2>
+                            
+                            <div class="space-y-4 mb-6">
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Subtotal (${cart.getCount()} items)</span>
+                                    <span>${formatCurrency(subtotal)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Processing Fee</span>
+                                    <span>${fees > 0 ? formatCurrency(fees) : 'Free'}</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-100 pt-4 mb-6">
+                                <div class="flex justify-between">
+                                    <span class="text-lg font-bold text-secondary">Total</span>
+                                    <span class="text-2xl font-bold text-primary">${formatCurrency(total)}</span>
+                                </div>
+                            </div>
+
+                            <button class="btn-checkout" onclick="proceedToCheckout()">
+                                <i class="fas fa-lock"></i>
+                                Proceed to Checkout
+                            </button>
+
+                            <!-- Trust Badges -->
+                            <div class="mt-6 pt-6 border-t border-gray-100">
+                                <div class="flex items-center justify-center gap-4 text-gray-400 text-sm">
+                                    <span><i class="fas fa-shield-alt mr-1"></i> Secure</span>
+                                    <span><i class="fas fa-bolt mr-1"></i> Instant</span>
+                                    <span><i class="fab fa-bitcoin mr-1"></i> Crypto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // =========================================================
+        // CHECKOUT
+        // =========================================================
+        const proceedToCheckout = () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Login Required',
+                    text: 'Please login or create an account to complete your purchase.',
+                    confirmButtonText: 'Login',
+                    confirmButtonColor: '#2563EB',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/auth.html?redirect=/checkout.html';
+                    }
+                });
+                return;
+            }
+            window.location.href = '/checkout.html';
+        };
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthState();
+            updateCartBadge();
+            renderCart();
+        });
+    </script>
+</body>
+</html>
