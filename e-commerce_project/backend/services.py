@@ -25,7 +25,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import update, delete, and_
 
 # IMPORT MODELS
-from models_schemas import (
+from .models_schemas import (
     User,
     Admin,
     Product,
@@ -42,7 +42,7 @@ from models_schemas import (
 )
 
 # IMPORT UTILS & CORE
-from utils import (
+from .utils import (
     generate_otp,
     send_email_otp,
     send_email_async, #
@@ -51,14 +51,14 @@ from utils import (
     format_currency
 )
 
-from core import (
+from .core import (
     create_access_token,
     hash_password,
     verify_password,
     ADMIN_PASSWORDS
 )
 
-from db import get_unused_code, mark_code_as_used #
+from .db import get_unused_code, mark_code_as_used #
 
 # =========================================================
 # CONFIG & LOGGING
