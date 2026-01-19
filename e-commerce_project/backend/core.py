@@ -16,7 +16,8 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from pydantic import BaseSettings, ValidationError
+from pydantic_settings import BaseSettings
+from pydantic import ValidationError
 
 from .db import get_db
 from .models_schemas import User, Admin, AdminRole
