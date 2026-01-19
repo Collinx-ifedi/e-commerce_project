@@ -146,7 +146,7 @@ async def bootstrap_admins(db: AsyncSession):
     Uses credentials parsed in core.py.
     """
     # Import here to avoid circular dependency issues during startup
-    from core import ADMIN_PASSWORDS 
+    from .core import ADMIN_PASSWORDS 
     
     for username, password in ADMIN_PASSWORDS.items():
         result = await db.execute(select(Admin).where(Admin.username == username))
