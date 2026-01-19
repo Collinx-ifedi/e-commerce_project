@@ -33,12 +33,12 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # --- LOCAL MODULES ---
-from db import get_db, init_db, ping_db, add_product_codes_from_file
-from core import settings, get_current_admin, require_superadmin
-from utils import logger  # Structured JSON logger
+from .db import get_db, init_db, ping_db, add_product_codes_from_file
+from .core import settings, get_current_admin, require_superadmin
+from .utils import logger  # Structured JSON logger
 
 # --- SERVICES ---
-from services import (
+from .services import (
     create_user_service,
     verify_user_email_service,
     admin_login_service,
@@ -50,7 +50,7 @@ from services import (
 )
 
 # --- SCHEMAS ---
-from models_schemas import (
+from .models_schemas import (
     UserCreateSchema, 
     AdminLoginSchema, 
     MultiProductOrderCreate, 
