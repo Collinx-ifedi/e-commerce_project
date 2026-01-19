@@ -18,8 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseSettings, ValidationError
 
-from db import get_db
-from models_schemas import User, Admin, AdminRole
+from .db import get_db
+from .models_schemas import User, Admin, AdminRole
 
 # ======================================================
 # 1. ROBUST CONFIGURATION (Settings Pattern)
