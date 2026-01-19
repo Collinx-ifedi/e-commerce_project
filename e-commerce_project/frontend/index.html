@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyVault - Premium Digital Keys & Gift Cards</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Swiper.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    
+    <!-- AOS (Animate On Scroll) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+        }
+
+        /* Top Progress Loader */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.loading {
+            animation: progress 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-input {
+            background: #F1F5F9;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #2563EB;
+            background: #FFFFFF;
+            outline: none;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-top: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 50;
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        .search-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-item:hover {
+            background: #F8FAFC;
+        }
+
+        /* Cart Badge */
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #EF4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hero Swiper */
+        .hero-swiper {
+            height: 500px;
+        }
+
+        .hero-slide {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 60px;
+            max-width: 700px;
+        }
+
+        /* Product Cards */
+        .product-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            aspect-ratio: 16/10;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #EF4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .add-to-cart-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #2563EB;
+            color: white;
+            padding: 14px;
+            text-align: center;
+            font-weight: 600;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-card:hover .add-to-cart-btn {
+            transform: translateY(0);
+        }
+
+        /* Category Cards */
+        .category-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .category-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+            color: #2563EB;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            color: #10B981;
+        }
+
+        /* Trending Section */
+        .trending-scroll {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            padding: 8px 0;
+            scrollbar-width: none;
+        }
+
+        .trending-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .trending-card {
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1E293B;
+            color: #94A3B8;
+            padding: 60px 0 30px;
+        }
+
+        .footer a {
+            color: #94A3B8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #FFFFFF;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .social-icon:hover {
+            background: #2563EB;
+            color: white;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: #2563EB;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #1D4ED8;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #2563EB;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #2563EB;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: #2563EB;
+            color: white;
+        }
+
+        /* Load More Button */
+        .load-more-btn {
+            background: #F1F5F9;
+            color: #1E293B;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .load-more-btn:hover {
+            background: #E2E8F0;
+        }
+
+        /* Region Flag */
+        .region-flag {
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-top: 8px;
+            min-width: 200px;
+            display: none;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #1E293B;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .profile-dropdown-item:hover {
+            background: #F8FAFC;
+        }
+
+        .profile-dropdown-item.danger {
+            color: #EF4444;
+        }
+
+        /* Swiper Pagination */
+        .swiper-pagination-bullet {
+            background: white !important;
+            opacity: 0.5;
+        }
+
+        .swiper-pagination-bullet-active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<!-- Start of LiveChat (www.livechat.com) code -->
+<script>
+    window.__lc = window.__lc || {};
+    window.__lc.license = 19457324;
+    window.__lc.integration_name = "manual_channels";
+    window.__lc.product_name = "livechat";
+    ;(function(n,t,c){function i(n){return e._h?e._h.apply(null,n):e._q.push(n)}var e={_q:[],_h:null,_v:"2.0",on:function(){i(["on",c.call(arguments)])},once:function(){i(["once",c.call(arguments)])},off:function(){i(["off",c.call(arguments)])},get:function(){if(!e._h)throw new Error("[LiveChatWidget] You can't use getters before load.");return i(["get",c.call(arguments)])},call:function(){i(["call",c.call(arguments)])},init:function(){var n=t.createElement("script");n.async=!0,n.type="text/javascript",n.src="https://cdn.livechatinc.com/tracking.js",t.head.appendChild(n)}};!n.__lc.asyncInit&&e.init(),n.LiveChatWidget=n.LiveChatWidget||e}(window,document,[].slice))
+</script>
+<noscript><a href="https://www.livechat.com/chat-with/19457324/" rel="nofollow">Chat with us</a>, powered by <a href="https://www.livechat.com/?welcome" rel="noopener nofollow" target="_blank">LiveChat</a></noscript>
+<!-- End of LiveChat code -->
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-secondary">KeyVault</span>
+                </a>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-xl mx-8 relative">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
+                            placeholder="Search for games, gift cards, subscriptions..."
+                        >
+                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-dropdown" id="searchDropdown">
+                        <!-- Search results populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Auth / User Actions -->
+                <div class="flex items-center gap-4">
+                    <!-- Guest State -->
+                    <div id="guestActions" class="flex items-center gap-3">
+                        <a href="login" class="btn-outline text-sm">Login</a>
+                        <a href="register?tab=register" class="btn-primary text-sm">Register</a>
+                    </div>
+
+                    <!-- Logged In State (Hidden by default) -->
+                    <div id="userActions" class="hidden items-center gap-4">
+                        <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+                            <i class="fas fa-wallet"></i>
+                            <span>My Wallet</span>
+                            <span class="text-primary font-bold" id="walletBalance">$0.00</span>
+                        </a>
+                        
+                        <div class="relative">
+                            <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+                                <i class="fas fa-user text-gray-600"></i>
+                            </button>
+                            <div class="profile-dropdown" id="profileDropdown">
+                                <a href="/profile" class="profile-dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    My Profile
+                                </a>
+                                <a href="/profile?tab=orders" class="profile-dropdown-item">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Order History
+                                </a>
+                                <a href="/profile?tab=settings" class="profile-dropdown-item">
+                                    <i class="fas fa-cog"></i>
+                                    Settings
+                                </a>
+                                <hr class="my-1">
+                                <button onclick="logout()" class="profile-dropdown-item danger w-full text-left">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart Icon -->
+                    <a href="/cart" class="relative p-2">
+                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Slider -->
+    <section class="hero-swiper swiper" id="heroSwiper">
+        <div class="swiper-wrapper" id="heroSlides">
+            <!-- Slides populated via JS -->
+        </div>
+        <div class="swiper-pagination"></div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="py-16 bg-white" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center text-secondary mb-12" data-aos="zoom-in">Why Choose KeyVault?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-secondary mb-3">Instant Delivery</h3>
+                    <p class="text-gray-500">Get your digital keys delivered to your email within seconds of payment confirmation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);">
+                        <i class="fas fa-shield-alt" style="color: #2563EB;"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-secondary mb-3">Secure Payments</h3>
+                    <p class="text-gray-500">Pay safely with Bitcoin, Litecoin, USDT, or other cryptocurrencies via BTCPay Server.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);">
+                        <i class="fas fa-headset" style="color: #D97706;"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-secondary mb-3">24/7 Support</h3>
+                    <p class="text-gray-500">Our dedicated support team is available around the clock to assist you with any questions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Now -->
+    <section class="py-16" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-secondary" data-aos="zoom-in">Trending Now</h2>
+                <a href="/?filter=trending" class="text-primary font-medium hover:underline flex items-center gap-2">
+                    View All <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="trending-scroll" id="trendingProducts">
+                <!-- Trending products populated via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Browse by Category -->
+    <section class="py-16 bg-white" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center text-secondary mb-12" data-aos="zoom-in">Browse by Category</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="categoriesGrid">
+                <div class="category-card" onclick="filterByCategory('gaming')">
+                    <div class="category-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-secondary">Gaming</h3>
+                    <p class="text-gray-500 text-sm mt-1">Xbox, PSN, Steam</p>
+                </div>
+                <div class="category-card" onclick="filterByCategory('music')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);">
+                        <i class="fas fa-music" style="color: #D97706;"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-secondary">Music</h3>
+                    <p class="text-gray-500 text-sm mt-1">Spotify, Apple Music</p>
+                </div>
+                <div class="category-card" onclick="filterByCategory('entertainment')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);">
+                        <i class="fas fa-tv" style="color: #DB2777;"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-secondary">Entertainment</h3>
+                    <p class="text-gray-500 text-sm mt-1">Netflix, Disney+</p>
+                </div>
+                <div class="category-card" onclick="filterByCategory('vouchers')">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);">
+                        <i class="fas fa-gift" style="color: #10B981;"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-secondary">Gift Cards</h3>
+                    <p class="text-gray-500 text-sm mt-1">Amazon, Google Play</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Grid -->
+    <section class="py-16" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-secondary mb-8" data-aos="zoom-in">All Products</h2>
+            
+            <!-- Filter Bar -->
+            <div class="flex items-center gap-4 mb-8 flex-wrap">
+                <select id="sortSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary">
+                    <option value="newest">Newest First</option>
+                    <option value="price_low">Price: Low to High</option>
+                    <option value="price_high">Price: High to Low</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+                <select id="platformSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary">
+                    <option value="">All Platforms</option>
+                    <option value="steam">Steam</option>
+                    <option value="xbox">Xbox</option>
+                    <option value="playstation">PlayStation</option>
+                    <option value="nintendo">Nintendo</option>
+                </select>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="productsGrid">
+                <!-- Products populated via JS -->
+            </div>
+
+            <!-- Load More -->
+            <div class="text-center mt-12" id="loadMoreContainer">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">
+                    <i class="fas fa-plus mr-2"></i> Load More Products
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Your trusted source for premium digital keys and gift cards. Instant delivery, secure payments.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/?filter=featured">Featured</a></li>
+                        <li><a href="/?filter=trending">Trending</a></li>
+                        <li><a href="/profilel">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/faq.html">FAQ</a></li>
+                        <li><a href="/contact.html">Contact Us</a></li>
+                        <li><a href="/terms.html">Terms of Service</a></li>
+                        <li><a href="/privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="text-white text-sm font-medium mb-2">We Accept</h5>
+                        <div class="flex gap-2 text-2xl">
+                            <i class="fab fa-bitcoin text-yellow-500"></i>
+                            <i class="fab fa-ethereum text-blue-400"></i>
+                            <span class="text-green-400 text-sm font-bold">USDT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    
+
+    <!-- Swiper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap
+
+    <!-- AOS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.min.js"></script>
+
+    <script>
+        // =========================================================
+        // API WRAPPER
+        // =========================================================
+        const API_BASE = ''; // Same origin
+
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { headers: api.getHeaders() });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally {
+                    hideLoader();
+                }
+            },
+
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally {
+                    hideLoader();
+                }
+            }
+        };
+
+        // =========================================================
+        // CART MANAGER
+        // =========================================================
+        const cart = {
+            KEY: 'cart',
+
+            getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
+
+            saveItems: (items) => {
+                localStorage.setItem(cart.KEY, JSON.stringify(items));
+                window.dispatchEvent(new Event('cartUpdated'));
+            },
+
+            addItem: (product) => {
+                const items = cart.getItems();
+                const existing = items.find(i => i.id === product.id);
+                if (existing) {
+                    existing.quantity += 1;
+                } else {
+                    items.push({ ...product, quantity: 1 });
+                }
+                cart.saveItems(items);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: `${product.name} has been added to your cart.`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            },
+
+            removeItem: (id) => {
+                const items = cart.getItems().filter(i => i.id !== id);
+                cart.saveItems(items);
+            },
+
+            updateQty: (id, qty) => {
+                const items = cart.getItems();
+                const item = items.find(i => i.id === id);
+                if (item) {
+                    item.quantity = Math.max(1, qty);
+                    cart.saveItems(items);
+                }
+            },
+
+            getTotal: () => {
+                return cart.getItems().reduce((sum, item) => sum + (item.final_price * item.quantity), 0);
+            },
+
+            getCount: () => {
+                return cart.getItems().reduce((sum, item) => sum + item.quantity, 0);
+            }
+        };
+
+        // =========================================================
+        // UTILITIES
+        // =========================================================
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        };
+
+        const formatDate = (dateStr) => {
+            return new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }).format(new Date(dateStr));
+        };
+
+        const showLoader = () => {
+            document.getElementById('progressBar').classList.add('loading');
+        };
+
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        // =========================================================
+        // AUTH STATE
+        // =========================================================
+        const checkAuthState = () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+            } else {
+                document.getElementById('guestActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('hidden');
+            }
+        };
+
+        const logout = () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            checkAuthState();
+            window.location.href = '/';
+        };
+
+        // =========================================================
+        // PRODUCT RENDERING
+        // =========================================================
+        let currentPage = 1;
+        let allProducts = [];
+
+        const getRegionFlag = (platform) => {
+            const flags = {
+                'Steam': '🌍',
+                'Xbox': '🇺🇸',
+                'PlayStation': '🇺🇸',
+                'Nintendo': '🇯🇵'
+            };
+            return flags[platform] || '🌍';
+        };
+
+        const renderProductCard = (product) => {
+            const finalPrice = product.discount_percent > 0 
+                ? product.price_usd * (1 - product.discount_percent / 100) 
+                : product.price_usd;
+
+            return `
+                <div class="product-card">
+                    ${product.discount_percent > 0 ? `<span class="discount-badge">-${product.discount_percent}%</span>` : ''}
+                    <a href="/product?id=${product.id}">
+                        <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
+                             alt="${product.name}" 
+                             class="product-image"
+                             onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'">
+                    </a>
+                    <div class="p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform}</span>
+                            <span class="region-flag">${getRegionFlag(product.platform)}</span>
+                        </div>
+                        <a href="/product?id=${product.id}">
+                            <h3 class="font-semibold text-secondary hover:text-primary transition line-clamp-2">${product.name}</h3>
+                        </a>
+                        <div class="mt-3 flex items-baseline gap-2">
+                            <span class="text-xl font-bold text-primary">${formatCurrency(finalPrice)}</span>
+                            ${product.discount_percent > 0 ? `<span class="text-sm text-gray-400 line-through">${formatCurrency(product.price_usd)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="add-to-cart-btn" onclick="event.preventDefault(); cart.addItem({
+                        id: ${product.id},
+                        name: '${product.name.replace(/'/g, "\\'")}',
+                        image_url: '${product.image_url}',
+                        price_usd: ${product.price_usd},
+                        final_price: ${finalPrice},
+                        platform: '${product.platform}'
+                    })">
+                        <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+                    </div>
+                </div>
+            `;
+        };
+
+        const loadProducts = async () => {
+            try {
+                // Fetch real products from API
+                const response = await api.get('/api/products');
+                let products = Array.isArray(response) ? response : response.data || response;
+                // Filter out products with no stock
+                allProducts = products.filter(p => p.stock_quantity > 0 && !p.is_deleted);
+                renderProducts(allProducts.slice(0, 8));
+                if (allProducts.length === 0) {
+                    document.getElementById('loadMoreContainer').style.display = 'none';
+                }
+            } catch (e) {
+                console.log('[v0] API fetch failed, using mock data:', e.message);
+                allProducts = getMockProducts().filter(p => p.stock_quantity > 0);
+                renderProducts(allProducts.slice(0, 8));
+            }
+        };
+
+        const renderProducts = (products) => {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(renderProductCard).join('');
+        };
+
+        const loadMoreProducts = () => {
+            currentPage++;
+            const startIdx = (currentPage - 1) * 8;
+            const endIdx = currentPage * 8;
+            const moreProducts = allProducts.slice(startIdx, endIdx);
+            
+            if (moreProducts.length > 0) {
+                const grid = document.getElementById('productsGrid');
+                grid.innerHTML += moreProducts.map(renderProductCard).join('');
+            }
+            
+            if (endIdx >= allProducts.length) {
+                document.getElementById('loadMoreContainer').style.display = 'none';
+            }
+        };
+
+        // =========================================================
+        // TRENDING PRODUCTS
+        // =========================================================
+        const loadTrendingProducts = async () => {
+            try {
+                const response = await api.get('/api/products');
+                let products = Array.isArray(response) ? response : response.data || response;
+                // Filter products marked as trending by admin
+                const trendingProducts = products.filter(p => p.is_trending && p.stock_quantity > 0 && !p.is_deleted).slice(0, 4);
+                if (trendingProducts.length > 0) {
+                    renderTrendingProducts(trendingProducts);
+                } else {
+                    document.getElementById('trendingProducts').innerHTML = '<p class="text-gray-500">No trending products available</p>';
+                }
+            } catch (e) {
+                console.log('[v0] Trending products fetch failed:', e.message);
+                const products = getMockProducts().filter(p => p.is_trending && p.stock_quantity > 0);
+                renderTrendingProducts(products.slice(0, 4));
+            }
+        };
+
+        const renderTrendingProducts = (products) => {
+            const container = document.getElementById('trendingProducts');
+            container.innerHTML = products.map(product => `
+                <div class="trending-card product-card">
+                    ${product.discount_percent > 0 ? `<span class="discount-badge">-${product.discount_percent}%</span>` : ''}
+                    <a href="/product?id=${product.id}">
+                        <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
+                             alt="${product.name}" 
+                             class="product-image"
+                             onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'">
+                    </a>
+                    <div class="p-4">
+                        <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform}</span>
+                        <h3 class="font-semibold text-secondary mt-2 line-clamp-1">${product.name}</h3>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-lg font-bold text-primary">${formatCurrency(product.discount_percent > 0 ? product.price_usd * (1 - product.discount_percent / 100) : product.price_usd)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // =========================================================
+        // HERO SLIDER
+        // =========================================================
+        const loadBanners = async () => {
+            try {
+                const response = await api.get('/api/banners?active=true');
+                let banners = Array.isArray(response) ? response : response.data || response;
+                // Filter only active banners
+                banners = banners.filter(b => b.is_active);
+                if (banners.length > 0) {
+                    renderBanners(banners);
+                } else {
+                    console.log('[v0] No active banners found');
+                    renderBanners(getMockBanners());
+                }
+            } catch (e) {
+                console.log('[v0] Banners fetch failed, using mock:', e.message);
+                renderBanners(getMockBanners());
+            }
+        };
+
+        const renderBanners = (banners) => {
+            const container = document.getElementById('heroSlides');
+            container.innerHTML = banners.map(banner => `
+                <div class="swiper-slide hero-slide" style="background-image: url('${banner.image_url}')">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h1 class="text-5xl font-bold text-white mb-4">${banner.title || 'Premium Digital Keys'}</h1>
+                        <p class="text-xl text-gray-200 mb-8">${banner.subtitle || 'Get instant delivery on all your favorite games and subscriptions.'}</p>
+                        <a href="${banner.target_url || '/'}" class="btn-primary inline-flex">
+                            ${banner.btn_text || 'Shop Now'} <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            // Initialize Swiper
+            new Swiper('#heroSwiper', {
+                loop: true,
+                autoplay: { delay: 5000, disableOnInteraction: false },
+                pagination: { el: '.swiper-pagination', clickable: true },
+                effect: 'fade',
+                fadeEffect: { crossFade: true }
+            });
+        };
+
+        // =========================================================
+        // SEARCH FUNCTIONALITY
+        // =========================================================
+        const searchInput = document.getElementById('searchInput');
+        const searchDropdown = document.getElementById('searchDropdown');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                searchDropdown.classList.remove('active');
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                const results = allProducts.filter(p => 
+                    p.name.toLowerCase().includes(query.toLowerCase()) ||
+                    p.platform.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 5);
+
+                if (results.length > 0) {
+                    searchDropdown.innerHTML = results.map(product => `
+                        <a href="/product?id=${product.id}" class="search-item">
+                            <img src="${product.image_url}" alt="${product.name}" class="w-12 h-12 rounded-lg object-cover">
+                            <div class="ml-3">
+                                <div class="font-medium text-secondary">${product.name}</div>
+                                <div class="text-sm text-gray-500">${product.platform} - ${formatCurrency(product.price_usd)}</div>
+                            </div>
+                        </a>
+                    `).join('');
+                    searchDropdown.classList.add('active');
+                } else {
+                    searchDropdown.innerHTML = '<div class="p-4 text-center text-gray-500">No results found</div>';
+                    searchDropdown.classList.add('active');
+                }
+            }, 300);
+        });
+
+        // Close search dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.classList.remove('active');
+            }
+        });
+
+        // =========================================================
+        // PROFILE DROPDOWN
+        // =========================================================
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileBtn?.addEventListener('click', () => {
+            profileDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileBtn?.contains(e.target) && !profileDropdown?.contains(e.target)) {
+                profileDropdown?.classList.remove('active');
+            }
+        });
+
+        // =========================================================
+        // CART BADGE UPDATE
+        // =========================================================
+        const updateCartBadge = () => {
+            const count = cart.getCount();
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        };
+
+        window.addEventListener('cartUpdated', updateCartBadge);
+
+        // =========================================================
+        // CATEGORY FILTER
+        // =========================================================
+        const filterByCategory = (category) => {
+            window.location.href = `/?category=${category}`;
+        };
+
+        // =========================================================
+        // MOCK DATA (Fallback when API unavailable)
+        // =========================================================
+        const getMockProducts = () => [
+            { id: 1, name: 'Xbox Game Pass Ultimate - 3 Months', platform: 'Xbox', price_usd: 44.99, discount_percent: 10, image_url: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400', in_stock: true, stock_quantity: 50, is_trending: true, is_featured: true },
+            { id: 2, name: 'PlayStation Plus Premium - 12 Months', platform: 'PlayStation', price_usd: 59.99, discount_percent: 15, image_url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400', in_stock: true, stock_quantity: 45, is_trending: true, is_featured: true },
+            { id: 3, name: 'Steam Wallet Card - $50', platform: 'Steam', price_usd: 50.00, discount_percent: 0, image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400', in_stock: true, stock_quantity: 100, is_trending: false, is_featured: true },
+            { id: 4, name: 'Spotify Premium - 6 Months', platform: 'Spotify', price_usd: 59.99, discount_percent: 20, image_url: 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=400', in_stock: true, stock_quantity: 75, is_trending: true, is_featured: false },
+            { id: 5, name: 'Nintendo eShop Card - $35', platform: 'Nintendo', price_usd: 35.00, discount_percent: 0, image_url: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=400', in_stock: true, stock_quantity: 30, is_trending: false, is_featured: true },
+            { id: 6, name: 'EA Play Pro - 1 Month', platform: 'Steam', price_usd: 14.99, discount_percent: 25, image_url: 'https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=400', in_stock: true, stock_quantity: 60, is_trending: true, is_featured: false },
+            { id: 7, name: 'Netflix Gift Card - $100', platform: 'Netflix', price_usd: 100.00, discount_percent: 5, image_url: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400', in_stock: true, stock_quantity: 40, is_trending: false, is_featured: true },
+            { id: 8, name: 'Amazon Gift Card - $25', platform: 'Amazon', price_usd: 25.00, discount_percent: 0, image_url: 'https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=400', in_stock: true, stock_quantity: 80, is_trending: false, is_featured: false },
+            { id: 9, name: 'Google Play Gift Card - $50', platform: 'Google', price_usd: 50.00, discount_percent: 8, image_url: 'https://images.unsplash.com/photo-1598128558393-70ff21433be0?w=400', in_stock: true, stock_quantity: 55, is_trending: true, is_featured: true },
+            { id: 10, name: 'Apple App Store Card - $100', platform: 'Apple', price_usd: 100.00, discount_percent: 10, image_url: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400', in_stock: true, stock_quantity: 35, is_trending: false, is_featured: true },
+            { id: 11, name: 'Discord Nitro - 1 Year', platform: 'Discord', price_usd: 99.99, discount_percent: 15, image_url: 'https://images.unsplash.com/photo-1614680376408-81e91ffe3db7?w=400', in_stock: true, stock_quantity: 25, is_trending: true, is_featured: false },
+            { id: 12, name: 'Roblox Gift Card - $25', platform: 'Roblox', price_usd: 25.00, discount_percent: 0, image_url: 'https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?w=400', in_stock: true, stock_quantity: 70, is_trending: true, is_featured: true },
+        ];
+
+        const getMockBanners = () => [
+            {
+                id: 1,
+                image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600',
+                title: 'Summer Gaming Sale',
+                subtitle: 'Up to 50% off on all Xbox and PlayStation keys. Limited time only!',
+                target_url: '/?filter=sale',
+                btn_text: 'Shop Sale'
+            },
+            {
+                id: 2,
+                image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1600',
+                title: 'Steam Wallet Cards',
+                subtitle: 'Top up your Steam wallet instantly with our digital codes.',
+                target_url: '/?platform=steam',
+                btn_text: 'Get Steam Cards'
+            },
+            {
+                id: 3,
+                image_url: 'https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=1600',
+                title: 'Gift Cards For Everyone',
+                subtitle: 'Netflix, Spotify, Amazon and more. Perfect gifts for any occasion.',
+                target_url: '/?category=vouchers',
+                btn_text: 'Browse Gift Cards'
+            }
+        ];
+
+        // =========================================================
+        // ANIMATIONS (GSAP & AOS)
+        // =========================================================
+        const initAnimations = () => {
+            // Initialize AOS (Animate On Scroll)
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: false,
+                offset: 100
+            });
+
+            // Register ScrollTrigger with GSAP
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Animate product cards on scroll
+            gsap.utils.toArray('.product-card').forEach((card) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    },
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.6
+                });
+            });
+
+            // Animate category cards
+            gsap.utils.toArray('.category-card').forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    },
+                    opacity: 0,
+                    y: 20,
+                    rotation: -5,
+                    duration: 0.5,
+                    delay: index * 0.1
+                });
+            });
+
+            // Animate feature cards
+            gsap.utils.toArray('.feature-card').forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    },
+                    opacity: 0,
+                    scale: 0.9,
+                    duration: 0.5,
+                    delay: index * 0.15
+                });
+            });
+        };
+
+        // =========================================================
+        // INITIALIZATION
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthState();
+            updateCartBadge();
+            loadBanners();
+            loadTrendingProducts();
+            loadProducts();
+            // Initialize animations after content is loaded
+            setTimeout(initAnimations, 500);
+        });
+    </script>
+</body>
+</html>
