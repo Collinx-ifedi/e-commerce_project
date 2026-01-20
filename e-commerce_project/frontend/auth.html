@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register - KeyVault</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.loading {
+            animation: progress 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* Auth Card */
+        .auth-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 440px;
+            overflow: hidden;
+        }
+
+        .auth-header {
+            padding: 40px 40px 30px;
+            text-align: center;
+        }
+
+        .auth-body {
+            padding: 0 40px 40px;
+        }
+
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            background: #F1F5F9;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 32px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748B;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #FFFFFF;
+            color: #2563EB;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #FFFFFF;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #EF4444;
+        }
+
+        .form-input-icon {
+            position: relative;
+        }
+
+        .form-input-icon .form-input {
+            padding-left: 48px;
+        }
+
+        .form-input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
+        }
+
+        .form-input-icon .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .form-input-icon .toggle-password:hover {
+            color: #2563EB;
+        }
+
+        /* Select Styles */
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            padding-left: 48px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #FFFFFF;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 20px;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 16px 24px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #1D4ED8;
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-submit .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error Message */
+        .error-message {
+            color: #EF4444;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #E2E8F0;
+        }
+
+        .divider span {
+            padding: 0 16px;
+            color: #94A3B8;
+            font-size: 13px;
+        }
+
+        /* Social Buttons */
+        .social-btn {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            border-color: #CBD5E1;
+            background: #F8FAFC;
+        }
+
+        /* OTP Modal */
+        .otp-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Password Requirements */
+        .password-requirements {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .password-requirements li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .password-requirements li.valid {
+            color: #10B981;
+        }
+
+        .password-requirements li i {
+            width: 14px;
+        }
+
+        /* Resend OTP Button */
+        .resend-otp-btn {
+            background: none;
+            border: none;
+            color: #2563EB;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .resend-otp-btn:hover:not(:disabled) {
+            color: #1D4ED8;
+        }
+
+        .resend-otp-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .resend-otp-countdown {
+            font-size: 12px;
+            color: #94A3B8;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <!-- Logo -->
+            <a href="/" class="inline-flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                    <i class="fas fa-key text-white text-xl"></i>
+                </div>
+            </a>
+            <h1 class="text-2xl font-bold text-secondary">Welcome to KeyVault</h1>
+            <p class="text-gray-500 mt-2">Sign in to access your digital keys and orders</p>
+        </div>
+
+        <div class="auth-body">
+            <!-- Tabs -->
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" data-tab="register" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div class="tab-content active" id="loginContent">
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <div class="form-input-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input 
+                                type="email" 
+                                id="loginEmail" 
+                                class="form-input" 
+                                placeholder="you@example.com"
+                                required
+                            >
+                        </div>
+                        <p class="error-message" id="loginEmailError"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="form-input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="loginPassword" 
+                                class="form-input" 
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p class="error-message" id="loginPasswordError"></p>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-primary font-medium hover:underline">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="loginBtn">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div class="tab-content" id="registerContent">
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <div class="form-input-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input 
+                                type="email" 
+                                id="registerEmail" 
+                                class="form-input" 
+                                placeholder="you@example.com"
+                                required
+                            >
+                        </div>
+                        <p class="error-message" id="registerEmailError"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="form-input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="registerPassword" 
+                                class="form-input" 
+                                placeholder="Create a password"
+                                required
+                                oninput="checkPasswordStrength()"
+                            >
+                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <ul class="password-requirements" id="passwordRequirements">
+                            <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
+                            <li id="req-upper"><i class="fas fa-circle"></i> One uppercase letter</li>
+                            <li id="req-number"><i class="fas fa-circle"></i> One number</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Country</label>
+                        <div class="form-input-icon">
+                            <i class="fas fa-globe"></i>
+                            <select id="registerCountry" class="form-select" required>
+                                <option value="">Select your country</option>
+                                <option value="US">United States</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="CA">Canada</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="ES">Spain</option>
+                                <option value="IT">Italy</option>
+                                <option value="NL">Netherlands</option>
+                                <option value="BR">Brazil</option>
+                                <option value="MX">Mexico</option>
+                                <option value="JP">Japan</option>
+                                <option value="KR">South Korea</option>
+                                <option value="IN">India</option>
+                                <option value="AE">United Arab Emirates</option>
+                                <option value="SG">Singapore</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="termsCheckbox" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" required>
+                            <span class="text-sm text-gray-600">
+                                I agree to the <a href="/terms.html" class="text-primary hover:underline">Terms of Service</a> and <a href="/privacy.html" class="text-primary hover:underline">Privacy Policy</a>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="registerBtn">
+                        <span>Create Account</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-8">
+                <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Store
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================
+        // API WRAPPER
+        // =========================================================
+        const API_BASE = '';
+
+        const api = {
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally {
+                    hideLoader();
+                }
+            }
+        };
+
+        const showLoader = () => {
+            document.getElementById('progressBar').classList.add('loading');
+        };
+
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        // =========================================================
+        // TAB SWITCHING
+        // =========================================================
+        const switchTab = (tab) => {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+
+            // Update content
+            document.getElementById('loginContent').classList.toggle('active', tab === 'login');
+            document.getElementById('registerContent').classList.toggle('active', tab === 'register');
+
+            // Update URL without reload
+            const url = new URL(window.location);
+            if (tab === 'register') {
+                url.searchParams.set('tab', 'register');
+            } else {
+                url.searchParams.delete('tab');
+            }
+            window.history.replaceState({}, '', url);
+        };
+
+        // Check URL for initial tab
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'register') {
+            switchTab('register');
+        }
+
+        // =========================================================
+        // PASSWORD VISIBILITY TOGGLE
+        // =========================================================
+        const togglePassword = (inputId, btn) => {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        };
+
+        // =========================================================
+        // PASSWORD STRENGTH CHECKER
+        // =========================================================
+        const checkPasswordStrength = () => {
+            const password = document.getElementById('registerPassword').value;
+            
+            const requirements = {
+                length: password.length >= 8,
+                upper: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password)
+            };
+
+            Object.entries(requirements).forEach(([key, valid]) => {
+                const el = document.getElementById(`req-${key}`);
+                el.classList.toggle('valid', valid);
+                el.querySelector('i').className = valid ? 'fas fa-check-circle' : 'fas fa-circle';
+            });
+
+            return Object.values(requirements).every(Boolean);
+        };
+
+        // =========================================================
+        // LOGIN HANDLER
+        // =========================================================
+        const handleLogin = async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            // Clear previous errors
+            document.getElementById('loginEmailError').classList.remove('visible');
+            document.getElementById('loginPasswordError').classList.remove('visible');
+
+            // Disable button and show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>Signing in...</span>';
+
+            try {
+                // Call production API with proper credentials
+                const response = await api.post('/api/auth/login', { username: email, password });
+                
+                // Validate response structure
+                if (!response.access_token) {
+                    throw new Error('Invalid response from server: missing access token');
+                }
+                
+                // Store token
+                localStorage.setItem('token', response.access_token);
+                
+                // Store user data from backend (balance_usd, country, email are required)
+                if (response.user) {
+                    const userData = {
+                        email: response.user.email,
+                        full_name: response.user.full_name || 'Valued Customer',
+                        balance_usd: response.user.balance_usd || 0,
+                        country: response.user.country || '',
+                        avatar_url: response.user.avatar_url || null
+                    };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    console.log('[Auth] User data saved:', userData);
+                } else {
+                    // Fail if user object is missing - never use mock data
+                    throw new Error('Server response missing user data');
+                }
+
+                // Success notification
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Welcome back!',
+                    text: 'You have successfully signed in.',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Redirect to home or previous page
+                    const redirect = urlParams.get('redirect') || '/';
+                    window.location.href = redirect;
+                });
+
+            } catch (error) {
+                // Show error - no fallback to mock auth
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: error.message || 'Invalid credentials or server error. Please try again.',
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Sign In</span><i class="fas fa-arrow-right"></i>';
+            }
+        };
+
+        // =========================================================
+        // REGISTER HANDLER
+        // =========================================================
+        const handleRegister = async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const country = document.getElementById('registerCountry').value;
+            const btn = document.getElementById('registerBtn');
+
+            // Validate password strength
+            if (!checkPasswordStrength()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Weak Password',
+                    text: 'Please ensure your password meets all requirements.',
+                });
+                return;
+            }
+
+            // Disable button
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>Creating account...</span>';
+
+            try {
+                const response = await api.post('/api/auth/register', { 
+                    email, 
+                    password, 
+                    country 
+                });
+
+                // Store email for resend OTP functionality
+                window.otpEmail = email;
+                window.otpResendTimer = 0;
+
+                // Show OTP verification modal
+                Swal.fire({
+                    title: 'Verify Your Email',
+                    html: `
+                        <p class="text-gray-600 mb-4">We've sent a verification code to <strong>${email}</strong></p>
+                        <div class="otp-container" id="otpContainer">
+                            <input type="text" maxlength="1" class="otp-input" data-index="0">
+                            <input type="text" maxlength="1" class="otp-input" data-index="1">
+                            <input type="text" maxlength="1" class="otp-input" data-index="2">
+                            <input type="text" maxlength="1" class="otp-input" data-index="3">
+                            <input type="text" maxlength="1" class="otp-input" data-index="4">
+                            <input type="text" maxlength="1" class="otp-input" data-index="5">
+                        </div>
+                        <div class="resend-otp-countdown">
+                            <button type="button" class="resend-otp-btn" id="resendOtpBtn" onclick="handleResendOtp()">
+                                Resend Code
+                            </button>
+                            <div id="resendCountdown" style="display:none; margin-top: 8px;"></div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Verify',
+                    confirmButtonColor: '#2563EB',
+                    showLoaderOnConfirm: true,
+                    didOpen: () => {
+                        // Setup OTP input handlers
+                        const otpInputs = document.querySelectorAll('.otp-input');
+                        otpInputs.forEach((input, index) => {
+                            input.addEventListener('input', (e) => {
+                                if (e.target.value && index < otpInputs.length - 1) {
+                                    otpInputs[index + 1].focus();
+                                }
+                            });
+                            input.addEventListener('keydown', (e) => {
+                                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                                    otpInputs[index - 1].focus();
+                                }
+                            });
+                        });
+                        otpInputs[0].focus();
+                        
+                        // Start resend countdown
+                        startResendCountdown();
+                    },
+                    preConfirm: async () => {
+                        const otpInputs = document.querySelectorAll('.otp-input');
+                        const otp = Array.from(otpInputs).map(i => i.value).join('');
+                        
+                        if (otp.length !== 6) {
+                            Swal.showValidationMessage('Please enter the complete 6-digit code');
+                            return false;
+                        }
+
+                        try {
+                            // Show loading spinner
+                            const confirmBtn = Swal.getConfirmButton();
+                            if (confirmBtn) {
+                                confirmBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px;"></div>Verifying...';
+                            }
+                            
+                            await api.post('/api/auth/verify-email', { email, otp });
+                            return true;
+                        } catch (error) {
+                            Swal.showValidationMessage(error.message || 'Invalid OTP code');
+                            return false;
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Account Verified!',
+                            text: 'You can now sign in with your credentials.',
+                            confirmButtonColor: '#2563EB'
+                        }).then(() => {
+                            switchTab('login');
+                            document.getElementById('loginEmail').value = email;
+                        });
+                    }
+                });
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: error.message || 'Unable to create account. Please try again.',
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Create Account</span><i class="fas fa-arrow-right"></i>';
+            }
+        };
+
+        // =========================================================
+        // RESEND OTP COUNTDOWN TIMER
+        // =========================================================
+        const startResendCountdown = () => {
+            const btn = document.getElementById('resendOtpBtn');
+            const countdown = document.getElementById('resendCountdown');
+            
+            if (!btn) return;
+            
+            window.otpResendTimer = 60;
+            btn.disabled = true;
+            countdown.style.display = 'block';
+            
+            const interval = setInterval(() => {
+                window.otpResendTimer--;
+                countdown.textContent = `Resend code in ${window.otpResendTimer}s`;
+                
+                if (window.otpResendTimer <= 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    countdown.style.display = 'none';
+                    countdown.textContent = '';
+                }
+            }, 1000);
+        };
+
+        const handleResendOtp = async () => {
+            const btn = document.getElementById('resendOtpBtn');
+            if (!btn || btn.disabled || !window.otpEmail) return;
+            
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = 'Sending...';
+            
+            try {
+                await api.post('/api/auth/resend-otp', { email: window.otpEmail });
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Code Sent',
+                    text: `A new verification code has been sent to ${window.otpEmail}`,
+                    toast: true,
+                    position: 'top-end',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                
+                // Restart the countdown
+                startResendCountdown();
+                
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Resend Failed',
+                    text: error.message || 'Unable to resend code. Please try again.',
+                    toast: true,
+                    position: 'top-end',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        };
+
+        // =========================================================
+        // CHECK IF ALREADY LOGGED IN
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>
