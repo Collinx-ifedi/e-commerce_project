@@ -17,3 +17,4 @@ python-dotenv
 aiofiles
 jinja2
 argon2_cffi
+cloudinary
