@@ -187,7 +187,7 @@ async def verify_user_email_service(db: AsyncSession, email: str, otp: str):
 
 async def bootstrap_admins(db: AsyncSession):
     """Seeds admin accounts on startup."""
-    from core import ADMIN_PASSWORDS 
+    from .core import ADMIN_PASSWORDS 
     
     for username, password in ADMIN_PASSWORDS.items():
         result = await db.execute(select(Admin).where(Admin.username == username))
