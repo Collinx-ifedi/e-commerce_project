@@ -15,6 +15,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
     <!-- Google Translate API -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
@@ -50,7 +53,19 @@
     </script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
         body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
 
         .progress-bar {
@@ -375,12 +390,7 @@
             localStorage.theme = isDark ? "dark" : "light";
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
         
         // =========================================================
         // AUTH CHECK & UTILITIES

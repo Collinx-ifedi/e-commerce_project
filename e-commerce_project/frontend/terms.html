@@ -15,8 +15,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    <!-- Google Translate API -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <style>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        * {
+            min-width: 0;
+        }
         body { font-family: 'Inter', sans-serif; }
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .bg-white { background: #1E293B; }
@@ -31,12 +43,7 @@
             localStorage.theme = isDark ? "dark" : "light";
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
     </script>
     
     <div class="max-w-4xl mx-auto px-6 py-20">

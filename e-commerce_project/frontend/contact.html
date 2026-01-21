@@ -14,6 +14,9 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
     <!-- Google Translate API -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
@@ -24,6 +27,16 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        * {
+            min-width: 0;
+        }
+        
         tailwind.config = {
             theme: {
                 extend: {
@@ -124,6 +137,16 @@
     </footer>
     
     <style>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        * {
+            min-width: 0;
+        }
+        
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .navbar { background: #1E293B; }
         html.dark footer { background: #1E293B; border-top-color: #334155; }
@@ -146,12 +169,7 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
         
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
         

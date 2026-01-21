@@ -20,6 +20,9 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
     <!-- Google Translate API -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
@@ -42,6 +45,16 @@
     </script>
 
     <style>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        * {
+            min-width: 0;
+        }
+        
         .prose h2 { 
             color: #0F172A; 
             font-weight: 700; 
@@ -180,12 +193,7 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
         
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
     </script>
