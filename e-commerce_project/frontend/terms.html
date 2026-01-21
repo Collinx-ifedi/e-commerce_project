@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - KeyVault</title>
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .bg-white { background: #1E293B; }
+        html.dark a { color: #60A5FA; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+        }
+        
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+                'googleTranslate'
+            );
+        }
+    </script>
+    
+    <div class="max-w-4xl mx-auto px-6 py-20">
+        <div class="flex items-center justify-between mb-8">
+            <a href="/" class="text-blue-600 font-medium">← Back to Home</a>
+            <div class="flex items-center gap-4">
+                <button id="themeToggle" class="p-2 text-slate-600 hover:text-primary transition" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div id="googleTranslate" class="flex items-center"></div>
+            </div>
+        </div>
+        
+        <div class="bg-white p-10 rounded-3xl shadow-sm">
+            <h1 class="text-3xl font-bold mb-2">Terms of Service</h1>
+            <p class="text-slate-400 mb-8">Last Updated: January 2026</p>
+            
+            <div class="prose prose-slate max-w-none space-y-6 text-slate-600 leading-relaxed">
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">1. Digital Product Delivery</h2>
+                    <p>All products sold on KeyVault are digital keys. Upon successful payment via cryptocurrency, the key is delivered instantly to your registered email. Because these are digital goods, <strong>no returns</strong> are accepted once the key has been viewed.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">2. Payments</h2>
+                    <p>We exclusively accept cryptocurrency payments. It is the user's responsibility to ensure the correct amount is sent including network fees. Underpaid invoices will not be processed automatically.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">3. Account Responsibility</h2>
+                    <p>You are responsible for maintaining the security of your account and your wallet. KeyVault is not liable for any loss resulting from unauthorized access to your account.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
