@@ -37,7 +37,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, delete, func, case, update
+from sqlalchemy import select, desc, delete, func, case, update, or_
 from sqlalchemy.orm import selectinload
 
 # --- LOCAL MODULES ---
@@ -75,6 +75,7 @@ from .models_schemas import (
     Admin,
     User,
     Product, 
+    OrderItem,  # <--- CRITICAL FIX: Imported for relationship loading
     ProductSchema,
     Banner,
     BannerSchema,
@@ -194,7 +195,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.3.2",
+    version="2.3.3",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -232,7 +233,7 @@ async def add_process_time_header(request: Request, call_next):
 # 5. API ROUTERS
 # =========================================================
 
-# --- A. CATALOG ROUTES ---
+# --- A. CATALOG ROUTER ---
 catalog_router = APIRouter(prefix="/api", tags=["Catalog"])
 
 @catalog_router.get("/products", response_model=List[ProductSchema])
@@ -241,8 +242,11 @@ async def get_products(
     limit: int = 50, 
     db: AsyncSession = Depends(get_db)
 ):
-    """Fetch products for the frontend grid."""
-    query = select(Product).where(Product.is_deleted == False)
+    """Fetch active products for the frontend grid."""
+    # Ensure we only fetch non-deleted items
+    query = select(Product).where(
+        or_(Product.is_deleted == False, Product.is_deleted.is_(None))
+    )
     
     if platform:
         query = query.where(Product.platform == platform)
@@ -273,7 +277,7 @@ async def get_banners(active: bool = True, db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
-# --- B. AUTH ROUTES ---
+# --- B. AUTH ROUTER ---
 auth_router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -339,7 +343,7 @@ async def resend_otp(payload: dict, db: AsyncSession = Depends(get_db)):
     return await resend_otp_service(db, email)
 
 
-# --- C. ORDER ROUTES ---
+# --- C. ORDER ROUTER ---
 order_router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 @order_router.post("/checkout", status_code=status.HTTP_201_CREATED)
@@ -364,8 +368,8 @@ async def get_user_orders(user: User = Depends(get_current_user), db: AsyncSessi
     return result.scalars().all()
 
 
-# --- D. ADMIN ROUTES (Updated) ---
-# NOTE: Prefix is explicitly /api/admin to match frontend fetch calls
+# --- D. ADMIN ROUTER (FIXED) ---
+# PREFIX: /api/admin - Matches frontend calls
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @admin_router.post("/login")
@@ -393,7 +397,11 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
     total_users = users_res.scalar() or 0
 
     # 4. Total Products
-    products_res = await db.execute(select(func.count(Product.id)).where(Product.is_deleted == False))
+    products_res = await db.execute(
+        select(func.count(Product.id)).where(
+            or_(Product.is_deleted == False, Product.is_deleted.is_(None))
+        )
+    )
     total_products = products_res.scalar() or 0
 
     return {
@@ -406,9 +414,16 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
 # -- ADMIN PRODUCTS LIST --
 @admin_router.get("/products", response_model=List[ProductSchema])
 async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Admin view of products (includes draft/hidden items)."""
-    # Fetch all non-deleted products
-    query = select(Product).where(Product.is_deleted == False).order_by(desc(Product.id))
+    """
+    Admin view of products.
+    FIX: Uses 'or_(...)' to capture False and NULL values for is_deleted,
+    ensuring all active/draft products are returned.
+    """
+    query = (
+        select(Product)
+        .where(or_(Product.is_deleted == False, Product.is_deleted.is_(None)))
+        .order_by(desc(Product.id))
+    )
     result = await db.execute(query)
     return result.scalars().all()
 
@@ -423,16 +438,26 @@ async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = D
 # -- ADMIN ORDERS LIST --
 @admin_router.get("/orders", response_model=List[OrderResponse])
 async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Admin view of recent orders with items eager loaded."""
-    # Use selectinload to fetch items efficiently for the 'View' modal
-    query = (
-        select(Order)
-        .options(selectinload(Order.items).selectinload("product"))
-        .order_by(desc(Order.created_at))
-        .limit(limit)
-    )
-    result = await db.execute(query)
-    return result.scalars().all()
+    """
+    Admin view of recent orders with items eager loaded.
+    FIX: Replaced string based selectinload with class-bound attributes (OrderItem.product)
+    to resolve 'Strings are not accepted' error in SQLAlchemy 2.0.
+    """
+    try:
+        query = (
+            select(Order)
+            .options(
+                # CRITICAL FIX HERE:
+                selectinload(Order.items).selectinload(OrderItem.product) 
+            )
+            .order_by(desc(Order.created_at))
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return result.scalars().all()
+    except Exception as e:
+        logger.error(f"Order Fetch Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database error while fetching orders.")
 
 # -- CREATE PRODUCT --
 @admin_router.post("/products", response_model=ProductSchema)
@@ -639,7 +664,7 @@ async def upload_product_codes(
             os.remove(file_path)
 
 
-# --- E. WEBHOOKS ---
+# --- E. WEBHOOK ROUTER ---
 webhook_router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
 
 @webhook_router.post("/nowpayments")
