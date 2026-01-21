@@ -16,7 +16,7 @@ from sqlalchemy import text, select, update, func
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 
-from models_schemas import Base, Product, ProductCode
+from .models_schemas import Base, Product, ProductCode
 
 # ======================================================
 # CONFIGURATION & LOGGING
