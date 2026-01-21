@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Checkout - KeyVault</title>
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6); z-index: 9999;
+        }
+        .progress-bar.loading { animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .checkout-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .order-item:last-child { border-bottom: none; }
+
+        .order-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .payment-option {
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .payment-option:hover { border-color: #CBD5E1; }
+        .payment-option.selected { border-color: #2563EB; background: #EFF6FF; }
+
+        .payment-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #2563EB;
+        }
+
+        .crypto-icons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .crypto-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #F8FAFC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 18px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-pay:hover { background: #1D4ED8; transform: translateY(-2px); }
+        .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-pay .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: #ECFDF5;
+            border-radius: 10px;
+            color: #10B981;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94A3B8;
+        }
+
+        .step.active { color: #2563EB; }
+        .step.completed { color: #10B981; }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step.active .step-number { background: #2563EB; color: white; }
+        .step.completed .step-number { background: #10B981; color: white; }
+
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: #E2E8F0;
+        }
+        
+        /* Dark Mode Styles */
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-secondary">KeyVault</span>
+                </a>
+                <div class="secure-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Secure Checkout
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <span class="font-medium">Cart</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <span class="font-medium">Payment</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <span class="font-medium">Complete</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Payment Section -->
+            <div class="lg:col-span-3">
+                <div class="checkout-card">
+                    <h2 class="text-xl font-bold text-secondary mb-6">Payment Method</h2>
+                    
+                    <div class="space-y-4" id="paymentOptions">
+                        <label class="payment-option selected">
+                            <input type="radio" name="payment" value="nowpayment" checked>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-secondary">NowPayment</span>
+                                    <div class="crypto-icons">
+                                        <div class="crypto-icon"><i class="fab fa-bitcoin text-yellow-500"></i></div>
+                                        <div class="crypto-icon"><i class="fab fa-ethereum text-blue-400"></i></div>
+                                        <div class="crypto-icon text-green-500 text-xs font-bold">USDT</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Pay with Bitcoin, Ethereum, Litecoin, USDT & 100+ cryptocurrencies</p>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="binancepay">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-secondary">Binance Pay</span>
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #F3BA2F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">B</div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Secure payment with QR code - powered by Binance</p>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="bybitpay">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-secondary">Bybit Pay</span>
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #F7931A; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">₿</div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Fast crypto payments with QR code - by Bybit</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-gray-100">
+                        <h3 class="font-semibold text-secondary mb-4">How it works</h3>
+                        <div class="space-y-3 text-sm text-gray-600">
+                            <div class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">1</div>
+                                <p>Click "Pay Securely" to generate your invoice</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">2</div>
+                                <p>Send the exact amount to the provided wallet address</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">3</div>
+                                <p>Your keys will be delivered instantly after confirmation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-2">
+                <div class="checkout-card">
+                    <h2 class="text-xl font-bold text-secondary mb-6">Order Summary</h2>
+                    
+                    <div id="orderItems" class="mb-6">
+                        <!-- Items rendered via JS -->
+                    </div>
+
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span id="subtotalAmount">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Processing Fee</span>
+                            <span class="text-success">Free</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-4 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-lg font-bold text-secondary">Total</span>
+                            <span class="text-2xl font-bold text-primary" id="totalAmount">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-pay" id="payBtn" onclick="processPayment()">
+                        <i class="fas fa-lock"></i>
+                        <span>Pay Securely</span>
+                    </button>
+
+                    <p class="text-center text-xs text-gray-400 mt-4">
+                        By completing this purchase you agree to our <a href="/terms" class="text-primary hover:underline">Terms of Service</a>
+                    </p>
+                </div>
+
+                <a href="/cart.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition mt-6">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Cart
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // =========================================================
+        // DARK MODE & GOOGLE TRANSLATE
+        // =========================================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+        }
+        
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+                'googleTranslate'
+            );
+        }
+        
+        // =========================================================
+        // AUTH CHECK & UTILITIES
+        // =========================================================
+        const API_BASE = '';
+
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { window.location.href = '/auth.html?redirect=/checkout.html'; throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            }
+        };
+
+        const showLoader = () => document.getElementById('progressBar').classList.add('loading');
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+        const cart = {
+            KEY: 'cart',
+            getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
+            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.final_price * item.quantity), 0),
+            clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
+        };
+
+        // =========================================================
+        // CHECK AUTH ON LOAD
+        // =========================================================
+        const checkAuth = () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/auth.html?redirect=/checkout.html';
+                return false;
+            }
+            return true;
+        };
+
+        // =========================================================
+        // RENDER ORDER SUMMARY
+        // =========================================================
+        const renderOrderSummary = () => {
+            const items = cart.getItems();
+            
+            if (items.length === 0) {
+                window.location.href = '/cart.html';
+                return;
+            }
+
+            const container = document.getElementById('orderItems');
+            container.innerHTML = items.map(item => `
+                <div class="order-item">
+                    <img src="${item.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'}" 
+                         alt="${item.name}" 
+                         class="order-item-image"
+                         onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'">
+                    <div class="flex-1">
+                        <p class="font-medium text-secondary line-clamp-1">${item.name}</p>
+                        <p class="text-sm text-gray-500">Qty: ${item.quantity}</p>
+                    </div>
+                    <span class="font-semibold text-secondary">${formatCurrency(item.final_price * item.quantity)}</span>
+                </div>
+            `).join('');
+
+            const total = cart.getTotal();
+            document.getElementById('subtotalAmount').textContent = formatCurrency(total);
+            document.getElementById('totalAmount').textContent = formatCurrency(total);
+        };
+
+        // =========================================================
+        // PAYMENT OPTION SELECTION
+        // =========================================================
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                option.querySelector('input').checked = true;
+            });
+        });
+
+        // =========================================================
+        // PROCESS PAYMENT
+        // =========================================================
+        const processPayment = async () => {
+            const btn = document.getElementById('payBtn');
+            const items = cart.getItems();
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            
+            if (items.length === 0) {
+                Swal.fire({ icon: 'error', title: 'Cart Empty', text: 'Your cart is empty.' });
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>Processing...</span>';
+
+            try {
+                // Prepare order data matching MultiProductOrderCreate schema
+                const orderData = {
+                    items: items.map(item => ({
+                        product_id: item.id,
+                        quantity: item.quantity
+                    })),
+                    payment_method: paymentMethod
+                };
+
+                const response = await api.post('/api/orders/checkout', orderData);
+
+                if (response.checkout_url) {
+                    // Clear cart and redirect to payment
+                    cart.clear();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Created!',
+                        text: 'Redirecting to payment...',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = response.checkout_url;
+                    });
+                } else {
+                    throw new Error('No checkout URL received');
+                }
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Checkout Failed',
+                    text: error.message || 'Unable to process your order. Please try again.',
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Securely</span>';
+            }
+        };
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                renderOrderSummary();
+            }
+        });
+    </script>
+</body>
+</html>
