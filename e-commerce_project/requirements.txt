@@ -16,3 +16,5 @@ httpx
 python-dotenv
 aiofiles
 jinja2
+Cloudinary
+argon2_cffi
