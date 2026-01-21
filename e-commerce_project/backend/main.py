@@ -37,7 +37,8 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, delete, func, case
+from sqlalchemy import select, desc, delete, func, case, update
+from sqlalchemy.orm import selectinload
 
 # --- LOCAL MODULES ---
 from .db import get_db, init_db, add_product_codes_from_file
@@ -372,11 +373,11 @@ async def admin_login_route(data: AdminLoginSchema, db: AsyncSession = Depends(g
     token = await admin_login_service(db, data.username, data.password)
     return {"access_token": token, "token_type": "bearer"}
 
-# -- ADDED: ADMIN STATS ENDPOINT (Resolves 404) --
+# -- ADMIN STATS --
 @admin_router.get("/stats")
 async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
     """Returns dashboard statistics (Sales, Users, Orders)."""
-    # 1. Total Revenue (Paid/Completed Orders)
+    # 1. Total Revenue
     revenue_query = select(func.sum(Order.total_amount_usd)).where(
         Order.status.in_([OrderStatus.PAID, OrderStatus.COMPLETED])
     )
@@ -402,24 +403,38 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
         "total_products": total_products
     }
 
-# -- ADDED: ADMIN PRODUCTS LIST (Resolves 404) --
+# -- ADMIN PRODUCTS LIST --
 @admin_router.get("/products", response_model=List[ProductSchema])
 async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
     """Admin view of products (includes draft/hidden items)."""
+    # Fetch all non-deleted products
     query = select(Product).where(Product.is_deleted == False).order_by(desc(Product.id))
     result = await db.execute(query)
     return result.scalars().all()
 
-# -- ADDED: ADMIN ORDERS LIST (Resolves 404) --
-@admin_router.get("/orders")
-async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Admin view of recent orders."""
-    # We join User to get email/name details if needed, but Pydantic response will handle serialization
-    query = select(Order).order_by(desc(Order.created_at)).limit(limit)
+# -- ADMIN BANNERS LIST --
+@admin_router.get("/banners", response_model=List[BannerSchema])
+async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    """Admin view of all banners (active and inactive)."""
+    query = select(Banner).order_by(desc(Banner.id))
     result = await db.execute(query)
     return result.scalars().all()
 
-# 1. CREATE PRODUCT (Multipart Form + Cloudinary Error Handling)
+# -- ADMIN ORDERS LIST --
+@admin_router.get("/orders", response_model=List[OrderResponse])
+async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    """Admin view of recent orders with items eager loaded."""
+    # Use selectinload to fetch items efficiently for the 'View' modal
+    query = (
+        select(Order)
+        .options(selectinload(Order.items).selectinload("product"))
+        .order_by(desc(Order.created_at))
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
+
+# -- CREATE PRODUCT --
 @admin_router.post("/products", response_model=ProductSchema)
 async def create_product(
     name: str = Form(...),
@@ -434,29 +449,90 @@ async def create_product(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    # Upload Image to Cloudinary with IMPROVED ERROR HANDLING
     try:
-        # Note: cloudinary.uploader automatically uses the configured CLOUDINARY_URL
         logger.info(f"Attempting Cloudinary upload for file: {file.filename}")
         upload_result = cloudinary.uploader.upload(file.file, folder="keyvault_products")
         secure_url = upload_result.get("secure_url")
     except Exception as e:
         logger.error(f"Cloudinary upload failed: {str(e)}")
-        # Returns 400 Bad Request with specific error details (e.g. 'Invalid Signature')
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Image Provider Error: {str(e)}"
-        )
+        raise HTTPException(status_code=400, detail=f"Image Provider Error: {str(e)}")
 
     return await create_product_service(
         db, name, platform, price_usd, description, secure_url, 
         stock_quantity, discount_percent, is_featured, is_trending
     )
 
-# 2. CREATE BANNER (Multipart + Cloudinary)
+# -- UPDATE PRODUCT (PUT) --
+@admin_router.put("/products/{product_id}", response_model=ProductSchema)
+async def update_product(
+    product_id: int,
+    name: str = Form(...),
+    platform: str = Form(...),
+    price_usd: float = Form(...),
+    stock_quantity: int = Form(...),
+    discount_percent: int = Form(0),
+    description: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None), # Optional for update
+    is_featured: bool = Form(False),
+    is_trending: bool = Form(False),
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    # Fetch Product
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalar_one_or_none()
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Handle Image Update (if file provided)
+    if file:
+        try:
+            logger.info(f"Updating image for product {product_id}")
+            upload_result = cloudinary.uploader.upload(file.file, folder="keyvault_products")
+            product.image_url = upload_result.get("secure_url")
+        except Exception as e:
+            logger.error(f"Cloudinary upload failed: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Image Update Error: {str(e)}")
+
+    # Update Fields
+    product.name = name
+    product.platform = platform
+    product.price_usd = price_usd
+    product.stock_quantity = stock_quantity
+    product.discount_percent = discount_percent
+    product.description = description
+    product.is_featured = is_featured
+    product.is_trending = is_trending
+    product.in_stock = (stock_quantity > 0)
+
+    await db.commit()
+    await db.refresh(product)
+    return product
+
+# -- DELETE PRODUCT --
+@admin_router.delete("/products/{product_id}")
+async def delete_product(product_id: int, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    """Soft delete a product."""
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalar_one_or_none()
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+        
+    product.is_deleted = True
+    product.deleted_at = datetime.utcnow()
+    await db.commit()
+    return {"message": "Product deleted successfully"}
+
+# -- CREATE BANNER --
 @admin_router.post("/banners", response_model=BannerSchema)
 async def create_banner(
     title: Optional[str] = Form(None),
+    subtitle: Optional[str] = Form(None),
+    target_url: Optional[str] = Form(None),
+    btn_text: str = Form("Shop Now"),
+    is_active: bool = Form(True),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
@@ -469,7 +545,69 @@ async def create_banner(
         logger.error(f"Banner upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Image Provider Error: {str(e)}")
 
-    return await create_banner_service(db, title, secure_url)
+    new_banner = Banner(
+        title=title,
+        subtitle=subtitle,
+        target_url=target_url,
+        btn_text=btn_text,
+        image_url=secure_url,
+        is_active=is_active,
+        start_date=datetime.utcnow()
+    )
+    db.add(new_banner)
+    await db.commit()
+    await db.refresh(new_banner)
+    return new_banner
+
+# -- UPDATE BANNER (PUT) --
+@admin_router.put("/banners/{banner_id}", response_model=BannerSchema)
+async def update_banner(
+    banner_id: int,
+    title: Optional[str] = Form(None),
+    subtitle: Optional[str] = Form(None),
+    target_url: Optional[str] = Form(None),
+    btn_text: str = Form("Shop Now"),
+    is_active: bool = Form(True),
+    file: Optional[UploadFile] = File(None),
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    result = await db.execute(select(Banner).where(Banner.id == banner_id))
+    banner = result.scalar_one_or_none()
+    if not banner:
+        raise HTTPException(status_code=404, detail="Banner not found")
+        
+    if file:
+        try:
+            logger.info(f"Updating image for banner {banner_id}")
+            upload_result = cloudinary.uploader.upload(file.file, folder="keyvault_banners")
+            banner.image_url = upload_result.get("secure_url")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Image Update Error: {str(e)}")
+
+    banner.title = title
+    banner.subtitle = subtitle
+    banner.target_url = target_url
+    banner.btn_text = btn_text
+    banner.is_active = is_active
+    
+    await db.commit()
+    await db.refresh(banner)
+    return banner
+
+# -- DELETE BANNER --
+@admin_router.delete("/banners/{banner_id}")
+async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    """Hard delete a banner."""
+    result = await db.execute(select(Banner).where(Banner.id == banner_id))
+    banner = result.scalar_one_or_none()
+    
+    if not banner:
+        raise HTTPException(status_code=404, detail="Banner not found")
+        
+    await db.delete(banner)
+    await db.commit()
+    return {"message": "Banner deleted successfully"}
 
 # 3. UPLOAD CODES (Kept Local for CSV Processing Efficiency)
 @admin_router.post("/products/{product_id}/upload-codes")
