@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - KeyVault</title>
+    
+    <meta name="description" content="Privacy Policy for KeyVault - Learn how we protect your data and handle digital key transactions securely.">
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .prose h2 { 
+            color: #0F172A; 
+            font-weight: 700; 
+            font-size: 1.5rem; 
+            margin-top: 2rem; 
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .prose p { 
+            color: #475569; 
+            line-height: 1.75; 
+            margin-bottom: 1.25rem; 
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            color: #475569;
+            margin-bottom: 1.25rem;
+        }
+        .prose li { margin-bottom: 0.5rem; }
+        
+        /* Dark Mode Styles */
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; }
+        html.dark .footer { background: #0F172A; }
+        html.dark header { background: #1E293B; border-bottom-color: #334155; }
+    </style>
+</head>
+<body class="bg-background text-secondary min-h-screen flex flex-col font-sans">
+
+    <nav class="bg-white border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:rotate-12 transition-transform">
+                    <i class="fas fa-vault text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">KeyVault</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <button id="themeToggle" class="p-2 text-slate-600 hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div id="googleTranslate" class="flex items-center"></div>
+                <a href="/" class="text-sm font-medium text-slate-500 hover:text-primary transition flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> Back to Store
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-white border-b border-slate-100 py-12">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-4">Privacy Policy</h1>
+            <p class="text-slate-500 font-medium">Last Updated: January 20, 2026</p>
+        </div>
+    </header>
+
+    <main class="flex-grow py-16 px-6">
+        <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 md:p-16">
+            <div class="prose max-w-none">
+                
+                <section>
+                    <h2><i class="fas fa-info-circle text-primary"></i> 1. Introduction</h2>
+                    <p>Welcome to KeyVault. We are committed to protecting your personal information and your right to privacy. This policy explains what information we collect, how we use it, and what rights you have in relation to it. This applies to all information collected through our website and related services.</p>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-database text-primary"></i> 2. Information We Collect</h2>
+                    <p>We collect personal information that you voluntarily provide to us when you register on the website, express an interest in obtaining information about us or our products, or when you participate in activities on the website. This includes:</p>
+                    <ul>
+                        <li><strong>Account Data:</strong> Name, email address, and encrypted passwords.</li>
+                        <li><strong>Transaction Data:</strong> Details about payments you make and digital keys you purchase (e.g., product name, timestamp).</li>
+                        <li><strong>Device Data:</strong> IP addresses, browser type, and operating system for security and fraud prevention.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-shield-alt text-primary"></i> 3. How We Use Your Information</h2>
+                    <p>We use the information we collect to provide, improve, and secure our services. Specific uses include:</p>
+                    <ul>
+                        <li>To facilitate account creation and the logon process.</li>
+                        <li>To fulfill and manage your orders and payments.</li>
+                        <li>To send verification codes (OTP) and order delivery emails.</li>
+                        <li>To protect our services against bot attacks and fraudulent transactions.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-lock text-primary"></i> 4. Data Security</h2>
+                    <p>We implement a variety of security measures to maintain the safety of your personal information. We use industry-standard encryption for data at rest and in transit. Your digital keys are stored in a secured database and are only accessible after successful authentication.</p>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-cookie-bite text-primary"></i> 5. Cookies and Tracking</h2>
+                    <p>We use cookies to enhance your experience. These are small files that a site or its service provider transfers to your computer's hard drive through your web browser that enables the site's systems to recognize your browser and capture/remember certain information (like items in your cart).</p>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-external-link-alt text-primary"></i> 6. Third-Party Services</h2>
+                    <p>We may share information with third-party service providers to perform functions on our behalf, such as:</p>
+                    <ul>
+                        <li>Payment processing (via encrypted cryptocurrency gateways).</li>
+                        <li>Cloud hosting and image storage (e.g., Cloudinary).</li>
+                        <li>Customer support tools.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2><i class="fas fa-user-check text-primary"></i> 7. Your Rights</h2>
+                    <p>Depending on your location, you may have the right to access, correct, or delete your personal data. You can manage most of your data directly through your profile page. To request a full account deletion, please contact our support team.</p>
+                </section>
+
+                <div class="mt-16 p-8 bg-blue-50 rounded-3xl border border-blue-100 flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+                        <i class="fas fa-envelope-open-text text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-900 mb-1">Privacy Questions?</h3>
+                        <p class="text-blue-800 m-0 leading-relaxed">If you have any questions about this policy, please reach out to our privacy officer at <strong>privacy@keyvault.com</strong> or visit our <a href="/contact" class="underline font-bold hover:text-primary">Contact Page</a>.</p>
+                    </div>
+                </div>
+    
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggle').querySelector('i');
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+                'googleTranslate'
+            );
+        }
+        
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+    </script>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 bg-white border-t border-slate-100 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2 text-slate-400">
+                <i class="fas fa-vault"></i>
+                <span class="text-sm font-semibold">&copy; 2026 KeyVault. All rights reserved.</span>
+            </div>
+            <div class="flex gap-8">
+                <a href="/terms" class="text-sm text-slate-500 hover:text-primary transition font-medium">Terms of Service</a>
+                <a href="/contact" class="text-sm text-slate-500 hover:text-primary transition font-medium">Support</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
