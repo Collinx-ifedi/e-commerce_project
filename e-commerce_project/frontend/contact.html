@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - KeyVault</title>
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-secondary min-h-screen flex flex-col">
+
+    <nav class="bg-white border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:rotate-12 transition-transform">
+                    <i class="fas fa-vault text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">KeyVault</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <button id="themeToggle" class="p-2 text-slate-600 hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div id="googleTranslate" class="flex items-center"></div>
+                <a href="/" class="text-sm font-medium text-slate-500 hover:text-primary transition flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> Back to Store
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center py-12 px-4">
+        <div class="max-w-xl w-full">
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-50">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-extrabold text-slate-900 mb-3">Get in Touch</h1>
+                    <p class="text-slate-500">Have a question about your order? Our team is here to help you 24/7.</p>
+                </div>
+
+                <form id="contactForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                            <input type="text" id="name" required 
+                                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition" 
+                                placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
+                            <input type="email" id="email" required 
+                                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition" 
+                                placeholder="john@example.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="subject" class="block text-sm font-semibold text-slate-700 mb-2">Subject</label>
+                        <select id="subject" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition">
+                            <option value="Order Support">Order Support</option>
+                            <option value="Product Inquiry">Product Inquiry</option>
+                            <option value="Payment Issue">Payment Issue</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-semibold text-slate-700 mb-2">Message</label>
+                        <textarea id="message" rows="5" required 
+                            class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition resize-none" 
+                            placeholder="Tell us how we can help..."></textarea>
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full bg-primary text-white font-bold py-5 rounded-2xl hover:bg-blue-700 transition transform active:scale-[0.98] shadow-xl shadow-blue-100 flex items-center justify-center gap-3">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Send Email</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-8 text-center border-t border-slate-100 bg-white">
+        <div class="flex justify-center gap-6 mb-4">
+            <a href="/" class="text-sm text-slate-400 hover:text-primary transition">Home</a>
+            <a href="/privacy" class="text-sm text-slate-400 hover:text-primary transition">Privacy Policy</a>
+            <a href="/terms" class="text-sm text-slate-400 hover:text-primary transition">Terms of Service</a>
+        </div>
+        <p class="text-slate-400 text-sm">&copy; 2026 KeyVault. All rights reserved.</p>
+    </footer>
+    
+    <style>
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; }
+        html.dark footer { background: #1E293B; border-top-color: #334155; }
+    </style>
+
+    <script>
+        // =========================================================
+        // DARK MODE & GOOGLE TRANSLATE
+        // =========================================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggle').querySelector('i');
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+                'googleTranslate'
+            );
+        }
+        
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+        
+        // =========================================================
+        // CONTACT FORM HANDLER
+        // =========================================================
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 1. Setup your support email
+            const SUPPORT_EMAIL = "ifedicollinslinx@gmail.com";
+
+            // 2. Collect Data
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subjectSelect = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            // 3. Construct the Email Content
+            const subject = `${subjectSelect}: Inquiry from ${encodeURIComponent(name)}`;
+            const body = `Customer Details:\n` +
+                         `------------------\n` +
+                         `Name: ${encodeURIComponent(name)}\n` +
+                         `Reply-To: ${email}\n\n` +
+                         `Message:\n` +
+                         `${encodeURIComponent(message)}\n\n` +
+                         `------------------\n` +
+                         `Sent via KeyVault Contact Form`;
+
+            // 4. Show SweetAlert2 confirmation
+            Swal.fire({
+                title: 'Open Email Client?',
+                text: 'We are ready to open your default email client with the pre-filled message. Click "Continue" to proceed.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Continue',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 5. Open email client with encoded data
+                    const mailtoLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    window.location.href = mailtoLink;
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Email Client Opened',
+                        text: 'Your email client should now be open. Send the email to complete your inquiry.',
+                        icon: 'success',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
