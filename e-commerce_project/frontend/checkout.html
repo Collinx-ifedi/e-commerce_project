@@ -81,6 +81,146 @@
             position: sticky; top: 0; z-index: 100;
         }
 
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #1E293B;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active { display: flex; flex-direction: column; }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active { display: block; }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1E293B;
+            padding: 0;
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover { color: #2563EB; }
+        .mobile-menu-item i { font-size: 18px; width: 24px; }
+
+        .mobile-menu-divider { height: 1px; background: #E2E8F0; margin: 16px 0; }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-button-group .btn-outline {
+            background: #F1F5F9;
+            color: #1E293B;
+            border: 2px solid #E2E8F0;
+        }
+
+        .mobile-menu-button-group .btn-outline:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+
+        .mobile-menu-button-group .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .mobile-menu-button-group .btn-primary:hover { background: #1D4ED8; }
+
+        @media (min-width: 768px) {
+            .hamburger-btn { display: none !important; }
+            .mobile-menu { display: none !important; }
+            .mobile-menu-overlay { display: none !important; }
+        }
+
+        @media (max-width: 767px) {
+            .hamburger-btn { display: flex; }
+            .navbar-desktop-items { display: none; }
+        }
+
         .checkout-card {
             background: #FFFFFF;
             border-radius: 20px;
@@ -232,23 +372,67 @@
 <body>
     <div class="progress-bar" id="progressBar"></div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <a href="/" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <i class="fas fa-key text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold text-secondary">KeyVault</span>
-                </a>
-                <div class="secure-badge">
-                    <i class="fas fa-shield-alt"></i>
-                    Secure Checkout
-                </div>
-            </div>
-        </div>
-    </nav>
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16">
+  <a href="/" class="flex items-center gap-3">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Desktop Badge (Hidden on Mobile) -->
+  <div class="navbar-desktop-items flex items-center">
+  <div class="secure-badge">
+  <i class="fas fa-shield-alt"></i>
+  <span class="hidden sm:inline">Secure Checkout</span>
+  </div>
+  </div>
+
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+  <h3>Menu</h3>
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+  <i class="fas fa-times"></i>
+  </button>
+  </div>
+  
+  <div class="mobile-menu-content">
+  <a href="/" class="mobile-menu-item">
+  <i class="fas fa-home"></i>
+  Home
+  </a>
+  <a href="/cart" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  <a href="/profile" class="mobile-menu-item">
+  <i class="fas fa-user"></i>
+  Profile
+  </a>
+  </div>
+
+  <!-- Mobile Menu Buttons -->
+  <div class="mobile-menu-button-group">
+  <button onclick="history.back()" class="btn-outline" style="width: 100%; cursor: pointer;">Back</button>
+  </div>
+  </div>
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -277,6 +461,20 @@
                     <h2 class="text-xl font-bold text-secondary mb-6">Payment Method</h2>
                     
                     <div class="space-y-4" id="paymentOptions">
+                        <label class="payment-option" id="walletOption">
+                            <input type="radio" name="payment" value="wallet">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-secondary flex items-center gap-2">
+                                        <i class="fas fa-wallet text-primary"></i>
+                                        KeyVault Wallet
+                                    </span>
+                                    <span class="text-sm font-bold text-primary" id="walletBalanceCheckout">$0.00</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Pay instantly from your wallet balance</p>
+                            </div>
+                        </label>
+
                         <label class="payment-option selected">
                             <input type="radio" name="payment" value="nowpayment" checked>
                             <div class="flex-1">
@@ -390,11 +588,43 @@
             localStorage.theme = isDark ? "dark" : "light";
         }
         
-        // Note: googleTranslateElementInit is now defined in translate-config.js
-        
-        // =========================================================
-        // AUTH CHECK & UTILITIES
-        // =========================================================
+  // Note: googleTranslateElementInit is now defined in translate-config.js
+  
+  // =========================================================
+  // MOBILE MENU FUNCTIONALITY
+  // =========================================================
+  function initMobileMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+  hamburgerBtn.addEventListener('click', () => {
+  mobileMenu.classList.add('active');
+  mobileMenuOverlay.classList.add('active');
+  hamburgerBtn.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  });
+
+  const closeMenu = () => {
+  mobileMenu.classList.remove('active');
+  mobileMenuOverlay.classList.remove('active');
+  hamburgerBtn.classList.remove('active');
+  document.body.style.overflow = '';
+  };
+
+  mobileMenuClose.addEventListener('click', closeMenu);
+  mobileMenuOverlay.addEventListener('click', closeMenu);
+
+  mobileMenuItems.forEach(item => {
+  item.addEventListener('click', closeMenu);
+  });
+  }
+  
+  // =========================================================
+  // AUTH CHECK & UTILITIES
+  // =========================================================
         const API_BASE = '';
 
         const api = {
@@ -477,6 +707,49 @@
             const total = cart.getTotal();
             document.getElementById('subtotalAmount').textContent = formatCurrency(total);
             document.getElementById('totalAmount').textContent = formatCurrency(total);
+            
+            // Update wallet balance and check if sufficient
+            updateWalletDisplay();
+        };
+
+        // =========================================================
+        // WALLET MANAGEMENT
+        // =========================================================
+        const updateWalletDisplay = async () => {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const cartTotal = cart.getTotal();
+            const walletOption = document.getElementById('walletOption');
+            
+            if (!user) {
+                walletOption.style.opacity = '0.5';
+                walletOption.style.pointerEvents = 'none';
+                document.getElementById('walletBalanceCheckout').textContent = 'Login required';
+                return;
+            }
+
+            try {
+                // Fetch latest wallet balance
+                const response = await api.get('/api/user/profile');
+                const balance = response.balance_usd || 0;
+                
+                document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
+                
+                // Disable wallet option if insufficient balance
+                if (balance < cartTotal) {
+                    walletOption.style.opacity = '0.6';
+                    walletOption.style.pointerEvents = 'none';
+                    walletOption.title = 'Insufficient wallet balance';
+                    walletOption.innerHTML = walletOption.innerHTML.replace('Pay instantly', `Pay instantly (Need $${(cartTotal - balance).toFixed(2)} more)`);
+                } else {
+                    walletOption.style.opacity = '1';
+                    walletOption.style.pointerEvents = 'auto';
+                    walletOption.title = '';
+                }
+            } catch (error) {
+                console.log('[v0] Could not fetch wallet balance:', error.message);
+                const balance = user.balance_usd || 0;
+                document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
+            }
         };
 
         // =========================================================
@@ -516,23 +789,52 @@
                     payment_method: paymentMethod
                 };
 
-                const response = await api.post('/api/orders/checkout', orderData);
+                // Special handling for wallet payment
+                if (paymentMethod === 'wallet') {
+                    const cartTotal = items.reduce((sum, item) => sum + (item.final_price * item.quantity), 0);
+                    const user = JSON.parse(localStorage.getItem('user') || 'null');
+                    
+                    if (!user || (user.balance_usd || 0) < cartTotal) {
+                        throw new Error('Insufficient wallet balance. Please add funds first.');
+                    }
 
-                if (response.checkout_url) {
-                    // Clear cart and redirect to payment
+                    // Process wallet payment directly
+                    const response = await api.post('/api/orders/checkout', orderData);
+                    
+                    // For wallet, typically no redirect needed - just success
                     cart.clear();
+                    updateCartBadge();
                     
                     Swal.fire({
                         icon: 'success',
-                        title: 'Order Created!',
-                        text: 'Redirecting to payment...',
-                        timer: 2000,
+                        title: 'Payment Successful!',
+                        text: 'Your order has been processed. Check your email for details.',
+                        timer: 3000,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = response.checkout_url;
+                        window.location.href = '/profile?tab=orders';
                     });
                 } else {
-                    throw new Error('No checkout URL received');
+                    // External payment gateway
+                    const response = await api.post('/api/orders/checkout', orderData);
+
+                    if (response.checkout_url) {
+                        // Clear cart and redirect to payment
+                        cart.clear();
+                        updateCartBadge();
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Created!',
+                            text: 'Redirecting to payment...',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = response.checkout_url;
+                        });
+                    } else {
+                        throw new Error('No checkout URL received');
+                    }
                 }
 
             } catch (error) {
@@ -550,11 +852,12 @@
         // =========================================================
         // INIT
         // =========================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) {
-                renderOrderSummary();
-            }
-        });
-    </script>
+  document.addEventListener('DOMContentLoaded', () => {
+  initMobileMenu();
+  if (checkAuth()) {
+  renderOrderSummary();
+  }
+  });
+  </script>
 </body>
 </html>

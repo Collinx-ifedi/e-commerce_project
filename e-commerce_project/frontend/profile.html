@@ -89,6 +89,146 @@
             display: flex; align-items: center; justify-content: center;
         }
 
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #1E293B;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active { display: flex; flex-direction: column; }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active { display: block; }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1E293B;
+            padding: 0;
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover { color: #2563EB; }
+        .mobile-menu-item i { font-size: 18px; width: 24px; }
+
+        .mobile-menu-divider { height: 1px; background: #E2E8F0; margin: 16px 0; }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-button-group .btn-outline {
+            background: #F1F5F9;
+            color: #1E293B;
+            border: 2px solid #E2E8F0;
+        }
+
+        .mobile-menu-button-group .btn-outline:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+
+        .mobile-menu-button-group .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .mobile-menu-button-group .btn-primary:hover { background: #1D4ED8; }
+
+        @media (min-width: 768px) {
+            .hamburger-btn { display: none !important; }
+            .mobile-menu { display: none !important; }
+            .mobile-menu-overlay { display: none !important; }
+        }
+
+        @media (max-width: 767px) {
+            .hamburger-btn { display: flex; }
+            .navbar-desktop-items { display: none; }
+        }
+
         .profile-card {
             background: #FFFFFF;
             border-radius: 20px;
@@ -260,10 +400,11 @@
                     <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                         <i class="fas fa-key text-white text-lg"></i>
                     </div>
-                    <span class="text-xl font-bold text-secondary">KeyVault</span>
+                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
                 </a>
 
-                <div class="flex items-center gap-4">
+                <!-- Desktop Items (Hidden on Mobile) -->
+                <div class="navbar-desktop-items flex items-center gap-4">
                     <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
                         <i class="fas fa-moon"></i>
                     </button>
@@ -280,9 +421,70 @@
                         <span class="cart-badge" id="cartBadge">0</span>
                     </a>
                 </div>
+
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+            <a href="/cart" class="mobile-menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+            </a>
+            <a href="#" onclick="switchTab('overview')" class="mobile-menu-item">
+                <i class="fas fa-th-large"></i>
+                Overview
+            </a>
+            <a href="#" onclick="switchTab('orders')" class="mobile-menu-item">
+                <i class="fas fa-shopping-bag"></i>
+                Orders
+            </a>
+            <a href="#" onclick="switchTab('settings')" class="mobile-menu-item">
+                <i class="fas fa-cog"></i>
+                Settings
+            </a>
+
+            <div class="mobile-menu-divider"></div>
+
+            <div class="mobile-menu-item">
+                <i class="fas fa-moon"></i>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+            </div>
+
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+                <i class="fas fa-globe"></i>
+                <div id="mobileGoogleTranslate" class="flex-1"></div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Buttons -->
+        <div class="mobile-menu-button-group">
+            <a href="/" class="btn-outline">Store</a>
+            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -313,6 +515,10 @@
             <button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">
                 <i class="fas fa-shopping-bag"></i>
                 <span>Order History</span>
+            </button>
+            <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transactions</span>
             </button>
             <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
                 <i class="fas fa-cog"></i>
@@ -356,6 +562,22 @@
                         </div>
                     </div>
                 </div>
+                <div class="profile-card bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4 flex-1">
+                            <div class="w-12 h-12 rounded-xl bg-blue-200 flex items-center justify-center">
+                                <i class="fas fa-wallet text-xl text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-primary" id="walletBalanceOverview">$0.00</p>
+                                <p class="text-sm text-gray-600">Wallet Balance</p>
+                            </div>
+                        </div>
+                        <button onclick="openFundWalletModal()" class="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-1"></i>Fund
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="profile-card">
@@ -394,6 +616,43 @@
                             <!-- Rendered via JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="tab-content" id="transactionsContent">
+            <div class="profile-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-secondary">Wallet Transactions</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="refreshTransactions()" class="px-4 py-2 text-primary hover:bg-blue-50 rounded-lg transition" title="Refresh transactions">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="orders-table" id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state hidden" id="transactionsEmpty">
+                    <div class="empty-icon">
+                        <i class="fas fa-history text-2xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-2">No Transactions Yet</h3>
+                    <p class="text-gray-500">Your wallet transaction history will appear here</p>
                 </div>
             </div>
         </div>
@@ -497,14 +756,49 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
-        
-        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+  function googleTranslateElementInit() {
+  new google.translate.TranslateElement(
+  { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+  'googleTranslate'
+  );
+  }
+  
+  // =========================================================
+  // MOBILE MENU FUNCTIONALITY
+  // =========================================================
+  function initMobileMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+  hamburgerBtn.addEventListener('click', () => {
+  mobileMenu.classList.add('active');
+  mobileMenuOverlay.classList.add('active');
+  hamburgerBtn.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  });
+
+  const closeMenu = () => {
+  mobileMenu.classList.remove('active');
+  mobileMenuOverlay.classList.remove('active');
+  hamburgerBtn.classList.remove('active');
+  document.body.style.overflow = '';
+  };
+
+  mobileMenuClose.addEventListener('click', closeMenu);
+  mobileMenuOverlay.addEventListener('click', closeMenu);
+
+  mobileMenuItems.forEach(item => {
+  item.addEventListener('click', closeMenu);
+  });
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+  updateThemeIcon();
+  initMobileMenu();
+  });
         
         // =========================================================
         // UTILITIES & API
@@ -602,8 +896,11 @@
         // Check URL for initial tab
         const urlParams = new URLSearchParams(window.location.search);
         const initialTab = urlParams.get('tab');
-        if (initialTab && ['overview', 'orders', 'settings'].includes(initialTab)) {
+        if (initialTab && ['overview', 'orders', 'transactions', 'settings'].includes(initialTab)) {
             switchTab(initialTab);
+            if (initialTab === 'transactions') {
+                loadTransactions();
+            }
         }
 
         // =========================================================
@@ -620,6 +917,20 @@
                 document.getElementById('settingsEmail').value = user.email;
                 document.getElementById('settingsName').value = user.full_name || '';
                 document.getElementById('settingsCountry').value = user.country || 'US';
+                
+                // Update wallet balance from API
+                try {
+                    const profileData = await api.get('/api/user/profile');
+                    if (profileData.balance_usd !== undefined) {
+                        document.getElementById('walletBalance').textContent = formatCurrency(profileData.balance_usd);
+                        document.getElementById('walletBalanceOverview').textContent = formatCurrency(profileData.balance_usd);
+                        // Update localStorage
+                        user.balance_usd = profileData.balance_usd;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
+                } catch (error) {
+                    console.log('[v0] Could not fetch wallet balance:', error.message);
+                }
             }
 
             // Load orders
@@ -665,10 +976,15 @@
                     <td class="text-gray-500">${formatDate(order.created_at)}</td>
                     <td class="font-semibold">${formatCurrency(order.total_amount_usd)}</td>
                     <td>
-                        <span class="status-badge ${order.status}">
-                            <i class="fas fa-${getStatusIcon(order.status)}"></i>
-                            ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
+                        <div class="flex flex-col gap-1">
+                            <span class="status-badge ${order.status}">
+                                <i class="fas fa-${getStatusIcon(order.status)}"></i>
+                                ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                            <span class="text-xs px-2 py-1 rounded-full font-semibold ${order.is_deposit ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">
+                                ${order.is_deposit ? 'Wallet Deposit' : 'Product Purchase'}
+                            </span>
+                        </div>
                     </td>
                     <td>
                         <button class="view-btn" onclick="viewOrder('${order.order_reference}')">
@@ -837,6 +1153,127 @@
         };
 
         // =========================================================
+        // WALLET MANAGEMENT
+        // =========================================================
+        let allTransactions = [];
+
+        const openFundWalletModal = () => {
+            // Reuse the fund wallet modal from index.html if available
+            // For profile page, we'll show a simplified version
+            Swal.fire({
+                title: 'Fund Your Wallet',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Amount (USD)</label>
+                            <input type="number" id="modalFundAmount" placeholder="Enter amount" min="1" max="10000" step="0.01" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Payment Gateway</label>
+                            <select id="modalFundGateway" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="binance">Binance Pay</option>
+                                <option value="nowpayments">NowPayments</option>
+                                <option value="bybit">Bybit Pay</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Proceed to Payment',
+                preConfirm: async () => {
+                    const amount = parseFloat(document.getElementById('modalFundAmount').value);
+                    const gateway = document.getElementById('modalFundGateway').value;
+                    
+                    if (!amount || amount < 1 || amount > 10000) {
+                        Swal.showValidationMessage('Please enter an amount between $1 and $10,000');
+                        return false;
+                    }
+                    
+                    try {
+                        const response = await api.post('/api/wallet/deposit', {
+                            amount_usd: amount,
+                            gateway: gateway
+                        });
+                        
+                        if (response.payment_url) {
+                            window.location.href = response.payment_url;
+                        }
+                    } catch (error) {
+                        Swal.showValidationMessage(error.message || 'Failed to initiate funding');
+                        return false;
+                    }
+                }
+            });
+        };
+
+        const loadTransactions = async () => {
+            try {
+                const response = await api.get('/api/user/transactions');
+                allTransactions = response.data || response || [];
+            } catch (error) {
+                console.log('[v0] Could not load transactions:', error.message);
+                allTransactions = [];
+            }
+            renderTransactions();
+        };
+
+        const renderTransactions = () => {
+            const tbody = document.getElementById('transactionsTableBody');
+            const empty = document.getElementById('transactionsEmpty');
+            
+            if (allTransactions.length === 0) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            tbody.innerHTML = allTransactions.map(tx => `
+                <tr>
+                    <td class="text-gray-500 text-sm">${formatDate(tx.created_at)}</td>
+                    <td>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${tx.amount_usd > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${tx.amount_usd > 0 ? 'Credit' : 'Debit'}
+                        </span>
+                    </td>
+                    <td class="font-semibold ${tx.amount_usd > 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${tx.amount_usd > 0 ? '+' : ''}${formatCurrency(tx.amount_usd)}
+                    </td>
+                    <td>
+                        <span class="text-xs px-2 py-1 rounded-full font-semibold ${tx.status === 'confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}">
+                            ${tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                        </span>
+                    </td>
+                    <td class="text-sm text-gray-600">${tx.provider || 'KeyVault'}</td>
+                </tr>
+            `).join('');
+        };
+
+        const refreshTransactions = () => {
+            loadTransactions();
+            Swal.fire({
+                icon: 'success',
+                title: 'Refreshed',
+                text: 'Transactions updated',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        };
+
+        // Update wallet balance display
+        const updateWalletDisplay = async () => {
+            try {
+                const response = await api.get('/api/user/profile');
+                const balance = response.balance_usd || 0;
+                document.getElementById('walletBalanceOverview').textContent = formatCurrency(balance);
+            } catch (error) {
+                console.log('[v0] Could not update wallet balance:', error.message);
+            }
+        };
+
+        // =========================================================
         // MOCK DATA
         // =========================================================
         const getMockOrders = () => [
@@ -845,15 +1282,16 @@
             { order_reference: 'ORD-7834712', created_at: '2026-01-05T09:15:00Z', total_amount_usd: 59.99, status: 'pending', items: [{ product_name: 'Spotify Premium 6 Months', quantity: 1, unit_price_at_purchase: 59.99 }] },
         ];
 
-        // =========================================================
-        // INIT
-        // =========================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) {
-                updateCartBadge();
-                loadUserData();
-            }
-        });
-    </script>
+  // =========================================================
+  // INIT
+  // =========================================================
+  document.addEventListener('DOMContentLoaded', () => {
+  initMobileMenu();
+  if (checkAuth()) {
+  updateCartBadge();
+  loadUserData();
+  }
+  });
+  </script>
 </body>
 </html>

@@ -173,6 +173,200 @@
             justify-content: center;
         }
 
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #1E293B;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1E293B;
+            padding: 0;
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover {
+            color: #2563EB;
+        }
+
+        .mobile-menu-item i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .mobile-menu-divider {
+            height: 1px;
+            background: #E2E8F0;
+            margin: 16px 0;
+        }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-button-group .btn-outline {
+            background: #F1F5F9;
+            color: #1E293B;
+            border: 2px solid #E2E8F0;
+        }
+
+        .mobile-menu-button-group .btn-outline:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+
+        .mobile-menu-button-group .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .mobile-menu-button-group .btn-primary:hover {
+            background: #1D4ED8;
+        }
+
+        /* Hide mobile elements on desktop */
+        @media (min-width: 768px) {
+            .hamburger-btn {
+                display: none !important;
+            }
+
+            .mobile-menu {
+                display: none !important;
+            }
+
+            .mobile-menu-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Show mobile elements on mobile */
+        @media (max-width: 767px) {
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .navbar-desktop-items {
+                display: none;
+            }
+        }
+
         /* Hero Swiper */
         .hero-swiper {
             height: 500px;
@@ -552,93 +746,183 @@
     <!-- Progress Bar -->
     <div class="progress-bar" id="progressBar"></div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
-                <a href="/" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <i class="fas fa-key text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold text-secondary">KeyVault</span>
-                </a>
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16">
+  <!-- Logo -->
+  <a href="/" class="flex items-center gap-3">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Search Bar (Always Visible) -->
+  <div class="flex-1 max-w-xl mx-4 md:mx-8 relative">
+  <div class="relative">
+  <input
+  type="text"
+  id="searchInput"
+  class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
+  placeholder="Search for games, gift cards, subscriptions..."
+  >
+  <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition">
+  <i class="fas fa-search"></i>
+  </button>
+  </div>
+  <div class="search-dropdown" id="searchDropdown">
+  <!-- Search results populated via JS -->
+  </div>
+  </div>
+  
+  <!-- Desktop Items (Hidden on Mobile) -->
+  <div class="navbar-desktop-items flex items-center gap-4">
+  <!-- Theme & Language Toggle -->
+  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+  <i class="fas fa-moon"></i>
+  </button>
+  <div id="googleTranslate" class="flex items-center"></div>
+  
+  <!-- Guest State -->
+  <div id="guestActions" class="flex items-center gap-3">
+  <a href="/login" class="btn-outline text-sm">Login</a>
+  <a href="/register" class="btn-primary text-sm">Register</a>
+  </div>
+  
+  <!-- Logged In State (Hidden by default) -->
+  <div id="userActions" class="hidden items-center gap-4">
+  <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+  <i class="fas fa-wallet text-primary"></i>
+  <div class="text-right">
+  <p class="text-xs text-gray-600">Wallet Balance</p>
+  <p class="text-sm font-bold text-primary" id="walletBalance">$0.00</p>
+  </div>
+  <button onclick="openFundingModal()" class="ml-3 px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition" title="Fund your wallet">
+  <i class="fas fa-plus"></i>
+  </button>
+  </div>
+  
+  <div class="relative">
+  <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+  <i class="fas fa-user text-gray-600"></i>
+  </button>
+  <div class="profile-dropdown" id="profileDropdown">
+  <a href="/profile" class="profile-dropdown-item">
+  <i class="fas fa-user"></i>
+  My Profile
+  </a>
+  <a href="/profile?tab=orders" class="profile-dropdown-item">
+  <i class="fas fa-shopping-bag"></i>
+  Order History
+  </a>
+  <a href="/profile?tab=settings" class="profile-dropdown-item">
+  <i class="fas fa-cog"></i>
+  Settings
+  </a>
+  <hr class="my-1">
+  <button onclick="logout()" class="profile-dropdown-item danger w-full text-left">
+  <i class="fas fa-sign-out-alt"></i>
+  Logout
+  </button>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Cart Icon -->
+  <a href="/cart" class="relative p-2">
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+  <span class="cart-badge" id="cartBadge">0</span>
+  </a>
+  </div>
+  
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
 
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-xl mx-8 relative">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="searchInput"
-                            class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
-                            placeholder="Search for games, gift cards, subscriptions..."
-                        >
-                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                    <div class="search-dropdown" id="searchDropdown">
-                        <!-- Search results populated via JS -->
-                    </div>
-                </div>
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 
-                <!-- Auth / User Actions -->
-                <div class="flex items-center gap-4">
-                    <!-- Theme & Language Toggle -->
-                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div id="googleTranslate" class="flex items-center"></div>
-                    
-                    <!-- Guest State -->
-                    <div id="guestActions" class="flex items-center gap-3">
-                        <a href="/login" class="btn-outline text-sm">Login</a>
-                        <a href="/register" class="btn-primary text-sm">Register</a>
-                    </div>
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+  <h3>Menu</h3>
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+  <i class="fas fa-times"></i>
+  </button>
+  </div>
+  
+  <div class="mobile-menu-content">
+  <!-- Guest Links -->
+  <div id="mobileGuestLinks">
+  <a href="#shop" class="mobile-menu-item">
+  <i class="fas fa-shopping-bag"></i>
+  Shop
+  </a>
+  <a href="#categories" class="mobile-menu-item">
+  <i class="fas fa-th"></i>
+  Categories
+  </a>
+  <a href="/cart" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  </div>
 
-                    <!-- Logged In State (Hidden by default) -->
-                    <div id="userActions" class="hidden items-center gap-4">
-                        <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
-                            <i class="fas fa-wallet"></i>
-                            <span>My Wallet</span>
-                            <span class="text-primary font-bold" id="walletBalance">$0.00</span>
-                        </a>
-                        
-                        <div class="relative">
-                            <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
-                                <i class="fas fa-user text-gray-600"></i>
-                            </button>
-                            <div class="profile-dropdown" id="profileDropdown">
-                                <a href="/profile" class="profile-dropdown-item">
-                                    <i class="fas fa-user"></i>
-                                    My Profile
-                                </a>
-                                <a href="/profile?tab=orders" class="profile-dropdown-item">
-                                    <i class="fas fa-shopping-bag"></i>
-                                    Order History
-                                </a>
-                                <a href="/profile?tab=settings" class="profile-dropdown-item">
-                                    <i class="fas fa-cog"></i>
-                                    Settings
-                                </a>
-                                <hr class="my-1">
-                                <button onclick="logout()" class="profile-dropdown-item danger w-full text-left">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+  <!-- User Links (Hidden by default) -->
+  <div id="mobileUserLinks" class="hidden">
+  <a href="/profile" class="mobile-menu-item">
+  <i class="fas fa-user"></i>
+  My Profile
+  </a>
+  <a href="/profile?tab=wallet" class="mobile-menu-item">
+  <i class="fas fa-wallet"></i>
+  My Wallet
+  </a>
+  <a href="/profile?tab=orders" class="mobile-menu-item">
+  <i class="fas fa-shopping-bag"></i>
+  Order History
+  </a>
+  <a href="/profile?tab=settings" class="mobile-menu-item">
+  <i class="fas fa-cog"></i>
+  Settings
+  </a>
+  <a href="/cart" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  </div>
 
-                    <!-- Cart Icon -->
-                    <a href="/cart" class="relative p-2">
-                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-                        <span class="cart-badge" id="cartBadge">0</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+  <div class="mobile-menu-divider"></div>
+
+  <!-- Theme & Language in Mobile Menu -->
+  <div class="mobile-menu-item">
+  <i class="fas fa-moon"></i>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+  </div>
+
+  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <i class="fas fa-globe"></i>
+  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  </div>
+  </div>
+
+  <!-- Mobile Menu Buttons -->
+  <div class="mobile-menu-button-group" id="mobileAuthButtons">
+  <a href="/login" class="btn-outline">Login</a>
+  <a href="/register" class="btn-primary">Register</a>
+  </div>
+
+  <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+  <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+  </div>
+  </div>
 
     <!-- Hero Slider -->
     <section class="hero-swiper swiper" id="heroSwiper">
@@ -765,6 +1049,82 @@
             </div>
         </div>
     </section>
+
+    <!-- Fund Wallet Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden" id="fundWalletModal">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full transform transition-all">
+            <div class="bg-gradient-to-r from-primary to-blue-600 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-plus-circle"></i>
+                    Fund Your Wallet
+                </h2>
+                <button onclick="closeFundingModal()" class="text-white hover:bg-white/20 rounded-lg p-1 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Amount Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-secondary mb-2">Amount (USD)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-bold">$</span>
+                        <input type="number" id="fundAmount" placeholder="Enter amount" min="1" max="10000" step="0.01" class="w-full pl-8 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none transition" />
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Minimum: $1 | Maximum: $10,000</p>
+                </div>
+
+                <!-- Payment Gateway Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-secondary mb-2">Payment Gateway</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-blue-50 transition gateway-option" data-value="binance">
+                            <input type="radio" name="fundGateway" value="binance" checked class="w-4 h-4 accent-primary" />
+                            <div class="ml-3 flex-1">
+                                <p class="font-semibold text-secondary">Binance Pay</p>
+                                <p class="text-xs text-gray-500">Fast & secure QR code payments</p>
+                            </div>
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #F3BA2F; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: white;">B</div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-blue-50 transition gateway-option" data-value="nowpayments">
+                            <input type="radio" name="fundGateway" value="nowpayments" class="w-4 h-4 accent-primary" />
+                            <div class="ml-3 flex-1">
+                                <p class="font-semibold text-secondary">NowPayments</p>
+                                <p class="text-xs text-gray-500">100+ cryptocurrencies supported</p>
+                            </div>
+                            <div class="flex gap-1">
+                                <i class="fab fa-bitcoin text-yellow-500" style="font-size: 20px;"></i>
+                                <i class="fab fa-ethereum text-blue-400" style="font-size: 20px;"></i>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-blue-50 transition gateway-option" data-value="bybit">
+                            <input type="radio" name="fundGateway" value="bybit" class="w-4 h-4 accent-primary" />
+                            <div class="ml-3 flex-1">
+                                <p class="font-semibold text-secondary">Bybit Pay</p>
+                                <p class="text-xs text-gray-500">Direct crypto payment from wallet</p>
+                            </div>
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #F7931A; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: white;">₿</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4 border-t border-gray-200">
+                    <button onclick="closeFundingModal()" class="flex-1 px-4 py-3 border-2 border-gray-300 text-secondary font-bold rounded-lg hover:border-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button onclick="processFunding()" class="flex-1 px-4 py-3 bg-primary text-white font-bold rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-lock"></i>
+                        Proceed to Payment
+                    </button>
+                </div>
+
+                <p class="text-xs text-center text-gray-500">By proceeding, you agree to our <a href="/terms" class="text-primary hover:underline">Terms of Service</a></p>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1379,9 +1739,166 @@
         };
 
         // =========================================================
+        // MOBILE MENU FUNCTIONALITY
+        // =========================================================
+        function initMobileMenu() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+            // Open menu
+            hamburgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+                mobileMenuOverlay.classList.add('active');
+                hamburgerBtn.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            // Close menu
+            const closeMenu = () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                hamburgerBtn.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            mobileMenuClose.addEventListener('click', closeMenu);
+            mobileMenuOverlay.addEventListener('click', closeMenu);
+
+            // Close menu when clicking on a link
+            mobileMenuItems.forEach(item => {
+                item.addEventListener('click', closeMenu);
+            });
+
+            // Handle auth state changes in mobile menu
+            const originalCheckAuthState = window.checkAuthState;
+            window.checkAuthState = function() {
+                originalCheckAuthState.call(this);
+                
+                const mobileGuestLinks = document.getElementById('mobileGuestLinks');
+                const mobileUserLinks = document.getElementById('mobileUserLinks');
+                const mobileAuthButtons = document.getElementById('mobileAuthButtons');
+                const mobileUserButtons = document.getElementById('mobileUserButtons');
+                
+                if (isLoggedIn) {
+                    mobileGuestLinks.classList.add('hidden');
+                    mobileUserLinks.classList.remove('hidden');
+                    mobileAuthButtons.classList.add('hidden');
+                    mobileUserButtons.classList.remove('hidden');
+                } else {
+                    mobileGuestLinks.classList.remove('hidden');
+                    mobileUserLinks.classList.add('hidden');
+                    mobileAuthButtons.classList.remove('hidden');
+                    mobileUserButtons.classList.add('hidden');
+                }
+            };
+        }
+
+        // =========================================================
+        // WALLET MANAGEMENT
+        // =========================================================
+        const openFundingModal = () => {
+            const modal = document.getElementById('fundWalletModal');
+            modal.classList.remove('hidden');
+        };
+
+        const closeFundingModal = () => {
+            const modal = document.getElementById('fundWalletModal');
+            modal.classList.add('hidden');
+            document.getElementById('fundAmount').value = '';
+            document.querySelector('input[name="fundGateway"][value="binance"]').checked = true;
+        };
+
+        const processFunding = async () => {
+            const amount = parseFloat(document.getElementById('fundAmount').value);
+            const gateway = document.querySelector('input[name="fundGateway"]:checked').value;
+            
+            if (!amount || amount < 1 || amount > 10000) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Amount',
+                    text: 'Please enter an amount between $1 and $10,000',
+                    toast: true,
+                    position: 'top-end'
+                });
+                return;
+            }
+
+            showLoader();
+            try {
+                const response = await api.post('/api/wallet/deposit', {
+                    amount_usd: amount,
+                    gateway: gateway
+                });
+
+                closeFundingModal();
+                
+                if (response.payment_url) {
+                    // Redirect to payment gateway
+                    window.location.href = response.payment_url;
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Wallet Funding Initiated',
+                        text: 'You will be redirected to complete the payment',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+            } catch (error) {
+                console.error('[v0] Funding error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Failed',
+                    text: error.message || 'Failed to initiate wallet funding. Please try again.',
+                    toast: true,
+                    position: 'top-end'
+                });
+            } finally {
+                hideLoader();
+            }
+        };
+
+        // Override checkAuthState to fetch wallet balance from API
+        const originalCheckAuthState = window.checkAuthState;
+        window.checkAuthState = function() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                
+                // Fetch and update wallet balance from API
+                api.get('/api/user/profile')
+                    .then(data => {
+                        if (data.balance_usd !== undefined) {
+                            document.getElementById('walletBalance').textContent = formatCurrency(data.balance_usd);
+                            // Update localStorage user with latest balance
+                            user.balance_usd = data.balance_usd;
+                            localStorage.setItem('user', JSON.stringify(user));
+                        }
+                    })
+                    .catch(err => {
+                        console.log('[v0] Could not fetch wallet balance:', err.message);
+                        document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+                    });
+            } else {
+                document.getElementById('guestActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('hidden');
+            }
+        };
+
+        // =========================================================
         // INITIALIZATION
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
+            initMobileMenu();
             checkAuthState();
             updateCartBadge();
             loadBanners();
