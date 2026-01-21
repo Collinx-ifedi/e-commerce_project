@@ -214,6 +214,7 @@
             .hamburger-btn { display: none !important; }
             .mobile-menu { display: none !important; }
             .mobile-menu-overlay { display: none !important; }
+            .navbar-desktop-items { display: flex !important; }
         }
 
         @media (max-width: 767px) {
@@ -375,8 +376,8 @@
   <!-- Navbar -->
   <nav class="navbar">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between h-16">
-  <a href="/" class="flex items-center gap-3">
+  <div class="flex items-center justify-between h-16 gap-4">
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
   <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
   <i class="fas fa-key text-white text-lg"></i>
   </div>
@@ -384,7 +385,7 @@
   </a>
   
   <!-- Desktop Badge (Hidden on Mobile) -->
-  <div class="navbar-desktop-items flex items-center">
+  <div class="navbar-desktop-items hidden md:flex items-center flex-shrink-0">
   <div class="secure-badge">
   <i class="fas fa-shield-alt"></i>
   <span class="hidden sm:inline">Secure Checkout</span>
@@ -392,7 +393,7 @@
   </div>
 
   <!-- Hamburger Menu Button (Mobile Only) -->
-  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
   <span></span>
   <span></span>
   <span></span>

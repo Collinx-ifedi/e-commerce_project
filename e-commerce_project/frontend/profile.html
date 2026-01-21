@@ -393,44 +393,44 @@
     <div class="progress-bar" id="progressBar"></div>
 
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <a href="/" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <i class="fas fa-key text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
-                </a>
-
-                <!-- Desktop Items (Hidden on Mobile) -->
-                <div class="navbar-desktop-items flex items-center gap-4">
-                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div id="googleTranslate" class="flex items-center"></div>
-                    
-                    <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
-                        <i class="fas fa-store mr-2"></i>Store
-                    </a>
-                    <button onclick="logout()" class="text-sm text-gray-500 hover:text-danger transition">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
-                    <a href="/cart" class="relative p-2">
-                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-                        <span class="cart-badge" id="cartBadge">0</span>
-                    </a>
-                </div>
-
-                <!-- Hamburger Menu Button (Mobile Only) -->
-                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </div>
-    </nav>
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16 gap-4">
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Desktop Items (Hidden on Mobile) -->
+  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+  <i class="fas fa-moon"></i>
+  </button>
+  <div id="googleTranslate" class="flex items-center"></div>
+  
+  <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
+  <i class="fas fa-store mr-2"></i>Store
+  </a>
+  <button onclick="logout()" class="text-sm text-gray-500 hover:text-danger transition">
+  <i class="fas fa-sign-out-alt mr-2"></i>Logout
+  </button>
+  <a href="/cart" class="relative p-2">
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+  <span class="cart-badge" id="cartBadge">0</span>
+  </a>
+  </div>
+  
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
 
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>

@@ -175,13 +175,20 @@
 
         /* Mobile Menu */
         .hamburger-btn {
-            display: none;
+            display: flex;
             flex-direction: column;
             gap: 6px;
             background: none;
             border: none;
             cursor: pointer;
             padding: 8px;
+            z-index: 201;
+        }
+        
+        @media (min-width: 768px) {
+            .hamburger-btn {
+                display: none;
+            }
         }
 
         .hamburger-btn span {
@@ -749,25 +756,25 @@
   <!-- Navbar -->
   <nav class="navbar">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between h-16">
+  <div class="flex items-center justify-between h-16 gap-4">
   <!-- Logo -->
-  <a href="/" class="flex items-center gap-3">
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
   <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
   <i class="fas fa-key text-white text-lg"></i>
   </div>
   <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
   </a>
   
-  <!-- Search Bar (Always Visible) -->
-  <div class="flex-1 max-w-xl mx-4 md:mx-8 relative">
+  <!-- Search Bar (Always Visible, Responsive) -->
+  <div class="flex-1 min-w-0 max-w-xl mx-2 md:mx-4 relative">
   <div class="relative">
   <input
   type="text"
   id="searchInput"
   class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
-  placeholder="Search for games, gift cards, subscriptions..."
+  placeholder="Search..."
   >
-  <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition">
+  <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition flex-shrink-0">
   <i class="fas fa-search"></i>
   </button>
   </div>
@@ -777,7 +784,7 @@
   </div>
   
   <!-- Desktop Items (Hidden on Mobile) -->
-  <div class="navbar-desktop-items flex items-center gap-4">
+  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
   <!-- Theme & Language Toggle -->
   <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
   <i class="fas fa-moon"></i>
@@ -837,7 +844,7 @@
   </div>
   
   <!-- Hamburger Menu Button (Mobile Only) -->
-  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
   <span></span>
   <span></span>
   <span></span>
@@ -859,15 +866,33 @@
   </div>
   
   <div class="mobile-menu-content">
+  <!-- Wallet Balance (Hidden by default, shown when logged in) -->
+  <div id="mobileWalletSection" class="hidden mb-4 pb-4 border-b border-gray-200">
+  <div class="flex items-center justify-between">
+  <div class="flex items-center gap-2">
+  <i class="fas fa-wallet text-primary text-lg"></i>
+  <span class="font-semibold text-secondary">Wallet Balance</span>
+  </div>
+  <span class="text-sm font-bold text-primary" id="mobileWalletBalance">$0.00</span>
+  </div>
+  <button onclick="openFundingModal()" class="mt-2 w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">
+  <i class="fas fa-plus mr-1"></i>Fund Wallet
+  </button>
+  </div>
+
   <!-- Guest Links -->
   <div id="mobileGuestLinks">
-  <a href="#shop" class="mobile-menu-item">
-  <i class="fas fa-shopping-bag"></i>
-  Shop
+  <a href="/" class="mobile-menu-item">
+  <i class="fas fa-home"></i>
+  Home
   </a>
-  <a href="#categories" class="mobile-menu-item">
-  <i class="fas fa-th"></i>
-  Categories
+  <a href="/?filter=trending" class="mobile-menu-item">
+  <i class="fas fa-fire"></i>
+  Trending
+  </a>
+  <a href="/?filter=all" class="mobile-menu-item">
+  <i class="fas fa-shopping-bag"></i>
+  Shop All
   </a>
   <a href="/cart" class="mobile-menu-item">
   <i class="fas fa-shopping-cart"></i>
@@ -881,9 +906,9 @@
   <i class="fas fa-user"></i>
   My Profile
   </a>
-  <a href="/profile?tab=wallet" class="mobile-menu-item">
-  <i class="fas fa-wallet"></i>
-  My Wallet
+  <a href="/profile?tab=transactions" class="mobile-menu-item">
+  <i class="fas fa-exchange-alt"></i>
+  Transactions
   </a>
   <a href="/profile?tab=orders" class="mobile-menu-item">
   <i class="fas fa-shopping-bag"></i>
@@ -899,15 +924,15 @@
   </a>
   </div>
 
-  <div class="mobile-menu-divider"></div>
+  <div class="mobile-menu-divider border-t border-gray-200 my-4"></div>
 
   <!-- Theme & Language in Mobile Menu -->
-  <div class="mobile-menu-item">
+  <div class="mobile-menu-item border-b-0">
   <i class="fas fa-moon"></i>
-  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
   </div>
 
-  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <div class="mobile-menu-item border-b-0" style="padding: 12px 0;">
   <i class="fas fa-globe"></i>
   <div id="mobileGoogleTranslate" class="flex-1"></div>
   </div>
@@ -1773,27 +1798,35 @@
             });
 
             // Handle auth state changes in mobile menu
-            const originalCheckAuthState = window.checkAuthState;
-            window.checkAuthState = function() {
-                originalCheckAuthState.call(this);
+            const mobileGuestLinks = document.getElementById('mobileGuestLinks');
+            const mobileUserLinks = document.getElementById('mobileUserLinks');
+            const mobileAuthButtons = document.getElementById('mobileAuthButtons');
+            const mobileUserButtons = document.getElementById('mobileUserButtons');
+            const mobileWalletSection = document.getElementById('mobileWalletSection');
+            
+            const updateMobileMenuAuthState = () => {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
                 
-                const mobileGuestLinks = document.getElementById('mobileGuestLinks');
-                const mobileUserLinks = document.getElementById('mobileUserLinks');
-                const mobileAuthButtons = document.getElementById('mobileAuthButtons');
-                const mobileUserButtons = document.getElementById('mobileUserButtons');
-                
-                if (isLoggedIn) {
+                if (token && user) {
                     mobileGuestLinks.classList.add('hidden');
                     mobileUserLinks.classList.remove('hidden');
                     mobileAuthButtons.classList.add('hidden');
                     mobileUserButtons.classList.remove('hidden');
+                    mobileWalletSection.classList.remove('hidden');
+                    
+                    // Update wallet balance in mobile menu
+                    document.getElementById('mobileWalletBalance').textContent = formatCurrency(user.balance_usd || 0);
                 } else {
                     mobileGuestLinks.classList.remove('hidden');
                     mobileUserLinks.classList.add('hidden');
                     mobileAuthButtons.classList.remove('hidden');
                     mobileUserButtons.classList.add('hidden');
+                    mobileWalletSection.classList.add('hidden');
                 }
             };
+            
+            updateMobileMenuAuthState();
         }
 
         // =========================================================
