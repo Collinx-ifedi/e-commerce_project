@@ -1,8 +1,8 @@
 # services.py
 # Production-level Business Logic Layer
-# - User Auth & Recovery (Deadlock Fix)
+# - User Auth & Recovery
 # - Cloudinary Content Management
-# - Atomic Order Fulfillment
+# - Atomic Order Fulfillment (Wallet + Gateways)
 # - Payment Gateway Integration
 
 import os
@@ -284,11 +284,13 @@ async def create_nowpayments_invoice(order: Order, user_email: str) -> str:
     headers = {"x-api-key": NOWPAYMENTS_API_KEY, "Content-Type": "application/json"}
     frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
     
+    desc = "Wallet Deposit" if order.is_deposit else f"Order {order.order_reference}"
+
     payload = {
         "price_amount": order.total_amount_usd,
         "price_currency": "usd",
         "order_id": order.order_reference,
-        "order_description": f"Order {order.order_reference}",
+        "order_description": desc,
         "ipn_callback_url": f"{settings.ADMIN_FRONTEND_URL or 'http://localhost:8000'}/api/webhooks/nowpayments",
         "success_url": f"{frontend_url}/checkout/success",
         "cancel_url": f"{frontend_url}/checkout/fail"
@@ -310,6 +312,10 @@ async def create_binance_order(order: Order) -> str:
         raise HTTPException(status_code=500, detail="Binance Pay config missing")
 
     frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+    
+    goods_name = "Wallet Deposit" if order.is_deposit else "Digital Products"
+    goods_detail = "Balance Top-up" if order.is_deposit else str(order.id)
+
     payload = {
         "env": {"terminalType": "WEB"},
         "merchantTradeNo": order.order_reference,
@@ -318,8 +324,8 @@ async def create_binance_order(order: Order) -> str:
         "goods": {
             "goodsType": "02",
             "goodsCategory": "Z000",
-            "referenceGoodsId": str(order.id),
-            "goodsName": "Digital Products",
+            "referenceGoodsId": goods_detail,
+            "goodsName": goods_name,
         },
         "returnUrl": f"{frontend_url}/checkout/success",
         "cancelUrl": f"{frontend_url}/checkout/fail",
@@ -361,6 +367,7 @@ async def create_bybit_order(order: Order) -> str:
     if not BYBIT_API_KEY or not BYBIT_SECRET_KEY:
         raise HTTPException(status_code=500, detail="Bybit Pay config missing")
     frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+    # Placeholder implementation
     return f"{frontend_url}/checkout/mock-provider?ref={order.order_reference}&provider=bybit"
 
 # =========================================================
@@ -369,7 +376,7 @@ async def create_bybit_order(order: Order) -> str:
 
 async def fulfill_digital_order(db: AsyncSession, order_id: int):
     """
-    Delivers digital goods. Uses SKIP LOCKED for concurrency safety.
+    Delivers digital goods. Uses concurrency safe checks.
     """
     logger.info(f"Starting fulfillment for Order ID: {order_id}")
     
@@ -460,11 +467,17 @@ async def _send_delivery_email(email: str, order_ref: str, items: List[dict]):
     await send_email_async(email, f"Order #{order_ref} - Your Digital Keys", html_content)
 
 # =========================================================
-# 5. ORDER CREATION SERVICE
+# 5. ORDER CREATION SERVICES (Checkout & Deposits)
 # =========================================================
 
 async def create_order_service(db: AsyncSession, user_id: int, order_data: MultiProductOrderCreate) -> str:
-    """Orchestrates order creation and payment link generation."""
+    """
+    Orchestrates order creation. 
+    Handles:
+    1. Stock Checks
+    2. Wallet Payment Deduction (Instant)
+    3. Crypto Payment Link Generation (Async)
+    """
     if not order_data.items:
         raise HTTPException(status_code=400, detail="Cart is empty")
 
@@ -482,25 +495,37 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
     total_amount_usd = 0.0
     order_items_objects = []
 
+    # 1. Calculate Total & Prepare Items
     for product in products_db:
         qty = requested_quantities[product.id]
         if not product.in_stock or product.stock_quantity < qty:
             raise HTTPException(status_code=400, detail=f"Insufficient stock for '{product.name}'")
         
-        unit_price = product.final_price()
+        unit_price = product.final_price
         total_amount_usd += unit_price * qty
         
         order_items_objects.append(
             OrderItem(product_id=product.id, quantity=qty, unit_price_at_purchase=unit_price)
         )
 
+    # 2. Check Wallet Balance if paying with Wallet
+    user_res = await db.execute(select(User).where(User.id == user_id))
+    user = user_res.scalar_one_or_none()
+
+    if order_data.payment_method == PaymentMethod.WALLET:
+        if user.balance_usd < total_amount_usd:
+            raise HTTPException(status_code=400, detail="Insufficient wallet balance.")
+
+    # 3. Create Order Record
+    order_ref = generate_otp(length=10)
     new_order = Order(
         user_id=user_id,
-        order_reference=generate_otp(length=10),
+        order_reference=order_ref,
         total_amount_usd=round(total_amount_usd, 2),
         status=OrderStatus.PENDING,
         payment_method=order_data.payment_method,
-        customer_ip="0.0.0.0"
+        customer_ip="0.0.0.0",
+        is_deposit=False
     )
     db.add(new_order)
     await db.flush()
@@ -509,11 +534,30 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
         item.order_id = new_order.id
         db.add(item)
 
-    user_res = await db.execute(select(User).where(User.id == user_id))
-    user = user_res.scalar_one_or_none()
-    
+    # 4. Handle Payment
     try:
-        if order_data.payment_method == PaymentMethod.NOWPAYMENTS:
+        # A) Wallet: Deduct & Fulfill Instantly
+        if order_data.payment_method == PaymentMethod.WALLET:
+            user.balance_usd -= total_amount_usd
+            new_order.status = OrderStatus.PAID
+            new_order.payment_reference = f"WALLET-{order_ref}"
+            
+            # Record Transaction
+            db.add(Transaction(
+                user_id=user.id, order_id=new_order.id, amount_usd=total_amount_usd,
+                status="confirmed", provider="Wallet", tx_hash=f"INT-{order_ref}"
+            ))
+            await db.commit()
+            
+            # Trigger Fulfillment
+            await fulfill_digital_order(db, new_order.id)
+            
+            # Return success URL
+            frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+            return f"{frontend_url}/checkout/success?ref={order_ref}"
+
+        # B) Gateways: Generate Link
+        elif order_data.payment_method == PaymentMethod.NOWPAYMENTS:
             checkout_url = await create_nowpayments_invoice(new_order, user.email)
         elif order_data.payment_method == PaymentMethod.BINANCE:
             checkout_url = await create_binance_order(new_order)
@@ -529,6 +573,43 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
         await db.rollback()
         logger.error(f"Order creation failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to initialize payment gateway.")
+
+async def create_deposit_service(db: AsyncSession, user_id: int, amount: float, gateway: str) -> str:
+    """
+    Creates a 'Deposit' order to fund the user's wallet.
+    """
+    user_res = await db.execute(select(User).where(User.id == user_id))
+    user = user_res.scalar_one_or_none()
+
+    order_ref = f"DEP-{generate_otp(length=8)}"
+    
+    new_order = Order(
+        user_id=user_id,
+        order_reference=order_ref,
+        total_amount_usd=amount,
+        status=OrderStatus.PENDING,
+        payment_method=gateway,
+        customer_ip="0.0.0.0",
+        is_deposit=True  # Important Flag
+    )
+    db.add(new_order)
+    await db.commit()
+    await db.refresh(new_order)
+
+    # Generate Link
+    try:
+        if gateway == PaymentMethod.NOWPAYMENTS:
+            return await create_nowpayments_invoice(new_order, user.email)
+        elif gateway == PaymentMethod.BINANCE:
+            return await create_binance_order(new_order)
+        elif gateway == PaymentMethod.BYBIT:
+            return await create_bybit_order(new_order)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid gateway for deposit")
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Deposit setup failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create deposit link")
 
 # =========================================================
 # 6. WEBHOOKS
@@ -548,19 +629,36 @@ async def handle_bybit_webhook(db: AsyncSession, payload: dict):
         await _process_successful_payment(db, payload.get("order_id"), "BybitPay", payload.get("trade_no"))
 
 async def _process_successful_payment(db: AsyncSession, order_ref: str, provider: str, tx_hash: str):
-    stmt = select(Order).where(Order.order_reference == order_ref)
+    """
+    Central handler for successful payments.
+    - If Deposit: Funds Wallet.
+    - If Purchase: Sends Keys.
+    """
+    stmt = select(Order).where(Order.order_reference == order_ref).options(selectinload(Order.user))
     result = await db.execute(stmt)
     order = result.scalar_one_or_none()
 
+    # Idempotency Check
     if not order or order.status in [OrderStatus.PAID, OrderStatus.COMPLETED]:
         return
 
+    # Mark Paid
     order.status = OrderStatus.PAID
     order.payment_reference = str(tx_hash)
+
+    # Record Transaction Log
     db.add(Transaction(
         user_id=order.user_id, order_id=order.id, amount_usd=order.total_amount_usd,
         status="confirmed", provider=provider, tx_hash=str(tx_hash)
     ))
-    
-    await db.commit() 
-    await fulfill_digital_order(db, order.id)
+
+    # --- BRANCHING LOGIC ---
+    if order.is_deposit:
+        # Fund Wallet
+        order.user.balance_usd += order.total_amount_usd
+        logger.info(f"Wallet Funded: {order.user.email} +${order.total_amount_usd}")
+        await db.commit()
+    else:
+        # Fulfill Product
+        await db.commit() 
+        await fulfill_digital_order(db, order.id)

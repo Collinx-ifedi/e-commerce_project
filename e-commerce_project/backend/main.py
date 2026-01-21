@@ -6,6 +6,7 @@
 # - Robust Path Resolution for Docker/Render
 # - OTP Recovery Endpoint
 # - Automatic Background Cleanup of Unverified Users
+# - Wallet System Integration (Profile & Deposit)
 
 import os
 import shutil
@@ -30,7 +31,8 @@ from fastapi import (
     UploadFile,
     File,
     Form,
-    Query
+    Query,
+    Body  # Added for Wallet Deposit
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -60,6 +62,7 @@ from .services import (
     admin_login_service,
     bootstrap_admins,
     create_order_service,
+    create_deposit_service,  # Used for Wallet Deposit
     create_product_service,
     create_banner_service,
     handle_nowpayments_webhook,
@@ -74,14 +77,16 @@ from .models_schemas import (
     MultiProductOrderCreate, 
     Admin,
     User,
+    UserResponse,   # Added for Profile Response
     Product, 
-    OrderItem,  # <--- CRITICAL FIX: Imported for relationship loading
+    OrderItem,
     ProductSchema,
     Banner,
     BannerSchema,
     Order,
     OrderResponse,
-    OrderStatus
+    OrderStatus,
+    PaymentMethod   # Added for Deposit Validation
 )
 
 # =========================================================
@@ -102,15 +107,12 @@ if not FRONTEND_DIR.exists():
     logger.critical(f"CRITICAL: Frontend directory not found at {FRONTEND_DIR}")
 
 # --- CLOUDINARY CONFIGURATION ---
-# Best Practice: Use CLOUDINARY_URL env var (cloudinary://api_key:api_secret@cloud_name)
-# We also enforce secure=True to ensure all delivered URLs use HTTPS.
 cloudinary_url = os.getenv("CLOUDINARY_URL")
 
 if cloudinary_url:
     cloudinary.config(cloudinary_url=cloudinary_url, secure=True)
     logger.info("Cloudinary initialized successfully via CLOUDINARY_URL.")
 else:
-    # Log a critical warning if missing, but do not crash immediately to allow API to start
     logger.critical("WARNING: CLOUDINARY_URL not found in environment variables. Image uploads will fail.")
 
 # =========================================================
@@ -121,17 +123,12 @@ async def cleanup_unverified_users():
     """
     Background task to remove users who registered but never 
     verified their email within the expiration window (e.g., 24 hours).
-    This keeps the database clean of abandoned registrations.
     """
     while True:
         try:
-            # We must create a new session generator for the background task
-            # Using the same logic as get_db but manually managing the context
             async for db in get_db():
-                # Define expiration threshold (users created > 24 hours ago)
                 expiration_limit = datetime.utcnow() - timedelta(hours=24)
                 
-                # Delete users who are unverified AND older than the limit
                 stmt = (
                     delete(User)
                     .where(User.is_verified == False)
@@ -143,31 +140,24 @@ async def cleanup_unverified_users():
                 
                 if result.rowcount > 0:
                     logger.info(f"Cleanup: Removed {result.rowcount} unverified/abandoned accounts.")
-                # Break after one iteration since we just needed one session
                 break 
         except Exception as e:
             logger.error(f"Cleanup task error: {e}")
         
-        # Run cleanup every hour (3600 seconds)
         await asyncio.sleep(3600)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Manages startup/shutdown lifecycle.
-    """
+    """Manages startup/shutdown lifecycle."""
     # --- STARTUP ---
     logger.info("System startup initiated...")
     
-    # 1. Database Init
     await init_db()
     
-    # 2. Bootstrap Admins
     async for db in get_db():
         await bootstrap_admins(db)
         break 
     
-    # 3. Start Background Cleanup Task
     cleanup_task = asyncio.create_task(cleanup_unverified_users())
     logger.info("Background task started: Cleanup unverified users.")
     
@@ -178,14 +168,12 @@ async def lifespan(app: FastAPI):
     # --- SHUTDOWN ---
     logger.info("System shutting down...")
     
-    # Cancel background task
     cleanup_task.cancel()
     try:
         await cleanup_task
     except asyncio.CancelledError:
         logger.info("Background cleanup task cancelled.")
 
-    # Cleanup temp CSV files
     if UPLOAD_DIR.exists():
         shutil.rmtree(UPLOAD_DIR, ignore_errors=True)
 
@@ -195,7 +183,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.3.3",
+    version="2.4.0", # Bumped version for Wallet Integration
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -207,7 +195,7 @@ app = FastAPI(
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-origins = ["*"] # Default to open for dev, restrict in prod via settings
+origins = ["*"] 
 if settings.ADMIN_FRONTEND_URL:
     origins.append(settings.ADMIN_FRONTEND_URL)
 if settings.FRONTEND_URL:
@@ -243,11 +231,9 @@ async def get_products(
     db: AsyncSession = Depends(get_db)
 ):
     """Fetch active products for the frontend grid."""
-    # Ensure we only fetch non-deleted items
     query = select(Product).where(
         or_(Product.is_deleted == False, Product.is_deleted.is_(None))
     )
-    
     if platform:
         query = query.where(Product.platform == platform)
     
@@ -290,11 +276,9 @@ async def register_user(data: UserCreateSchema, db: AsyncSession = Depends(get_d
 
 @auth_router.post("/login")
 async def login_user(data: AdminLoginSchema, db: AsyncSession = Depends(get_db)):
-    # 1. Fetch User
     result = await db.execute(select(User).where(User.email == data.username))
     user = result.scalar_one_or_none()
 
-    # 2. Verify Creds
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
@@ -304,7 +288,6 @@ async def login_user(data: AdminLoginSchema, db: AsyncSession = Depends(get_db))
     if user.is_banned:
         raise HTTPException(status_code=403, detail="Account suspended")
 
-    # 3. Create Token
     access_token = create_access_token(subject=user.id, role="user")
 
     return {
@@ -336,23 +319,68 @@ async def verify_email(payload: dict, db: AsyncSession = Depends(get_db)):
 
 @auth_router.post("/resend-otp")
 async def resend_otp(payload: dict, db: AsyncSession = Depends(get_db)):
-    """Allows unverified users to request a new OTP code."""
     email = payload.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email required")
     return await resend_otp_service(db, email)
 
 
-# --- C. ORDER ROUTER ---
+# --- C. USER & WALLET ROUTER (NEW) ---
+user_router = APIRouter(prefix="/api/user", tags=["User Profile"])
+wallet_router = APIRouter(prefix="/api/wallet", tags=["Wallet"])
+
+# 1. User Profile Endpoint
+@user_router.get("/profile", response_model=UserResponse)
+async def get_user_profile(user: User = Depends(get_current_user)):
+    """
+    Returns full profile data including current wallet balance.
+    UserResponse schema automatically serializes balance_usd.
+    """
+    return user
+
+# 2. Wallet Deposit Endpoint
+@wallet_router.post("/deposit", status_code=status.HTTP_201_CREATED)
+async def create_deposit(
+    amount: float = Body(..., gt=1.0, embed=True),
+    gateway: PaymentMethod = Body(..., embed=True),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Initiates a wallet top-up via crypto gateways.
+    Returns a payment link (checkout_url).
+    """
+    if gateway == PaymentMethod.WALLET:
+        raise HTTPException(status_code=400, detail="Cannot deposit using Wallet balance.")
+
+    try:
+        checkout_url = await create_deposit_service(
+            db, 
+            user_id=user.id, 
+            amount=amount, 
+            gateway=gateway
+        )
+        return {"checkout_url": checkout_url}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Deposit Error: {e}")
+        raise HTTPException(status_code=500, detail="Could not create deposit link.")
+
+
+# --- D. ORDER ROUTER ---
 order_router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 @order_router.post("/checkout", status_code=status.HTTP_201_CREATED)
 async def checkout_route(
     order_data: MultiProductOrderCreate,
-    request: Request,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Handles Checkout for both Products and Wallet payments.
+    Compatible with PaymentMethod.WALLET via create_order_service.
+    """
     try:
         checkout_url = await create_order_service(db, user.id, order_data)
         return {"checkout_url": checkout_url}
@@ -368,8 +396,7 @@ async def get_user_orders(user: User = Depends(get_current_user), db: AsyncSessi
     return result.scalars().all()
 
 
-# --- D. ADMIN ROUTER (FIXED) ---
-# PREFIX: /api/admin - Matches frontend calls
+# --- E. ADMIN ROUTER ---
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @admin_router.post("/login")
@@ -380,23 +407,18 @@ async def admin_login_route(data: AdminLoginSchema, db: AsyncSession = Depends(g
 # -- ADMIN STATS --
 @admin_router.get("/stats")
 async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Returns dashboard statistics (Sales, Users, Orders)."""
-    # 1. Total Revenue
     revenue_query = select(func.sum(Order.total_amount_usd)).where(
         Order.status.in_([OrderStatus.PAID, OrderStatus.COMPLETED])
     )
     revenue_res = await db.execute(revenue_query)
     total_revenue = revenue_res.scalar() or 0.0
 
-    # 2. Total Orders
     orders_res = await db.execute(select(func.count(Order.id)))
     total_orders = orders_res.scalar() or 0
 
-    # 3. Total Users
     users_res = await db.execute(select(func.count(User.id)))
     total_users = users_res.scalar() or 0
 
-    # 4. Total Products
     products_res = await db.execute(
         select(func.count(Product.id)).where(
             or_(Product.is_deleted == False, Product.is_deleted.is_(None))
@@ -414,11 +436,6 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
 # -- ADMIN PRODUCTS LIST --
 @admin_router.get("/products", response_model=List[ProductSchema])
 async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """
-    Admin view of products.
-    FIX: Uses 'or_(...)' to capture False and NULL values for is_deleted,
-    ensuring all active/draft products are returned.
-    """
     query = (
         select(Product)
         .where(or_(Product.is_deleted == False, Product.is_deleted.is_(None)))
@@ -430,7 +447,6 @@ async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = 
 # -- ADMIN BANNERS LIST --
 @admin_router.get("/banners", response_model=List[BannerSchema])
 async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Admin view of all banners (active and inactive)."""
     query = select(Banner).order_by(desc(Banner.id))
     result = await db.execute(query)
     return result.scalars().all()
@@ -438,16 +454,10 @@ async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = D
 # -- ADMIN ORDERS LIST --
 @admin_router.get("/orders", response_model=List[OrderResponse])
 async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """
-    Admin view of recent orders with items eager loaded.
-    FIX: Replaced string based selectinload with class-bound attributes (OrderItem.product)
-    to resolve 'Strings are not accepted' error in SQLAlchemy 2.0.
-    """
     try:
         query = (
             select(Order)
             .options(
-                # CRITICAL FIX HERE:
                 selectinload(Order.items).selectinload(OrderItem.product) 
             )
             .order_by(desc(Order.created_at))
@@ -463,12 +473,12 @@ async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), 
 @admin_router.post("/products", response_model=ProductSchema)
 async def create_product(
     name: str = Form(...),
-    platform: str = Form(...),  # Dynamic String
+    platform: str = Form(...),
     price_usd: float = Form(...),
     stock_quantity: int = Form(0),
     discount_percent: int = Form(0),
     description: Optional[str] = Form(None),
-    file: UploadFile = File(...), # Required for new product
+    file: UploadFile = File(...),
     is_featured: bool = Form(False),
     is_trending: bool = Form(False),
     db: AsyncSession = Depends(get_db),
@@ -497,20 +507,18 @@ async def update_product(
     stock_quantity: int = Form(...),
     discount_percent: int = Form(0),
     description: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None), # Optional for update
+    file: Optional[UploadFile] = File(None),
     is_featured: bool = Form(False),
     is_trending: bool = Form(False),
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    # Fetch Product
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalar_one_or_none()
     
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Handle Image Update (if file provided)
     if file:
         try:
             logger.info(f"Updating image for product {product_id}")
@@ -520,7 +528,6 @@ async def update_product(
             logger.error(f"Cloudinary upload failed: {str(e)}")
             raise HTTPException(status_code=400, detail=f"Image Update Error: {str(e)}")
 
-    # Update Fields
     product.name = name
     product.platform = platform
     product.price_usd = price_usd
@@ -538,7 +545,6 @@ async def update_product(
 # -- DELETE PRODUCT --
 @admin_router.delete("/products/{product_id}")
 async def delete_product(product_id: int, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Soft delete a product."""
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalar_one_or_none()
     
@@ -623,7 +629,6 @@ async def update_banner(
 # -- DELETE BANNER --
 @admin_router.delete("/banners/{banner_id}")
 async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
-    """Hard delete a banner."""
     result = await db.execute(select(Banner).where(Banner.id == banner_id))
     banner = result.scalar_one_or_none()
     
@@ -634,7 +639,7 @@ async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admi
     await db.commit()
     return {"message": "Banner deleted successfully"}
 
-# 3. UPLOAD CODES (Kept Local for CSV Processing Efficiency)
+# -- UPLOAD CODES --
 @admin_router.post("/products/{product_id}/upload-codes")
 async def upload_product_codes(
     product_id: int,
@@ -645,7 +650,6 @@ async def upload_product_codes(
     if not file.filename.endswith(('.txt', '.csv')):
         raise HTTPException(status_code=400, detail="Only .txt or .csv files allowed")
 
-    # Use local temp storage for CSV parsing (faster than cloud round-trip)
     temp_filename = f"{uuid.uuid4()}_{file.filename}"
     file_path = UPLOAD_DIR / temp_filename
     
@@ -664,7 +668,7 @@ async def upload_product_codes(
             os.remove(file_path)
 
 
-# --- E. WEBHOOK ROUTER ---
+# --- F. WEBHOOK ROUTER ---
 webhook_router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
 
 @webhook_router.post("/nowpayments")
@@ -679,7 +683,7 @@ async def binance_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     payload = await request.json()
     headers = request.headers
     await handle_binance_webhook(db, payload, headers)
-    return {"status": "SUCCESS"} # Binance expects uppercase string
+    return {"status": "SUCCESS"}
 
 @webhook_router.post("/bybit")
 async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
@@ -694,6 +698,8 @@ async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 
 app.include_router(catalog_router)
 app.include_router(auth_router)
+app.include_router(user_router)    # REGISTERED: Profile Access
+app.include_router(wallet_router)  # REGISTERED: Deposit Functionality
 app.include_router(order_router)
 app.include_router(admin_router)
 app.include_router(webhook_router)
@@ -723,7 +729,6 @@ async def serve_checkout_clean(): return FileResponse(FRONTEND_DIR / "checkout.h
 @app.get("/profile")
 async def serve_profile_clean(): return FileResponse(FRONTEND_DIR / "profile.html")
 
-# Policy Pages (Clean URLs)
 @app.get("/terms")
 async def serve_terms(): return FileResponse(FRONTEND_DIR / "terms.html")
 
@@ -733,7 +738,6 @@ async def serve_privacy(): return FileResponse(FRONTEND_DIR / "privacy.html")
 @app.get("/contact")
 async def serve_contact(): return FileResponse(FRONTEND_DIR / "contact.html")
 
-# Fallback for explicit .html extensions and other pages
 @app.get("/{page_name}.html")
 async def serve_html_pages(page_name: str):
     file_path = FRONTEND_DIR / f"{page_name}.html"

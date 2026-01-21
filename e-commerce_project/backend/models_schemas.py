@@ -1,6 +1,6 @@
 # models_schemas.py
 # Production-level Database Models & Pydantic Schemas
-# Updated: Robust Form Handling, Dynamic Platforms, Optional Images, Pydantic V2
+# Updated: Wallet Integration, Robust Form Handling, Dynamic Platforms
 
 from datetime import datetime
 from enum import Enum
@@ -65,6 +65,7 @@ class PaymentMethod(str, Enum):
     NOWPAYMENTS = "nowpayments"
     BINANCE = "binance"
     BYBIT = "bybit"
+    WALLET = "wallet"  # Added: Internal Wallet Payment
 
 class AdminRole(str, Enum):
     SUPERADMIN = "superadmin"
@@ -121,7 +122,7 @@ class User(Base, TimestampMixin):
     two_factor_enabled = Column(Boolean, default=False)
 
     # Wallet
-    balance_usd = Column(Float, default=0.0)
+    balance_usd = Column(Float, default=0.0, nullable=False) # Used for internal payments
 
     # Relationships
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
@@ -280,6 +281,9 @@ class Order(Base, TimestampMixin):
     payment_method = Column(SQLEnum(PaymentMethod), default=PaymentMethod.NOWPAYMENTS)
     payment_reference = Column(String(255), index=True)
     customer_ip = Column(String(50))
+    
+    # Wallet Integration: Flag to distinguish deposits from purchases
+    is_deposit = Column(Boolean, default=False, index=True)
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
@@ -517,6 +521,7 @@ class OrderResponse(ORMBase):
     total_amount_usd: float
     status: OrderStatus
     payment_method: PaymentMethod
+    is_deposit: bool  # Added to Schema
     items: List[OrderItemResponse] = [] 
     delivered_codes: List[DeliveredCodeSchema] = []
 
