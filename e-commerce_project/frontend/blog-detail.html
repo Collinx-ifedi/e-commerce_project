@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post - KeyVault</title>
+    
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="/translate-config.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
+        html, body { max-width: 100%; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+
+        .navbar { background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+        .cart-badge { position: absolute; top: -8px; right: -8px; background: #EF4444; color: white; font-size: 11px; font-weight: 600; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        .article-content { max-width: 800px; margin: 0 auto; }
+        .article-content h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.2; }
+        .article-content h2 { font-size: 2rem; font-weight: 600; margin: 2rem 0 1rem; }
+        .article-content h3 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+        .article-content p { margin-bottom: 1rem; line-height: 1.7; color: #475569; }
+        .article-content img { max-width: 100%; border-radius: 12px; margin: 2rem 0; }
+        .article-content ul, .article-content ol { margin: 1rem 0 1rem 2rem; }
+        .article-content li { margin-bottom: 0.5rem; line-height: 1.7; color: #475569; }
+        .article-content a { color: #2563EB; text-decoration: underline; }
+        .article-content blockquote { border-left: 4px solid #2563EB; padding-left: 1.5rem; margin: 1.5rem 0; font-style: italic; color: #64748B; }
+
+        .featured-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #F1F5F9;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748B;
+        }
+
+        .like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #F1F5F9;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .like-btn:hover:not(:disabled) { background: #FEE2E2; border-color: #EF4444; color: #EF4444; }
+        .like-btn.liked { background: #FEE2E2; border-color: #EF4444; color: #EF4444; }
+        .like-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .comment-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .comment-input:focus { outline: none; border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .comment-input:disabled { background: #F8FAFC; color: #64748B; cursor: not-allowed; }
+
+        .btn-submit {
+            padding: 12px 28px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover:not(:disabled) { background: #1D4ED8; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .login-prompt {
+            background: #EFF6FF;
+            border: 2px solid #DBEAFE;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            color: #1E40AF;
+        }
+
+        .skeleton { background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .footer { background: #1E293B; color: #94A3B8; padding: 60px 0 30px; }
+        .footer a { color: #94A3B8; text-decoration: none; transition: color 0.2s; }
+        .footer a:hover { color: #FFFFFF; }
+        .social-icon { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .social-icon:hover { background: #2563EB; color: white; }
+
+        /* Mobile Menu Styles */
+        .hamburger-btn { display: none; flex-direction: column; gap: 6px; background: none; border: none; cursor: pointer; padding: 8px; }
+        .hamburger-btn span { width: 24px; height: 3px; background: #2563EB; border-radius: 2px; transition: all 0.3s ease; }
+        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
+        .mobile-menu { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 80vw; max-width: 320px; background: #FFFFFF; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1); z-index: 200; overflow-y: auto; animation: slideIn 0.3s ease; }
+        .mobile-menu.active { display: flex; flex-direction: column; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 150; }
+        .mobile-menu-overlay.active { display: block; }
+        .mobile-menu-header { padding: 20px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; }
+        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
+        .mobile-menu-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #1E293B; padding: 0; }
+        .mobile-menu-content { padding: 20px; flex: 1; overflow-y: auto; }
+        .mobile-menu-item { padding: 12px 0; display: flex; align-items: center; gap: 12px; color: #1E293B; text-decoration: none; font-weight: 500; transition: color 0.2s; border-bottom: 1px solid #F1F5F9; }
+        .mobile-menu-item:hover { color: #2563EB; }
+        .mobile-menu-item i { font-size: 18px; width: 24px; }
+        .mobile-menu-divider { height: 1px; background: #E2E8F0; margin: 16px 0; }
+        .mobile-menu-button-group { padding: 20px; border-top: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 12px; }
+        .mobile-menu-button-group a, .mobile-menu-button-group button { padding: 12px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; }
+        .mobile-menu-button-group .btn-outline { background: #F1F5F9; color: #1E293B; border: 2px solid #E2E8F0; }
+        .mobile-menu-button-group .btn-outline:hover { border-color: #2563EB; color: #2563EB; }
+        .mobile-menu-button-group .btn-primary { background: #2563EB; color: white; }
+        .mobile-menu-button-group .btn-primary:hover { background: #1D4ED8; }
+        @media (min-width: 768px) { .hamburger-btn, .mobile-menu, .mobile-menu-overlay { display: none !important; } }
+        @media (max-width: 767px) { .hamburger-btn { display: flex; } .navbar-desktop-items { display: none; } }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                <a href="/" class="flex items-center gap-3 flex-shrink-0">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+                </a>
+                <div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
+                    <a href="/" class="text-sm font-medium text-gray-600 hover:text-primary transition">Store</a>
+                    <a href="/blog.html" class="text-sm font-medium text-primary">Blog</a>
+                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg" onclick="toggleTheme()" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div id="googleTranslate"></div>
+                    <div id="guestActions" class="flex items-center gap-3">
+                        <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+                    </div>
+                    <div id="userActions" class="hidden items-center gap-4">
+                        <a href="/profile" class="text-sm font-medium text-secondary hover:text-primary transition">Profile</a>
+                    </div>
+                    <a href="/cart" class="relative p-2">
+                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </a>
+                </div>
+                <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobileMenuClose"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item"><i class="fas fa-home"></i> Home</a>
+            <a href="/blog.html" class="mobile-menu-item"><i class="fas fa-newspaper"></i> Blog</a>
+            <a href="/cart" class="mobile-menu-item"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <a href="/profile" class="mobile-menu-item"><i class="fas fa-user"></i> Profile</a>
+            <div class="mobile-menu-divider"></div>
+            <div class="mobile-menu-item">
+                <i class="fas fa-moon"></i>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+            </div>
+        </div>
+        <div class="mobile-menu-button-group" id="mobileAuthButtons">
+            <a href="/login" class="btn-outline">Login</a>
+        </div>
+        <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm mb-8">
+            <a href="/" class="text-gray-500 hover:text-primary">Home</a>
+            <span class="text-gray-400">/</span>
+            <a href="/blog.html" class="text-gray-500 hover:text-primary">Blog</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-secondary font-medium" id="breadcrumbTitle">Loading...</span>
+        </nav>
+
+        <!-- Loading State -->
+        <div id="loadingState">
+            <div class="skeleton h-96 w-full mb-8"></div>
+            <div class="skeleton h-8 w-3/4 mb-4"></div>
+            <div class="skeleton h-4 w-1/2 mb-8"></div>
+            <div class="skeleton h-4 w-full mb-2"></div>
+            <div class="skeleton h-4 w-full mb-2"></div>
+            <div class="skeleton h-4 w-2/3"></div>
+        </div>
+
+        <!-- Article Content -->
+        <article id="articleContent" style="display: none;">
+            <img id="featuredImage" class="featured-image" alt="">
+            
+            <div class="flex items-center gap-4 mb-6 flex-wrap">
+                <span class="meta-badge">
+                    <i class="fas fa-user"></i>
+                    <span id="authorName">Author</span>
+                </span>
+                <span class="meta-badge">
+                    <i class="far fa-calendar"></i>
+                    <span id="publishDate">Date</span>
+                </span>
+                <span class="meta-badge">
+                    <i class="far fa-clock"></i>
+                    <span id="readTime">5 min read</span>
+                </span>
+            </div>
+
+            <div class="article-content">
+                <h1 id="articleTitle"></h1>
+                <div id="articleBody" class="mb-12"></div>
+            </div>
+
+            <!-- Engagement Section -->
+            <div class="border-t border-gray-200 pt-8 mb-8">
+                <button id="likeBtn" class="like-btn" onclick="toggleLike()">
+                    <i class="far fa-heart"></i>
+                    <span id="likeCount">0</span>
+                    <span>Likes</span>
+                </button>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="border-t border-gray-200 pt-8">
+                <h2 class="text-2xl font-bold text-secondary mb-6">Comments (<span id="commentCount">0</span>)</h2>
+
+                <!-- Comment Form (Logged In) -->
+                <div id="commentForm" style="display: none;" class="mb-8">
+                    <textarea id="commentInput" class="comment-input" placeholder="Share your thoughts..."></textarea>
+                    <button onclick="submitComment()" class="btn-submit mt-3">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Post Comment
+                    </button>
+                </div>
+
+                <!-- Login Prompt (Not Logged In) -->
+                <div id="loginPrompt" class="login-prompt mb-8" style="display: none;">
+                    <p class="font-semibold mb-2">Want to join the conversation?</p>
+                    <p class="text-sm mb-3">Log in to like and comment on this post</p>
+                    <a href="/login" class="inline-block px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-blue-700 transition">Login</a>
+                </div>
+
+                <!-- Comments List -->
+                <div id="commentsList" class="space-y-4"></div>
+
+                <!-- Empty Comments State -->
+                <div id="emptyComments" style="display: none;" class="text-center py-12 text-gray-500">
+                    <i class="far fa-comment-dots text-4xl mb-3"></i>
+                    <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Your trusted source for premium digital keys and gift cards.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Store</a></li>
+                        <li><a href="/blog.html">Blog</a></li>
+                        <li><a href="/profile">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentPostId = null;
+        let currentPostSlug = null;
+        let isLiked = false;
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+        }
+
+        // Mobile Menu
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+
+        hamburgerBtn?.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            mobileMenuOverlay.classList.toggle('active');
+        });
+
+        [mobileMenuClose, mobileMenuOverlay].forEach(el => {
+            el?.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
+
+        // Check Authentication
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                document.getElementById('guestActions')?.classList.add('hidden');
+                document.getElementById('userActions')?.classList.remove('hidden');
+                document.getElementById('mobileAuthButtons')?.classList.add('hidden');
+                document.getElementById('mobileUserButtons')?.classList.remove('hidden');
+                document.getElementById('commentForm').style.display = 'block';
+                document.getElementById('loginPrompt').style.display = 'none';
+                document.getElementById('likeBtn').disabled = false;
+            } else {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('likeBtn').disabled = true;
+            }
+        }
+
+        // Update Cart Badge
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartBadge').textContent = totalItems;
+        }
+
+        // Fetch Blog Post
+        async function loadBlogPost() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug');
+            
+            if (!slug) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Post not found' }).then(() => location.href = '/blog.html');
+                return;
+            }
+
+            currentPostSlug = slug;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/public/blog/${slug}`);
+                if (!response.ok) throw new Error('Post not found');
+                
+                const post = await response.json();
+                currentPostId = post.id;
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('articleContent').style.display = 'block';
+
+                document.getElementById('featuredImage').src = post.featured_image || '/placeholder-blog.jpg';
+                document.getElementById('featuredImage').alt = post.title;
+                document.getElementById('articleTitle').textContent = post.title;
+                document.getElementById('articleBody').innerHTML = post.content;
+                document.getElementById('authorName').textContent = post.author || 'KeyVault Team';
+                document.getElementById('publishDate').textContent = new Date(post.published_at || post.created_at).toLocaleDateString();
+                document.getElementById('readTime').textContent = `${estimateReadTime(post.content)} min read`;
+                document.getElementById('breadcrumbTitle').textContent = post.title;
+                document.getElementById('likeCount').textContent = post.likes_count || 0;
+
+                document.title = `${post.title} - KeyVault Blog`;
+
+                loadComments();
+
+            } catch (error) {
+                console.error('[v0] Blog post fetch error:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load blog post' }).then(() => location.href = '/blog.html');
+            }
+        }
+
+        // Load Comments
+        async function loadComments() {
+            if (!currentPostId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/public/blog/${currentPostId}/comments`);
+                if (!response.ok) throw new Error('Failed to load comments');
+                
+                const data = await response.json();
+                const comments = data.comments || data || [];
+
+                document.getElementById('commentCount').textContent = comments.length;
+
+                if (comments.length === 0) {
+                    document.getElementById('emptyComments').style.display = 'block';
+                    document.getElementById('commentsList').innerHTML = '';
+                    return;
+                }
+
+                document.getElementById('emptyComments').style.display = 'none';
+                document.getElementById('commentsList').innerHTML = comments.map(comment => `
+                    <div class="comment-card">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                ${(comment.user?.email || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="font-semibold text-secondary">${comment.user?.email || 'User'}</span>
+                                    <span class="text-xs text-gray-400">${new Date(comment.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <p class="text-gray-600">${comment.content}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('[v0] Comments fetch error:', error);
+            }
+        }
+
+        // Submit Comment
+        async function submitComment() {
+            const content = document.getElementById('commentInput').value.trim();
+            if (!content) {
+                Swal.fire({ icon: 'warning', title: 'Empty Comment', text: 'Please write something before posting' });
+                return;
+            }
+
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to comment' });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/blog/${currentPostId}/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (!response.ok) throw new Error('Failed to post comment');
+
+                document.getElementById('commentInput').value = '';
+                Swal.fire({ icon: 'success', title: 'Comment Posted!', timer: 1500, showConfirmButton: false });
+                loadComments();
+
+            } catch (error) {
+                console.error('[v0] Comment post error:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to post comment' });
+            }
+        }
+
+        // Toggle Like
+        async function toggleLike() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to like posts' });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/blog/${currentPostId}/react`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reaction_type: 'like' })
+                });
+
+                if (!response.ok) throw new Error('Failed to react');
+
+                const data = await response.json();
+                const likeBtn = document.getElementById('likeBtn');
+                const likeCount = document.getElementById('likeCount');
+
+                // Toggle visual state
+                isLiked = !isLiked;
+                likeBtn.classList.toggle('liked', isLiked);
+                likeBtn.querySelector('i').classList.toggle('far', !isLiked);
+                likeBtn.querySelector('i').classList.toggle('fas', isLiked);
+
+                // Update count (simplified, could be from response)
+                const currentCount = parseInt(likeCount.textContent);
+                likeCount.textContent = isLiked ? currentCount + 1 : currentCount - 1;
+
+            } catch (error) {
+                console.error('[v0] Like error:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update reaction' });
+            }
+        }
+
+        function estimateReadTime(content) {
+            const wordsPerMinute = 200;
+            const wordCount = (content || '').split(/\s+/).length;
+            return Math.ceil(wordCount / wordsPerMinute) || 1;
+        }
+
+        // Initialize
+        checkAuth();
+        updateCartBadge();
+        loadBlogPost();
+    </script>
+</body>
+</html>
