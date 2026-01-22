@@ -4,6 +4,7 @@
 import os
 import logging
 import csv
+import asyncio
 from typing import AsyncGenerator, Optional, List
 
 from sqlalchemy.ext.asyncio import (
@@ -16,7 +17,8 @@ from sqlalchemy import text, select, update, func
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 
-from .models_schemas import Base, Product, ProductCode
+# Import ProductCategory to ensure Enum types are registered in Metadata for init_db
+from models_schemas import Base, Product, ProductCode, ProductCategory
 
 # ======================================================
 # CONFIGURATION & LOGGING
@@ -99,6 +101,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     """
     Creates tables if they don't exist.
+    Ensures new Enum types (ProductCategory) are correctly registered in Postgres.
     Run this on startup (or use Alembic for migrations in strict prod).
     """
     try:
@@ -156,6 +159,8 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
     Reads a file (TXT/CSV), parses codes, and bulk inserts them into the DB.
     Updates the Product's stock_quantity counter upon success.
     
+    Now includes validation for Product existence and category checks (e.g. Direct Topup warnings).
+    
     Args:
         file_path: Path to the local file.
         product_id: ID of the product to associate codes with.
@@ -165,11 +170,6 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
         int: Number of codes successfully inserted.
     """
     # 1. Run file parsing in a separate thread to avoid blocking the async loop
-    # We use engine.run_sync or asyncio.to_thread, but run_sync is convenient here
-    # if we were doing DB ops, but for file IO, strictly strictly we should use asyncio.to_thread.
-    # Since we are inside an async func, we'll assume a standard loop.
-    import asyncio
-    
     try:
         codes = await asyncio.to_thread(_parse_codes_sync, file_path)
         
@@ -177,20 +177,35 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
             logger.warning(f"No codes found in file: {file_path}")
             return 0
 
-        # 2. Prepare Code Objects
-        # We process in batches if the file is huge, but for standard operations (<10k), all-at-once is fine.
+        # 2. Validate Product Existence & Category
+        # We fetch the product to ensure we aren't adding codes to a soft-deleted item
+        # or misconfigured category.
+        stmt = select(Product).where(Product.id == product_id)
+        result = await db.execute(stmt)
+        product = result.scalar_one_or_none()
+
+        if not product:
+            logger.error(f"Product ID {product_id} not found. Cannot add codes.")
+            return 0
+        
+        if product.is_deleted:
+             logger.error(f"Product ID {product_id} is soft-deleted. Cannot add codes.")
+             return 0
+
+        # Optional Warning for Direct Topup
+        # Usually Direct Topup (requires_player_id) is manual, but some use "Voucher Codes".
+        # We log this for audit purposes.
+        if product.product_category == ProductCategory.DIRECT_TOPUP:
+            logger.info(f"Adding stock codes to DIRECT_TOPUP product (ID: {product_id}). Ensure these are valid vouchers.")
+
+        # 3. Prepare Code Objects
         new_code_objects = [
             ProductCode(product_id=product_id, code_value=code, is_used=False) 
             for code in codes
         ]
         
-        # 3. Bulk Insert with Conflict Handling
-        # Standard SQLAlchemy `add_all` is slow for massive data.
-        # For true bulk, we might use `insert` constructs, but `add_all` allows ORM integrity.
-        # We will iterate and add, catching duplicates individually if necessary, 
-        # or just try a bulk add and rollback on error.
-        
-        # Approach: Filter existing codes first to avoid integrity errors breaking the batch
+        # 4. Bulk Insert with Conflict Handling
+        # Filter existing codes first to avoid integrity errors breaking the batch
         existing_res = await db.execute(
             select(ProductCode.code_value)
             .where(ProductCode.code_value.in_(codes))
@@ -209,12 +224,14 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
         db.add_all(filtered_objects)
         await db.flush() # Check for errors before committing
 
-        # 4. Update Product Stock Counter
-        # Denormalized counter update
+        # 5. Update Product Stock Counter
+        # Only update if the product is not deleted (redundant check, but safe for concurrency)
         count_added = len(filtered_objects)
+        
         await db.execute(
             update(Product)
             .where(Product.id == product_id)
+            .where(Product.is_deleted == False) 
             .values(
                 stock_quantity=Product.stock_quantity + count_added,
                 in_stock=True # Re-enable stock if it was 0
@@ -222,13 +239,12 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
         )
 
         await db.commit()
-        logger.info(f"Successfully added {count_added} codes for Product ID {product_id}.")
+        logger.info(f"Successfully added {count_added} codes for Product ID {product_id} ({product.product_category.value}).")
         return count_added
 
     except Exception as e:
         await db.rollback()
         logger.error(f"Failed to batch add codes: {e}")
-        # In production, you might raise a custom exception here
         return 0
 
 async def get_unused_code(product_id: int, db: AsyncSession) -> Optional[str]:
@@ -236,8 +252,6 @@ async def get_unused_code(product_id: int, db: AsyncSession) -> Optional[str]:
     Fetches a single unused code for automatic delivery.
     Uses 'SKIP LOCKED' to prevent race conditions where two concurrent requests 
     grab the same code before marking it used.
-    
-    Note: The caller MUST mark this code as used (or rollback) to finalize the claim.
     """
     try:
         # Postgres-specific: FOR UPDATE SKIP LOCKED
@@ -288,8 +302,6 @@ async def mark_code_as_used(code_value: str, db: AsyncSession) -> bool:
         # Note: We do NOT decrement Product.stock_quantity here.
         # That logic usually lives in the Service layer (handle_btcpay_webhook) 
         # because one order might contain multiple items, and we update stock per product.
-        # However, strictly speaking, consistency requires it. 
-        # For now, we follow the separation of concerns: this function purely updates the Code status.
         
         await db.flush() # Ensure update is pending
         logger.info(f"Code marked as used: {code_value[:4]}***")

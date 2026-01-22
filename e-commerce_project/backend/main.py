@@ -7,6 +7,7 @@
 # - OTP Recovery Endpoint
 # - Automatic Background Cleanup of Unverified Users
 # - Wallet System Integration (Profile & Deposit)
+# - Manual Delivery & Top-up Workflow Support
 
 import os
 import shutil
@@ -32,7 +33,7 @@ from fastapi import (
     File,
     Form,
     Query,
-    Body  # Added for Wallet Deposit
+    Body
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -62,12 +63,13 @@ from .services import (
     admin_login_service,
     bootstrap_admins,
     create_order_service,
-    create_deposit_service,  # Used for Wallet Deposit
-    create_product_service,
+    create_deposit_service,
+    # create_product_service, # Replaced by inline logic to support new fields
     create_banner_service,
     handle_nowpayments_webhook,
     handle_binance_webhook,
-    handle_bybit_webhook
+    handle_bybit_webhook,
+    process_admin_order_action # NEW: Manual Fulfillment Service
 )
 
 # --- SCHEMAS & MODELS ---
@@ -77,7 +79,7 @@ from .models_schemas import (
     MultiProductOrderCreate, 
     Admin,
     User,
-    UserResponse,   # Added for Profile Response
+    UserResponse,
     Product, 
     OrderItem,
     ProductSchema,
@@ -86,23 +88,27 @@ from .models_schemas import (
     Order,
     OrderResponse,
     OrderStatus,
-    PaymentMethod   # Added for Deposit Validation
+    PaymentMethod,
+    ProductCategory, # NEW: For Categorization
+    # --- BLOG SYSTEM MODELS & SCHEMAS ---
+    BlogPost,
+    BlogComment,
+    BlogResponse,
+    BlogDetailResponse,
+    CommentCreate
 )
 
 # =========================================================
 # 1. SETUP & CONFIGURATION
 # =========================================================
 
-# Robust path resolution using pathlib
-BASE_DIR = Path(__file__).resolve().parent      # .../backend
-PROJECT_ROOT = BASE_DIR.parent                  # .../root
-FRONTEND_DIR = PROJECT_ROOT / "frontend"        # .../root/frontend
-UPLOAD_DIR = BASE_DIR / "temp_uploads"          # For CSV/TXT processing only
+BASE_DIR = Path(__file__).resolve().parent      
+PROJECT_ROOT = BASE_DIR.parent                  
+FRONTEND_DIR = PROJECT_ROOT / "frontend"        
+UPLOAD_DIR = BASE_DIR / "temp_uploads"          
 
-# Ensure temp directory exists for CSV processing
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Validate Frontend Directory
 if not FRONTEND_DIR.exists():
     logger.critical(f"CRITICAL: Frontend directory not found at {FRONTEND_DIR}")
 
@@ -120,60 +126,41 @@ else:
 # =========================================================
 
 async def cleanup_unverified_users():
-    """
-    Background task to remove users who registered but never 
-    verified their email within the expiration window (e.g., 24 hours).
-    """
     while True:
         try:
             async for db in get_db():
                 expiration_limit = datetime.utcnow() - timedelta(hours=24)
-                
                 stmt = (
                     delete(User)
                     .where(User.is_verified == False)
                     .where(User.created_at < expiration_limit)
                 )
-                
                 result = await db.execute(stmt)
                 await db.commit()
-                
                 if result.rowcount > 0:
                     logger.info(f"Cleanup: Removed {result.rowcount} unverified/abandoned accounts.")
                 break 
         except Exception as e:
             logger.error(f"Cleanup task error: {e}")
-        
         await asyncio.sleep(3600)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manages startup/shutdown lifecycle."""
-    # --- STARTUP ---
     logger.info("System startup initiated...")
-    
     await init_db()
-    
     async for db in get_db():
         await bootstrap_admins(db)
         break 
-    
     cleanup_task = asyncio.create_task(cleanup_unverified_users())
     logger.info("Background task started: Cleanup unverified users.")
-    
     logger.info(f"System startup complete. Version: {app.version}")
-    
     yield
-    
-    # --- SHUTDOWN ---
     logger.info("System shutting down...")
-    
     cleanup_task.cancel()
     try:
         await cleanup_task
     except asyncio.CancelledError:
         logger.info("Background cleanup task cancelled.")
-
     if UPLOAD_DIR.exists():
         shutil.rmtree(UPLOAD_DIR, ignore_errors=True)
 
@@ -183,7 +170,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.4.0", # Bumped version for Wallet Integration
+    version="2.6.0", # Bumped for Manual Workflow
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -227,15 +214,20 @@ catalog_router = APIRouter(prefix="/api", tags=["Catalog"])
 @catalog_router.get("/products", response_model=List[ProductSchema])
 async def get_products(
     platform: Optional[str] = None, 
+    category: Optional[str] = None, # NEW: Filter by Category Enum
     limit: int = 50, 
     db: AsyncSession = Depends(get_db)
 ):
-    """Fetch active products for the frontend grid."""
+    """Fetch active products with optional platform or category filters."""
     query = select(Product).where(
         or_(Product.is_deleted == False, Product.is_deleted.is_(None))
     )
     if platform:
         query = query.where(Product.platform == platform)
+    
+    if category:
+        # Match against ProductCategory enum value
+        query = query.where(Product.product_category == category)
     
     query = query.order_by(desc(Product.id)).limit(limit)
     result = await db.execute(query)
@@ -244,7 +236,6 @@ async def get_products(
 
 @catalog_router.get("/products/{product_id}", response_model=ProductSchema)
 async def get_product_detail(product_id: int, db: AsyncSession = Depends(get_db)):
-    """Fetch single product details."""
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalar_one_or_none()
     if not product:
@@ -253,11 +244,9 @@ async def get_product_detail(product_id: int, db: AsyncSession = Depends(get_db)
 
 @catalog_router.get("/banners", response_model=List[BannerSchema])
 async def get_banners(active: bool = True, db: AsyncSession = Depends(get_db)):
-    """Fetch hero slider banners."""
     query = select(Banner)
     if active:
         query = query.where(Banner.is_active == True)
-    
     query = query.order_by(Banner.display_order)
     result = await db.execute(query)
     return result.scalars().all()
@@ -325,20 +314,14 @@ async def resend_otp(payload: dict, db: AsyncSession = Depends(get_db)):
     return await resend_otp_service(db, email)
 
 
-# --- C. USER & WALLET ROUTER (NEW) ---
+# --- C. USER & WALLET ROUTER ---
 user_router = APIRouter(prefix="/api/user", tags=["User Profile"])
 wallet_router = APIRouter(prefix="/api/wallet", tags=["Wallet"])
 
-# 1. User Profile Endpoint
 @user_router.get("/profile", response_model=UserResponse)
 async def get_user_profile(user: User = Depends(get_current_user)):
-    """
-    Returns full profile data including current wallet balance.
-    UserResponse schema automatically serializes balance_usd.
-    """
     return user
 
-# 2. Wallet Deposit Endpoint
 @wallet_router.post("/deposit", status_code=status.HTTP_201_CREATED)
 async def create_deposit(
     amount: float = Body(..., gt=1.0, embed=True),
@@ -346,10 +329,6 @@ async def create_deposit(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Initiates a wallet top-up via crypto gateways.
-    Returns a payment link (checkout_url).
-    """
     if gateway == PaymentMethod.WALLET:
         raise HTTPException(status_code=400, detail="Cannot deposit using Wallet balance.")
 
@@ -378,8 +357,7 @@ async def checkout_route(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Handles Checkout for both Products and Wallet payments.
-    Compatible with PaymentMethod.WALLET via create_order_service.
+    Handles Checkout. Now supports capturing 'player_id' for Direct Topup.
     """
     try:
         checkout_url = await create_order_service(db, user.id, order_data)
@@ -390,7 +368,6 @@ async def checkout_route(
 
 @order_router.get("")
 async def get_user_orders(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Fetch order history for the current user."""
     stmt = select(Order).where(Order.user_id == user.id).order_by(desc(Order.created_at))
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -402,7 +379,18 @@ admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
 @admin_router.post("/login")
 async def admin_login_route(data: AdminLoginSchema, db: AsyncSession = Depends(get_db)):
     token = await admin_login_service(db, data.username, data.password)
-    return {"access_token": token, "token_type": "bearer"}
+    result = await db.execute(select(Admin).where(Admin.username == data.username))
+    admin = result.scalar_one_or_none()
+    role = admin.role.value if admin and hasattr(admin.role, 'value') else "admin"
+    
+    return {
+        "access_token": token, 
+        "token_type": "bearer",
+        "admin": {
+            "username": data.username,
+            "role": role
+        }
+    }
 
 # -- ADMIN STATS --
 @admin_router.get("/stats")
@@ -426,11 +414,17 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
     )
     total_products = products_res.scalar() or 0
 
+    open_orders_res = await db.execute(
+        select(func.count(Order.id)).where(Order.status == OrderStatus.IN_PROGRESS)
+    )
+    open_orders = open_orders_res.scalar() or 0
+
     return {
         "total_sales": total_revenue,
         "total_orders": total_orders,
         "total_users": total_users,
-        "total_products": total_products
+        "total_products": total_products,
+        "open_orders": open_orders
     }
 
 # -- ADMIN PRODUCTS LIST --
@@ -469,7 +463,27 @@ async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), 
         logger.error(f"Order Fetch Error: {str(e)}")
         raise HTTPException(status_code=500, detail="Database error while fetching orders.")
 
-# -- CREATE PRODUCT --
+# -- NEW: ADMIN MANUAL ORDER ACTION --
+@admin_router.post("/orders/{order_id}/action")
+async def admin_order_action(
+    order_id: int,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """
+    Approve or Reject an order manually.
+    Payload: {"action": "complete" | "reject", "manual_content": "codes..."}
+    """
+    action = payload.get("action")
+    manual_content = payload.get("manual_content")
+    
+    if action not in ["complete", "reject"]:
+        raise HTTPException(status_code=400, detail="Invalid action")
+        
+    return await process_admin_order_action(db, order_id, action, manual_content)
+
+# -- CREATE PRODUCT (Updated for New Categories) --
 @admin_router.post("/products", response_model=ProductSchema)
 async def create_product(
     name: str = Form(...),
@@ -477,6 +491,10 @@ async def create_product(
     price_usd: float = Form(...),
     stock_quantity: int = Form(0),
     discount_percent: int = Form(0),
+    # NEW FIELDS:
+    product_category: ProductCategory = Form(ProductCategory.OTHERS),
+    requires_player_id: bool = Form(False),
+    
     description: Optional[str] = Form(None),
     file: UploadFile = File(...),
     is_featured: bool = Form(False),
@@ -492,10 +510,25 @@ async def create_product(
         logger.error(f"Cloudinary upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Image Provider Error: {str(e)}")
 
-    return await create_product_service(
-        db, name, platform, price_usd, description, secure_url, 
-        stock_quantity, discount_percent, is_featured, is_trending
+    # Inline Creation to ensure new fields are saved
+    new_product = Product(
+        name=name,
+        platform=platform,
+        product_category=product_category, # New field
+        requires_player_id=requires_player_id, # New field
+        price_usd=price_usd,
+        stock_quantity=stock_quantity,
+        in_stock=(stock_quantity > 0),
+        discount_percent=discount_percent,
+        description=description,
+        image_url=secure_url,
+        is_featured=is_featured,
+        is_trending=is_trending
     )
+    db.add(new_product)
+    await db.commit()
+    await db.refresh(new_product)
+    return new_product
 
 # -- UPDATE PRODUCT (PUT) --
 @admin_router.put("/products/{product_id}", response_model=ProductSchema)
@@ -506,6 +539,10 @@ async def update_product(
     price_usd: float = Form(...),
     stock_quantity: int = Form(...),
     discount_percent: int = Form(0),
+    # NEW FIELDS:
+    product_category: Optional[ProductCategory] = Form(None),
+    requires_player_id: bool = Form(False),
+    
     description: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     is_featured: bool = Form(False),
@@ -537,6 +574,11 @@ async def update_product(
     product.is_featured = is_featured
     product.is_trending = is_trending
     product.in_stock = (stock_quantity > 0)
+    
+    # Update new fields
+    if product_category:
+        product.product_category = product_category
+    product.requires_player_id = requires_player_id
 
     await db.commit()
     await db.refresh(product)
@@ -576,19 +618,7 @@ async def create_banner(
         logger.error(f"Banner upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Image Provider Error: {str(e)}")
 
-    new_banner = Banner(
-        title=title,
-        subtitle=subtitle,
-        target_url=target_url,
-        btn_text=btn_text,
-        image_url=secure_url,
-        is_active=is_active,
-        start_date=datetime.utcnow()
-    )
-    db.add(new_banner)
-    await db.commit()
-    await db.refresh(new_banner)
-    return new_banner
+    return await create_banner_service(db, title, secure_url)
 
 # -- UPDATE BANNER (PUT) --
 @admin_router.put("/banners/{banner_id}", response_model=BannerSchema)
@@ -691,6 +721,112 @@ async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     await handle_bybit_webhook(db, payload)
     return {"status": "success"}
 
+# --- G. BLOG ROUTER ---
+blog_router = APIRouter(prefix="/api/blog", tags=["Blog"])
+
+@blog_router.get("/posts", response_model=List[BlogResponse])
+async def get_blog_posts(db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(BlogPost)
+        .where(BlogPost.is_published == True, BlogPost.is_deleted == False)
+        .options(selectinload(BlogPost.author))
+        .order_by(desc(BlogPost.created_at))
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@blog_router.get("/posts/detail/{slug}", response_model=BlogDetailResponse)
+async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(BlogPost)
+        .where(BlogPost.slug == slug, BlogPost.is_deleted == False)
+        .options(
+            selectinload(BlogPost.author),
+            selectinload(BlogPost.comments).selectinload(BlogComment.user)
+        )
+    )
+    result = await db.execute(stmt)
+    post = result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return post
+
+@blog_router.post("/posts")
+async def create_blog_post(
+    title: str = Form(...),
+    content: str = Form(...),
+    image: UploadFile = File(None),
+    is_published: bool = Form(True),
+    current_admin: Admin = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    img_url = None
+    if image:
+        try:
+            upload_result = cloudinary.uploader.upload(image.file, folder="keyvault_blog")
+            img_url = upload_result.get("secure_url")
+        except Exception as e:
+            logger.error(f"Cloudinary upload failed: {e}")
+            raise HTTPException(status_code=400, detail="Image upload failed")
+
+    slug = title.lower().replace(" ", "-")[:50] + f"-{int(time.time())}"
+    
+    new_post = BlogPost(
+        title=title,
+        slug=slug,
+        content=content,
+        image_url=img_url,
+        is_published=is_published,
+        author_id=current_admin.id
+    )
+    db.add(new_post)
+    await db.commit()
+    return {"status": "success", "slug": slug}
+
+@blog_router.delete("/posts/{post_id}")
+async def delete_blog_post(
+    post_id: int,
+    admin: Admin = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = update(BlogPost).where(BlogPost.id == post_id).values(
+        is_deleted=True,
+        deleted_at=datetime.utcnow()
+    )
+    result = await db.execute(stmt)
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+        
+    await db.commit()
+    return {"detail": "Post moderated/removed by Superadmin"}
+
+@blog_router.post("/posts/{post_id}/comments")
+async def add_comment(
+    post_id: int,
+    content: str = Body(..., embed=True),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(BlogPost).where(BlogPost.id == post_id)
+    result = await db.execute(stmt)
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    new_comment = BlogComment(post_id=post_id, user_id=user.id, content=content)
+    db.add(new_comment)
+    await db.commit()
+    return {"status": "success"}
+
+@blog_router.delete("/comments/{comment_id}")
+async def delete_comment(
+    comment_id: int,
+    admin: Admin = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db)
+):
+    await db.execute(delete(BlogComment).where(BlogComment.id == comment_id))
+    await db.commit()
+    return {"detail": "Comment removed"}
+
 
 # =========================================================
 # 6. REGISTER API ROUTERS
@@ -698,14 +834,15 @@ async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 
 app.include_router(catalog_router)
 app.include_router(auth_router)
-app.include_router(user_router)    # REGISTERED: Profile Access
-app.include_router(wallet_router)  # REGISTERED: Deposit Functionality
+app.include_router(user_router)    
+app.include_router(wallet_router)  
 app.include_router(order_router)
 app.include_router(admin_router)
 app.include_router(webhook_router)
+app.include_router(blog_router)    
 
 # =========================================================
-# 7. FRONTEND PAGE ROUTES (Clean URLs)
+# 7. FRONTEND PAGE ROUTES
 # =========================================================
 
 @app.get("/")
@@ -738,6 +875,12 @@ async def serve_privacy(): return FileResponse(FRONTEND_DIR / "privacy.html")
 @app.get("/contact")
 async def serve_contact(): return FileResponse(FRONTEND_DIR / "contact.html")
 
+@app.get("/blog")
+async def serve_blog_clean(): return FileResponse(FRONTEND_DIR / "blog.html")
+
+@app.get("/blog-post")
+async def serve_blog_post_clean(): return FileResponse(FRONTEND_DIR / "blog-post.html")
+
 @app.get("/{page_name}.html")
 async def serve_html_pages(page_name: str):
     file_path = FRONTEND_DIR / f"{page_name}.html"
@@ -746,7 +889,7 @@ async def serve_html_pages(page_name: str):
     return JSONResponse(status_code=404, content={"detail": "Page not found"})
 
 # =========================================================
-# 8. STATIC FILES (Final Catch-All)
+# 8. STATIC FILES
 # =========================================================
 
 if FRONTEND_DIR.exists():

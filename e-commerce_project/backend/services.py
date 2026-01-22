@@ -4,6 +4,7 @@
 # - Cloudinary Content Management
 # - Atomic Order Fulfillment (Wallet + Gateways)
 # - Payment Gateway Integration
+# - Manual Delivery & Top-up Workflow
 
 import os
 import hmac
@@ -37,7 +38,8 @@ from .models_schemas import (
     OrderStatus,
     PaymentMethod,
     OTPPurpose,
-    MultiProductOrderCreate
+    MultiProductOrderCreate,
+    ProductCategory  # Imported for category logic
 )
 
 # IMPORT UTILS & CORE
@@ -371,15 +373,38 @@ async def create_bybit_order(order: Order) -> str:
     return f"{frontend_url}/checkout/mock-provider?ref={order.order_reference}&provider=bybit"
 
 # =========================================================
-# 4. DIGITAL FULFILLMENT SERVICE (ATOMIC)
+# 4. DIGITAL FULFILLMENT SERVICE (MANUAL LOGIC)
 # =========================================================
 
-async def fulfill_digital_order(db: AsyncSession, order_id: int):
+async def get_product_available_codes(db: AsyncSession, product_id: int) -> List[Dict[str, Any]]:
     """
-    Delivers digital goods. Uses concurrency safe checks.
+    Service used by Admin 'Code Picker' to see unused codes.
     """
-    logger.info(f"Starting fulfillment for Order ID: {order_id}")
+    stmt = (
+        select(ProductCode)
+        .where(ProductCode.product_id == product_id)
+        .where(ProductCode.is_used == False)
+        .order_by(ProductCode.id)
+        .limit(100) # Limit to prevent UI overload
+    )
+    result = await db.execute(stmt)
+    codes = result.scalars().all()
     
+    return [{"id": c.id, "code": c.code_value} for c in codes]
+
+# --- NEW: Admin Manual Action Handler ---
+async def process_admin_order_action(
+    db: AsyncSession, 
+    order_id: int, 
+    action: str, 
+    manual_content: Optional[str] = None,
+    code_ids: Optional[List[int]] = None
+):
+    """
+    Handles the Admin's decision to 'Complete' or 'Reject' an order.
+    Now supports selecting specific code_ids from the database.
+    """
+    # Fetch Order with Items and Product Info
     stmt = (
         select(Order)
         .options(
@@ -390,81 +415,122 @@ async def fulfill_digital_order(db: AsyncSession, order_id: int):
     )
     result = await db.execute(stmt)
     order = result.scalar_one_or_none()
-    
-    if not order or order.status == OrderStatus.COMPLETED:
-        return
 
-    delivered_items = []
-    
-    try:
-        for item in order.items:
-            product = item.product
-            qty_needed = item.quantity
-            codes_found = []
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
 
-            for _ in range(qty_needed):
-                code_val = await get_unused_code(product.id, db)
-                if code_val:
-                    await mark_code_as_used(code_val, db)
-                    # Link to order
-                    await db.execute(
-                        update(ProductCode)
-                        .where(ProductCode.code_value == code_val)
-                        .values(order_id=order.id)
-                    )
-                    codes_found.append(code_val)
-                else:
-                    logger.critical(f"OUT OF STOCK: Product {product.id} in Order {order.order_reference}")
-            
-            # Decrement Stock
-            await db.execute(
-                update(Product)
-                .where(Product.id == product.id)
-                .values(
-                    stock_quantity=Product.stock_quantity - qty_needed,
-                    in_stock=case((Product.stock_quantity - qty_needed <= 0, False), else_=True) 
-                )
-            )
+    if order.status == OrderStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Order is already completed")
 
-            if codes_found:
-                delivered_items.append({"product_name": product.name, "codes": codes_found})
-
-        order.status = OrderStatus.COMPLETED
+    # --- REJECT LOGIC ---
+    if action == "reject":
+        order.status = OrderStatus.REJECTED
         await db.commit()
+        # Notify user (optional, but good practice)
+        logger.info(f"Order {order.order_reference} rejected by admin.")
+        return {"status": "rejected", "detail": "Order marked as rejected."}
+
+    # --- COMPLETE LOGIC ---
+    if action == "complete":
         
-        if delivered_items:
-            await _send_delivery_email(order.user.email, order.order_reference, delivered_items)
+        assigned_codes_data = []
+        is_direct_topup = False
 
-        logger.info(f"Order {order.order_reference} fulfilled successfully.")
+        # 1. Identify Order Type
+        # Check if we have Direct Topups mixed with Gift Cards (usually separated, but handle logic safely)
+        for item in order.items:
+            if item.product.product_category == ProductCategory.DIRECT_TOPUP:
+                is_direct_topup = True
+            
+        # 2. Handle Code Assignment (Gift Cards / Games)
+        if code_ids and len(code_ids) > 0:
+            # Fetch selected codes
+            stmt_codes = select(ProductCode).where(ProductCode.id.in_(code_ids))
+            codes_res = await db.execute(stmt_codes)
+            selected_codes = codes_res.scalars().all()
+            
+            if len(selected_codes) != len(code_ids):
+                raise HTTPException(status_code=400, detail="Some selected codes do not exist.")
 
-    except Exception as e:
-        await db.rollback()
-        logger.error(f"Fulfillment failed for order {order_id}: {e}")
-        raise
+            for code in selected_codes:
+                if code.is_used:
+                    raise HTTPException(status_code=400, detail=f"Code {code.code_value} is already used.")
+                
+                # Mark as Used
+                code.is_used = True
+                code.used_at = datetime.utcnow()
+                code.order_id = order.id
+                assigned_codes_data.append(code.code_value)
+                
+                # Note: Stock deduction typically happens at 'Payment/Processing' stage in `create_order` or webhook.
+                # If your system relies on exact 'count of unused codes', the deduction is implicit.
+                # If we rely on the `Product.stock_quantity` integer, ensure it was decremented during payment.
 
-async def _send_delivery_email(email: str, order_ref: str, items: List[dict]):
-    """Sends HTML email with keys."""
-    items_html = ""
-    for item in items:
-        codes_block = "<br>".join([f"<code style='background:#eee; padding:2px 5px;'>{c}</code>" for c in item['codes']])
-        items_html += f"""
-        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-            <h3 style="margin: 0 0 10px;">{item['product_name']}</h3>
-            <div style="background: #f9f9f9; padding: 10px; font-family: monospace; font-size: 16px;">
-                {codes_block}
+        # 3. Validation: If no codes selected and not a Direct Topup, ensure we have manual content
+        if not assigned_codes_data and not is_direct_topup:
+             if not manual_content:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="No codes selected and no manual text provided."
+                )
+
+        # 4. Finalize Status
+        order.status = OrderStatus.COMPLETED
+        order.fulfillment_note = manual_content or "Delivered via Admin Selection"
+        order.updated_at = datetime.utcnow()
+        
+        # 5. Construct Email
+        email_body_html = ""
+        
+        # Case A: Codes assigned (Gift Cards)
+        if assigned_codes_data:
+            codes_html = ""
+            for c in assigned_codes_data:
+                codes_html += f'<div style="background:#f4f4f4;padding:10px;margin:5px 0;font-family:monospace;font-size:16px;">{c}</div>'
+            
+            email_body_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333;">
+                <h2>Your Order is Complete!</h2>
+                <p>Order Reference: <strong>{order.order_reference}</strong></p>
+                <p>Here are your digital keys:</p>
+                {codes_html}
+                <p>Thank you for shopping with us!</p>
             </div>
-        </div>
-        """
+            """
+        
+        # Case B: Direct Topup (Manual Text)
+        elif is_direct_topup and manual_content:
+             email_body_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333;">
+                <h2>Top-up Successful!</h2>
+                <p>Order Reference: <strong>{order.order_reference}</strong></p>
+                <div style="background-color: #e6fffa; padding: 15px; border-left: 4px solid #059669; margin: 20px 0;">
+                    <strong>Admin Note:</strong><br/>
+                    <pre style="font-family: sans-serif; white-space: pre-wrap;">{manual_content}</pre>
+                </div>
+                <p>The resources have been added to your account ID: <strong>{order.order_metadata.get('player_id', 'N/A')}</strong></p>
+            </div>
+            """
 
-    html_content = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2c3e50;">Here is your order!</h2>
-        <p>Thank you for your purchase (Order #{order_ref}).</p>
-        <p>Below are your activation codes/keys:</p>
-        {items_html}
-    </div>
-    """
-    await send_email_async(email, f"Order #{order_ref} - Your Digital Keys", html_content)
+        # Case C: Fallback Manual Content
+        elif manual_content:
+             email_body_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333;">
+                <h2>Order Update</h2>
+                <p>Order Reference: <strong>{order.order_reference}</strong></p>
+                <p>{manual_content}</p>
+            </div>
+            """
+
+        # 6. Send Email & Commit
+        if email_body_html:
+            await send_email_async(order.user.email, f"Order #{order.order_reference} Completed", email_body_html)
+            logger.info(f"Fulfillment email sent for Order {order.order_reference}")
+
+        await db.commit()
+        return {"status": "completed", "detail": "Order completed successfully.", "codes_count": len(assigned_codes_data)}
+
+    raise HTTPException(status_code=400, detail="Invalid action")
 
 # =========================================================
 # 5. ORDER CREATION SERVICES (Checkout & Deposits)
@@ -477,6 +543,7 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
     1. Stock Checks
     2. Wallet Payment Deduction (Instant)
     3. Crypto Payment Link Generation (Async)
+    4. Player ID Capture for Metadata
     """
     if not order_data.items:
         raise HTTPException(status_code=400, detail="Cart is empty")
@@ -516,8 +583,14 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
         if user.balance_usd < total_amount_usd:
             raise HTTPException(status_code=400, detail="Insufficient wallet balance.")
 
-    # 3. Create Order Record
+    # 3. Create Order Record with Metadata (Player ID)
     order_ref = generate_otp(length=10)
+    
+    # NEW: Capture Metadata
+    metadata = {}
+    if order_data.player_id:
+        metadata["player_id"] = order_data.player_id
+
     new_order = Order(
         user_id=user_id,
         order_reference=order_ref,
@@ -525,7 +598,8 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
         status=OrderStatus.PENDING,
         payment_method=order_data.payment_method,
         customer_ip="0.0.0.0",
-        is_deposit=False
+        is_deposit=False,
+        order_metadata=metadata # Save Player ID here
     )
     db.add(new_order)
     await db.flush()
@@ -536,10 +610,12 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
 
     # 4. Handle Payment
     try:
-        # A) Wallet: Deduct & Fulfill Instantly
+        # A) Wallet: Deduct & Mark IN_PROGRESS (Manual Delivery)
         if order_data.payment_method == PaymentMethod.WALLET:
             user.balance_usd -= total_amount_usd
-            new_order.status = OrderStatus.PAID
+            
+            # Set to IN_PROGRESS so Admin knows to fulfill it
+            new_order.status = OrderStatus.IN_PROGRESS 
             new_order.payment_reference = f"WALLET-{order_ref}"
             
             # Record Transaction
@@ -547,10 +623,16 @@ async def create_order_service(db: AsyncSession, user_id: int, order_data: Multi
                 user_id=user.id, order_id=new_order.id, amount_usd=total_amount_usd,
                 status="confirmed", provider="Wallet", tx_hash=f"INT-{order_ref}"
             ))
-            await db.commit()
             
-            # Trigger Fulfillment
-            await fulfill_digital_order(db, new_order.id)
+            # Decrement Stock Immediately (since user paid)
+            for item in order_items_objects:
+                await db.execute(
+                    update(Product)
+                    .where(Product.id == item.product_id)
+                    .values(stock_quantity=Product.stock_quantity - item.quantity)
+                )
+
+            await db.commit()
             
             # Return success URL
             frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
@@ -590,7 +672,8 @@ async def create_deposit_service(db: AsyncSession, user_id: int, amount: float, 
         status=OrderStatus.PENDING,
         payment_method=gateway,
         customer_ip="0.0.0.0",
-        is_deposit=True  # Important Flag
+        is_deposit=True,
+        order_metadata={} # No metadata needed for deposits
     )
     db.add(new_order)
     await db.commit()
@@ -632,19 +715,19 @@ async def _process_successful_payment(db: AsyncSession, order_ref: str, provider
     """
     Central handler for successful payments.
     - If Deposit: Funds Wallet.
-    - If Purchase: Sends Keys.
+    - If Purchase: Updates Status to IN_PROGRESS (Stops Auto-Delivery).
     """
-    stmt = select(Order).where(Order.order_reference == order_ref).options(selectinload(Order.user))
+    stmt = (
+        select(Order)
+        .where(Order.order_reference == order_ref)
+        .options(selectinload(Order.user), selectinload(Order.items).selectinload(OrderItem.product))
+    )
     result = await db.execute(stmt)
     order = result.scalar_one_or_none()
 
     # Idempotency Check
-    if not order or order.status in [OrderStatus.PAID, OrderStatus.COMPLETED]:
+    if not order or order.status in [OrderStatus.PAID, OrderStatus.COMPLETED, OrderStatus.IN_PROGRESS]:
         return
-
-    # Mark Paid
-    order.status = OrderStatus.PAID
-    order.payment_reference = str(tx_hash)
 
     # Record Transaction Log
     db.add(Transaction(
@@ -654,11 +737,24 @@ async def _process_successful_payment(db: AsyncSession, order_ref: str, provider
 
     # --- BRANCHING LOGIC ---
     if order.is_deposit:
-        # Fund Wallet
+        # Fund Wallet (Deposits are still automatic)
+        order.status = OrderStatus.COMPLETED
+        order.payment_reference = str(tx_hash)
         order.user.balance_usd += order.total_amount_usd
         logger.info(f"Wallet Funded: {order.user.email} +${order.total_amount_usd}")
         await db.commit()
     else:
-        # Fulfill Product
-        await db.commit() 
-        await fulfill_digital_order(db, order.id)
+        # Product Purchase -> Set to IN_PROGRESS for Manual Admin Action
+        order.status = OrderStatus.IN_PROGRESS
+        order.payment_reference = str(tx_hash)
+        
+        # Decrement Stock now that payment is confirmed
+        for item in order.items:
+            await db.execute(
+                update(Product)
+                .where(Product.id == item.product_id)
+                .values(stock_quantity=Product.stock_quantity - item.quantity)
+            )
+            
+        await db.commit()
+        logger.info(f"Order {order.order_reference} paid. Status set to IN_PROGRESS for manual fulfillment.")

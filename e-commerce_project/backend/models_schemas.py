@@ -1,10 +1,10 @@
 # models_schemas.py
 # Production-level Database Models & Pydantic Schemas
-# Updated: Wallet Integration, Robust Form Handling, Dynamic Platforms
+# Updated: Manual Delivery Categories, Order Metadata, and Statuses
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any, Union, Dict
 
 from sqlalchemy import (
     Column,
@@ -50,13 +50,25 @@ class SoftDeleteMixin:
 # ENUMS
 # ======================================================
 
+class ProductCategory(str, Enum):
+    """
+    New Delivery Logic Categories.
+    Determines if an order requires email delivery or manual top-up.
+    """
+    GIFT_CARDS = "gift_cards"      # Manual Email Delivery
+    GAMES = "games"                # Manual Email Delivery
+    DIRECT_TOPUP = "direct_topup"  # No Email (Player ID required)
+    OTHERS = "others"              # Manual Email Delivery
+
 class OrderStatus(str, Enum):
     PENDING = "pending"
     PROCESSING = "processing"
     PAID = "paid"
-    SHIPPED = "shipped"     # Kept for compatibility, though mostly digital
+    IN_PROGRESS = "in_progress" # NEW: Paid, waiting for Admin manual action
+    SHIPPED = "shipped"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+    REJECTED = "rejected"       # NEW: Admin declined (e.g., bad Player ID)
     REFUNDED = "refunded"
     FAILED = "failed"
 
@@ -65,7 +77,7 @@ class PaymentMethod(str, Enum):
     NOWPAYMENTS = "nowpayments"
     BINANCE = "binance"
     BYBIT = "bybit"
-    WALLET = "wallet"  # Added: Internal Wallet Payment
+    WALLET = "wallet"  # Internal Wallet Payment
 
 class AdminRole(str, Enum):
     SUPERADMIN = "superadmin"
@@ -98,6 +110,7 @@ class Admin(Base, TimestampMixin):
     last_login = Column(DateTime, nullable=True)
 
     logs = relationship("ActivityLog", back_populates="admin")
+    blog_posts = relationship("BlogPost", back_populates="author")
 
 class User(Base, TimestampMixin):
     __tablename__ = "users"
@@ -122,7 +135,7 @@ class User(Base, TimestampMixin):
     two_factor_enabled = Column(Boolean, default=False)
 
     # Wallet
-    balance_usd = Column(Float, default=0.0, nullable=False) # Used for internal payments
+    balance_usd = Column(Float, default=0.0, nullable=False)
 
     # Relationships
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
@@ -131,6 +144,9 @@ class User(Base, TimestampMixin):
     addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan")
     reviews = relationship("ProductReview", back_populates="user")
     wishlist = relationship("Wishlist", back_populates="user", cascade="all, delete-orphan")
+    
+    blog_comments = relationship("BlogComment", back_populates="user", cascade="all, delete-orphan")
+    blog_reactions = relationship("BlogReaction", back_populates="user", cascade="all, delete-orphan")
 
 class Address(Base, TimestampMixin):
     __tablename__ = "addresses"
@@ -149,7 +165,6 @@ class Address(Base, TimestampMixin):
     user = relationship("User", back_populates="addresses")
 
 class OTPRecord(Base):
-    """Separate table for tracking all OTPs (Audit Trail)"""
     __tablename__ = "otp_records"
 
     id = Column(Integer, primary_key=True)
@@ -165,6 +180,10 @@ class OTPRecord(Base):
 # ======================================================
 
 class Category(Base, TimestampMixin):
+    """
+    Legacy Table for hierarchical organization.
+    Kept for backward compatibility if needed, but logic now favors Product.product_category enum.
+    """
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)
@@ -173,7 +192,6 @@ class Category(Base, TimestampMixin):
     description = Column(Text)
     parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     
-    # Relationships
     products = relationship("Product", back_populates="category")
     children = relationship("Category", back_populates="parent")
     parent = relationship("Category", back_populates="children", remote_side=[id])
@@ -183,46 +201,48 @@ class Product(Base, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True) # Keeping FK for now
+    
+    # NEW: Core Logic Fields
+    product_category = Column(SQLEnum(ProductCategory), default=ProductCategory.OTHERS, nullable=False, index=True)
+    requires_player_id = Column(Boolean, default=False)
     
     name = Column(String(255), nullable=False, index=True)
     slug = Column(String(255), nullable=True, unique=True, index=True)
     
-    # DYNAMIC PLATFORM FIELD
-    # Changed from strict Enum to String to allow admin flexibility
     platform = Column(String(100), nullable=False) 
     
     description = Column(Text)
     short_description = Column(String(500))
     
-    image_url = Column(Text, nullable=True) # Nullable for draft states
+    image_url = Column(Text, nullable=True)
     gallery_images = Column(JSON, default=list)
     
     price_usd = Column(Float, nullable=False)
     discount_percent = Column(Integer, default=0)
     
     in_stock = Column(Boolean, default=True)
-    stock_quantity = Column(Integer, default=999) # Denormalized counter
+    stock_quantity = Column(Integer, default=999)
     
     is_featured = Column(Boolean, default=False)
     is_trending = Column(Boolean, default=False)
     
-    # Relationships
     category = relationship("Category", back_populates="products")
     order_items = relationship("OrderItem", back_populates="product")
     reviews = relationship("ProductReview", back_populates="product", cascade="all, delete-orphan")
     codes = relationship("ProductCode", back_populates="product", cascade="all, delete-orphan")
 
-    # --- FIX APPLIED HERE: Added @property decorator ---
     @property
     def final_price(self) -> float:
-        """Calculates price after discount."""
         if self.discount_percent and self.discount_percent > 0:
             return round(self.price_usd * (1 - self.discount_percent / 100), 2)
         return self.price_usd
 
 class ProductCode(Base, TimestampMixin):
-    """Stores individual digital keys/codes for products."""
+    """
+    Stores individual digital keys/codes.
+    In the new Manual Workflow, this serves as an admin repository/backstock.
+    """
     __tablename__ = "product_codes"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -277,13 +297,16 @@ class Order(Base, TimestampMixin):
     order_reference = Column(String(50), unique=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     total_amount_usd = Column(Float, nullable=False)
+    
     status = Column(SQLEnum(OrderStatus), default=OrderStatus.PENDING, index=True)
     payment_method = Column(SQLEnum(PaymentMethod), default=PaymentMethod.NOWPAYMENTS)
     payment_reference = Column(String(255), index=True)
     customer_ip = Column(String(50))
     
-    # Wallet Integration: Flag to distinguish deposits from purchases
     is_deposit = Column(Boolean, default=False, index=True)
+    
+    # NEW: Metadata for capturing Player ID / User ID for Direct Topup
+    order_metadata = Column(JSON, nullable=True, default={})
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
@@ -318,7 +341,7 @@ class Transaction(Base, TimestampMixin):
     order = relationship("Order", back_populates="transactions")
 
 # ======================================================
-# MARKETING & CMS MODELS
+# MARKETING, BLOG & CMS MODELS
 # ======================================================
 
 class Banner(Base, TimestampMixin):
@@ -327,8 +350,8 @@ class Banner(Base, TimestampMixin):
     id = Column(Integer, primary_key=True)
     image_url = Column(Text, nullable=False)
     title = Column(String(255))
-    subtitle = Column(String(255)) # Nullable allowed
-    target_url = Column(Text) # Nullable allowed
+    subtitle = Column(String(255))
+    target_url = Column(Text)
     btn_text = Column(String(50), default="Shop Now")
     
     is_active = Column(Boolean, default=True)
@@ -340,6 +363,45 @@ class Banner(Base, TimestampMixin):
     __table_args__ = (
         Index("idx_banner_active", "is_active", "display_order"),
     )
+
+class BlogPost(Base, TimestampMixin, SoftDeleteMixin):
+    __tablename__ = "blog_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, index=True)
+    content = Column(Text, nullable=False)
+    image_url = Column(String(500), nullable=True)
+    is_published = Column(Boolean, default=True)
+    author_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
+
+    author = relationship("Admin", back_populates="blog_posts")
+    comments = relationship("BlogComment", back_populates="post", cascade="all, delete-orphan")
+    reactions = relationship("BlogReaction", back_populates="post", cascade="all, delete-orphan")
+
+class BlogComment(Base, TimestampMixin, SoftDeleteMixin):
+    __tablename__ = "blog_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("blog_posts.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+
+    post = relationship("BlogPost", back_populates="comments")
+    user = relationship("User", back_populates="blog_comments")
+
+class BlogReaction(Base, TimestampMixin):
+    __tablename__ = "blog_reactions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("blog_posts.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reaction_type = Column(String(20), default="like") 
+
+    post = relationship("BlogPost", back_populates="reactions")
+    user = relationship("User", back_populates="blog_reactions")
+
+    __table_args__ = (UniqueConstraint('post_id', 'user_id', name='_user_post_reaction_uc'),)
 
 class Notification(Base, TimestampMixin):
     __tablename__ = "notifications"
@@ -381,8 +443,6 @@ class ActivityLog(Base):
 class ORMBase(BaseModel):
     id: int
     created_at: datetime
-    
-    # PYDANTIC V2 COMPATIBILITY
     model_config = ConfigDict(from_attributes=True)
 
 # --- Auth Schemas ---
@@ -424,19 +484,16 @@ class ProductCodeResponse(ORMBase):
 
 # --- Product Schemas ---
 
-# 1. PRICE & STOCK TYPE FLEXIBILITY
-# We define a flexible base that allows inputs (which might come as strings from FormData)
-# to be coerced into the correct types automatically by Pydantic V2.
-
 class ProductBaseSchema(BaseModel):
     name: str
     platform: str
-    category_id: Optional[int] = None
+    product_category: ProductCategory = Field(default=ProductCategory.OTHERS) # NEW Schema Field
+    category_id: Optional[int] = None # Keeping for compatibility
+    requires_player_id: bool = False  # NEW Schema Field
+    
     description: Optional[str] = None
     short_description: Optional[str] = None
     
-    # Using Union[float, str] allows explicit coercion logic if needed, 
-    # but Pydantic V2 default validation is smart enough to parse "49.99" to 49.99.
     price_usd: float = Field(..., gt=0)
     discount_percent: int = Field(0, ge=0, le=100)
     stock_quantity: int = Field(..., ge=0)
@@ -444,7 +501,6 @@ class ProductBaseSchema(BaseModel):
     is_featured: bool = False
     is_trending: bool = False
 
-    # Validator to ensure empty strings in form data become None or are handled
     @field_validator('price_usd', mode='before')
     @classmethod
     def parse_price(cls, v: Any) -> float:
@@ -460,31 +516,27 @@ class ProductBaseSchema(BaseModel):
         return v
 
 class ProductCreateSchema(ProductBaseSchema):
-    """Schema for creating a product. Image URL is required."""
     image_url: str 
 
 class ProductUpdateSchema(ProductBaseSchema):
-    """
-    OPTIONAL IMAGE FOR UPDATES
-    Schema for updating a product. Fields are optional to allow partial updates.
-    """
     name: Optional[str] = None
     platform: Optional[str] = None
+    product_category: Optional[ProductCategory] = None
+    requires_player_id: Optional[bool] = None
     price_usd: Optional[float] = None
     stock_quantity: Optional[int] = None
-    
-    # Image URL is optional here to prevent errors if no new file is uploaded
     image_url: Optional[str] = None 
 
 class ProductSchema(ORMBase):
-    """Output Schema"""
     name: str
     slug: Optional[str]
     platform: str
-    image_url: Optional[str] # Nullable in DB
+    product_category: ProductCategory # Exposed to frontend
+    requires_player_id: bool
+    image_url: Optional[str]
     price_usd: float
     discount_percent: int
-    final_price: float = 0.0  # Matches @property in model
+    final_price: float = 0.0
     in_stock: bool
     stock_quantity: int
     is_featured: bool
@@ -501,6 +553,7 @@ class CartItemSchema(BaseModel):
 class MultiProductOrderCreate(BaseModel):
     items: List[CartItemSchema]
     payment_method: PaymentMethod = PaymentMethod.NOWPAYMENTS
+    player_id: Optional[str] = None # Added for Direct Topup flow
 
 class OrderItemResponse(BaseModel):
     product_id: int
@@ -521,7 +574,8 @@ class OrderResponse(ORMBase):
     total_amount_usd: float
     status: OrderStatus
     payment_method: PaymentMethod
-    is_deposit: bool  # Added to Schema
+    is_deposit: bool
+    order_metadata: Optional[Dict[str, Any]] = None # Exposed to frontend
     items: List[OrderItemResponse] = [] 
     delivered_codes: List[DeliveredCodeSchema] = []
 
@@ -530,7 +584,6 @@ class OrderResponse(ORMBase):
 # --- CMS Schemas ---
 
 class BannerCreateSchema(BaseModel):
-    """Schema for creating a banner."""
     image_url: str
     title: Optional[str] = None
     subtitle: Optional[str] = None
@@ -539,19 +592,62 @@ class BannerCreateSchema(BaseModel):
     is_active: bool = True
 
 class BannerUpdateSchema(BannerCreateSchema):
-    """Schema for updating a banner."""
     image_url: Optional[str] = None
 
 class BannerSchema(ORMBase):
-    """
-    BANNER SCHEMA UPDATES
-    Allows nullable subtitle/target_url and proper image handling.
-    """
     image_url: str
     title: Optional[str]
     subtitle: Optional[str]
     target_url: Optional[str]
     btn_text: str
     is_active: bool
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# --- BLOG & SOCIAL SCHEMAS ---
+
+class BlogCreate(BaseModel):
+    title: str = Field(..., min_length=5, max_length=255)
+    content: str = Field(..., min_length=10)
+    image_url: Optional[str] = None
+    is_published: bool = True
+
+class BlogResponse(ORMBase):
+    title: str
+    slug: str
+    content: str
+    image_url: Optional[str]
+    is_published: bool
+    author_username: Optional[str] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def get_author_name(cls, data: Any):
+        if hasattr(data, 'author') and data.author:
+            data.author_username = data.author.username
+        return data
+
+    model_config = ConfigDict(from_attributes=True)
+
+class CommentCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=1000)
+
+class CommentResponse(ORMBase):
+    content: str
+    username: Optional[str] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def get_user_info(cls, data: Any):
+        if hasattr(data, 'user') and data.user:
+            data.username = data.user.full_name or "Anonymous"
+        return data
+
+    model_config = ConfigDict(from_attributes=True)
+
+class BlogDetailResponse(BlogResponse):
+    comments: List[CommentResponse] = []
+    likes_count: int = 0
+    has_liked: bool = False
     
     model_config = ConfigDict(from_attributes=True)

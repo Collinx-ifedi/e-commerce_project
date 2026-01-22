@@ -2,7 +2,7 @@
 # Production-level utility functions
 # - Async Email sending (Brevo) with Retries
 # - Cryptographically secure OTPs
-# - Structured JSON Logging
+# - Structured JSON Logging (Enhanced for Order Metadata)
 # - Efficient CSV/TXT parsing for bulk uploads
 # - Currency & Formatting helpers
 
@@ -18,9 +18,8 @@ from typing import List, Dict, Optional, Any, Union
 
 from dotenv import load_dotenv
 
-# Enum is imported to keep type hints clean, assuming it's available or we treat purpose as string
-# If OTPPurpose is strictly needed for type hinting, import it. Otherwise use str.
-from .models_schemas import OTPPurpose
+# Enum is imported to keep type hints clean
+from models_schemas import OTPPurpose
 
 # ======================================================
 # CONFIGURATION & VALIDATION
@@ -42,6 +41,7 @@ if not BREVO_API_KEY or not SENDER_EMAIL:
 class JSONFormatter(logging.Formatter):
     """
     Formatter to output logs in JSON format for production monitoring systems (ELK, Datadog, etc.)
+    Updated to explicitly capture business-critical metadata like player_id and order_reference.
     """
     def format(self, record):
         log_obj = {
@@ -54,9 +54,10 @@ class JSONFormatter(logging.Formatter):
         }
         if hasattr(record, 'request_id'):
             log_obj['request_id'] = record.request_id
-        # Include metadata if passed via extra={}
-        if hasattr(record, 'meta'):
-            log_obj['meta'] = record.meta
+        
+        # Merge structured metadata if present
+        if hasattr(record, 'meta') and isinstance(record.meta, dict):
+            log_obj.update(record.meta)
             
         return json.dumps(log_obj)
 
@@ -67,6 +68,36 @@ logger = logging.getLogger("ecommerce_core")
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 logger.propagate = False
+
+def log_action(
+    action: str, 
+    actor: str = "system", 
+    ip_address: Optional[str] = None, 
+    metadata: Optional[dict] = None,
+    order_reference: Optional[str] = None,
+    player_id: Optional[str] = None
+):
+    """
+    Centralized auditing helper.
+    Automatically merges specific business keys (player_id, order_reference) into the metadata
+    for easier indexing in log aggregation tools.
+    """
+    meta = metadata or {}
+    
+    # Explicitly hoist critical fields into the metadata dict
+    if order_reference:
+        meta['order_reference'] = order_reference
+    if player_id:
+        meta['player_id'] = player_id
+
+    log_data = {
+        "event": "audit_log",
+        "action": action,
+        "actor": actor,
+        "ip": ip_address,
+        "meta": meta
+    }
+    logger.info(json.dumps(log_data))
 
 # ======================================================
 # ASYNC EMAIL SERVICE (BREVO)
@@ -113,38 +144,94 @@ async def send_email_async(
     return False
 
 # ======================================================
-# PRODUCT CODE DELIVERY TEMPLATES
+# FULFILLMENT & NOTIFICATION TEMPLATES
 # ======================================================
 
-async def send_product_code_email(user_email: str, product_name: str, codes: List[str]) -> bool:
+async def send_fulfillment_email(
+    user_email: str, 
+    product_name: str, 
+    order_reference: str,
+    codes: Optional[List[str]] = None,
+    manual_text: Optional[str] = None,
+    player_id: Optional[str] = None
+) -> bool:
     """
-    Specific helper to format and send digital goods.
+    Unified fulfillment email handler.
+    Dynamically constructs the email body based on the delivery type:
+    1. Codes: Standard digital key delivery.
+    2. Player ID (Direct Topup): Confirmation of direct account credit.
+    3. Manual Text: Admin messages/instructions.
     """
-    subject = f"Your Digital Key(s) for {product_name}"
+    subject = f"Order Complete: {product_name} (#{order_reference})"
     
-    # Format codes for HTML display
-    codes_html = ""
-    for code in codes:
-        codes_html += f"""
-        <div style="background-color: #f0f0f0; border: 1px dashed #ccc; padding: 15px; margin: 10px 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px;">
-            {code}
+    # -- 1. Build Content Sections --
+    
+    content_html = ""
+
+    # Section A: Digital Codes
+    if codes and len(codes) > 0:
+        codes_block = ""
+        for code in codes:
+            codes_block += f"""
+            <div style="background-color: #f0f0f0; border: 1px dashed #ccc; padding: 15px; margin: 10px 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px;">
+                {code}
+            </div>
+            """
+        content_html += f"""
+        <h3>Your Activation Keys</h3>
+        <p>Please redeem these keys immediately:</p>
+        {codes_block}
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        """
+
+    # Section B: Direct Top-up Confirmation
+    if player_id:
+        content_html += f"""
+        <h3>Direct Top-up Successful</h3>
+        <div style="background-color: #e6fffa; padding: 15px; border-left: 4px solid #059669; margin: 10px 0;">
+            <p style="margin: 0; color: #064e3b;"><strong>Target Account ID:</strong> {player_id}</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px;">The resources have been credited directly to this account.</p>
         </div>
         """
 
-    html_content = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="border-bottom: 2px solid #000; padding-bottom: 10px;">Your Order is Ready</h2>
+    # Section C: Manual Admin Note / Instructions
+    if manual_text:
+        content_html += f"""
+        <h3>Order Details & Instructions</h3>
+        <div style="background-color: #fffbeb; padding: 15px; border-left: 4px solid #d97706; margin: 10px 0;">
+            <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; margin: 0; color: #333;">{manual_text}</pre>
+        </div>
+        """
+
+    # -- 2. Wrap in Master Template --
+
+    html_wrapper = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <h2 style="border-bottom: 2px solid #333; padding-bottom: 10px;">Your Order is Ready</h2>
         <p>Thank you for purchasing <strong>{product_name}</strong>.</p>
-        <p>Here are your activation details:</p>
-        {codes_html}
-        <p><strong>Instructions:</strong> Redeem these keys on the respective platform immediately.</p>
-        <p style="font-size: 12px; color: #777; margin-top: 30px;">
-            If you have trouble activating, please contact support with your order ID.
+        <p style="color: #666; font-size: 14px;">Order Reference: <strong>{order_reference}</strong></p>
+        
+        {content_html}
+        
+        <p style="font-size: 12px; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+            If you have trouble with your order, please reply to this email or contact support with your Order ID.
         </p>
     </div>
     """
     
-    return await send_email_async(user_email, subject, html_content)
+    return await send_email_async(user_email, subject, html_wrapper)
+
+async def send_product_code_email(user_email: str, product_name: str, codes: List[str]) -> bool:
+    """
+    Legacy wrapper for backward compatibility.
+    Redirects to the new unified fulfillment handler using a dummy order ref if not available.
+    """
+    return await send_fulfillment_email(
+        user_email=user_email,
+        product_name=product_name,
+        order_reference="INSTANT-DELIVERY",
+        codes=codes
+    )
 
 # ======================================================
 # FILE PARSING (BULK UPLOAD HELPERS)
@@ -153,7 +240,9 @@ async def send_product_code_email(user_email: str, product_name: str, codes: Lis
 def parse_codes_from_file(file_path: str) -> List[str]:
     """
     Parses a local file (CSV or TXT) to extract product codes.
-    Designed to be run via `asyncio.to_thread` to avoid blocking the event loop.
+    Thread-Safety: This function is synchronous and CPU-bound.
+    It is designed to be executed via `asyncio.to_thread` in the caller
+    to prevent blocking the main asyncio event loop.
     
     Returns:
         List of unique, stripped strings.
@@ -279,19 +368,6 @@ def export_to_csv(filename: str, data: List[Dict[str, Any]]) -> Optional[str]:
 def generate_random_token(length: int = 32) -> str:
     """Generate a secure random URL-safe token."""
     return secrets.token_urlsafe(length)
-
-def log_action(action: str, actor: str = "system", ip_address: Optional[str] = None, metadata: Optional[dict] = None):
-    """
-    Centralized auditing helper.
-    """
-    log_data = {
-        "event": "audit_log",
-        "action": action,
-        "actor": actor,
-        "ip": ip_address,
-        "meta": metadata or {}
-    }
-    logger.info(json.dumps(log_data))
 
 def format_currency(amount: float, currency: str = "USD") -> str:
     """
