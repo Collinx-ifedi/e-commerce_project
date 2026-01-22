@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 
 # Import ProductCategory to ensure Enum types are registered in Metadata for init_db
-from models_schemas import Base, Product, ProductCode, ProductCategory
+from .models_schemas import Base, Product, ProductCode, ProductCategory
 
 # ======================================================
 # CONFIGURATION & LOGGING

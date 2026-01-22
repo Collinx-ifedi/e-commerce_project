@@ -19,7 +19,7 @@ from typing import List, Dict, Optional, Any, Union
 from dotenv import load_dotenv
 
 # Enum is imported to keep type hints clean
-from models_schemas import OTPPurpose
+from .models_schemas import OTPPurpose
 
 # ======================================================
 # CONFIGURATION & VALIDATION
