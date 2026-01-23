@@ -147,9 +147,40 @@
             min-width: 0;
         }
         
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Dark Mode Styles */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
-        html.dark .navbar { background: #1E293B; }
+        html.dark nav { background: #1E293B !important; border-bottom-color: #334155 !important; }
+        html.dark nav a { color: #E2E8F0; }
+        html.dark nav a:hover { color: #60A5FA; }
         html.dark footer { background: #1E293B; border-top-color: #334155; }
+        html.dark .bg-white { background: #1E293B !important; }
+        html.dark .text-slate-700 { color: #E2E8F0 !important; }
+        html.dark .text-slate-500 { color: #94A3B8 !important; }
+        html.dark .text-slate-400 { color: #64748B !important; }
+        html.dark .bg-slate-50 { background: #334155 !important; }
+        html.dark .border-slate-200 { border-color: #475569 !important; }
+        html.dark input,
+        html.dark textarea,
+        html.dark select {
+            background: #334155 !important;
+            color: #E2E8F0 !important;
+            border-color: #475569 !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #94A3B8 !important;
+        }
+        html.dark input:focus,
+        html.dark textarea:focus,
+        html.dark select:focus {
+            border-color: #60A5FA !important;
+            box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.1) !important;
+        }
+        html.dark #themeToggle { color: #E2E8F0 !important; }
+        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important; }
     </style>
 
     <script>
@@ -179,8 +210,9 @@
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // 1. Setup your support email
-            const SUPPORT_EMAIL = "ifedicollinslinx@gmail.com";
+            // 1. Setup your support email - CUSTOMIZE THIS WITH YOUR EMAIL
+            // To change the support email, update the email address below:
+            const SUPPORT_EMAIL = localStorage.getItem('supportEmail') || "support@keyvault.example.com";
 
             // 2. Collect Data
             const name = document.getElementById('name').value;

@@ -1036,6 +1036,11 @@
   </button>
   <div id="googleTranslate" class="flex items-center"></div>
   
+  <!-- Navigation Links -->
+  <a href="/blog.html" class="text-sm text-gray-500 hover:text-primary transition">
+  <i class="fas fa-newspaper mr-2"></i>Blog
+  </a>
+  
   <!-- Guest State -->
   <div id="guestActions" class="flex items-center gap-3">
   <a href="/login" class="btn-outline text-sm">Login</a>
@@ -1308,18 +1313,15 @@
             
             <!-- Filter Bar -->
             <div class="flex items-center gap-4 mb-8 flex-wrap">
-                <select id="sortSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary">
+                <select id="sortSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary" onchange="applySortAndFilter()">
                     <option value="newest">Newest First</option>
                     <option value="price_low">Price: Low to High</option>
                     <option value="price_high">Price: High to Low</option>
                     <option value="popular">Most Popular</option>
                 </select>
-                <select id="platformSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary">
+                <select id="platformSelect" class="px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary" onchange="applyPlatformFilter()">
                     <option value="">All Platforms</option>
-                    <option value="steam">Steam</option>
-                    <option value="xbox">Xbox</option>
-                    <option value="playstation">PlayStation</option>
-                    <option value="nintendo">Nintendo</option>
+                    <!-- Options populated dynamically via JS -->
                 </select>
             </div>
 
@@ -1440,7 +1442,7 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Support</h4>
                     <ul class="space-y-3 text-sm">
-                        <li><a href="/contact.html">Contact Us</a></li>
+                        <li><a href="/contact.html" onclick="scrollToContactForm(event)">Contact Us</a></li>
                         <li><a href="/terms.html">Terms of Service</a></li>
                         <li><a href="/privacy.html">Privacy Policy</a></li>
                     </ul>
@@ -1448,10 +1450,10 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
                     <div class="flex gap-3">
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Join our Discord"><i class="fab fa-discord"></i></a>
+                        <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" class="social-icon" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
                     </div>
                     <div class="mt-6">
                         <h5 class="text-white text-sm font-medium mb-2">We Accept</h5>
@@ -1920,6 +1922,20 @@
         };
 
         // =========================================================
+        // SCROLL TO CONTACT FORM
+        // =========================================================
+        const scrollToContactForm = (event) => {
+            event.preventDefault();
+            // If on contact page, scroll to form, otherwise navigate
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                window.location.href = '/contact.html';
+            }
+        };
+
+        // =========================================================
         // MOCK DATA (Fallback when API unavailable)
         // =========================================================
         const getMockProducts = () => [
@@ -2187,6 +2203,61 @@
                 document.getElementById('guestActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('hidden');
             }
+        };
+
+        // =========================================================
+        // FILTER & SORT FUNCTION WRAPPERS
+        // =========================================================
+        const applyPlatformFilter = () => {
+            const platformSelect = document.getElementById('platformSelect');
+            const sortSelect = document.getElementById('sortSelect');
+            
+            const platforms = [...new Set(allProducts.map(p => p.platform))].sort();
+            const platformValue = platformSelect.value;
+            
+            let filteredProducts = [...allProducts];
+            
+            // Filter by platform
+            if (platformValue) {
+                filteredProducts = filteredProducts.filter(p => 
+                    p.platform.toLowerCase() === platformValue.toLowerCase()
+                );
+            }
+            
+            // Apply sort
+            const sortValue = sortSelect.value;
+            switch (sortValue) {
+                case 'price_low':
+                    filteredProducts.sort((a, b) => {
+                        const priceA = a.discount_percent > 0 ? a.price_usd * (1 - a.discount_percent / 100) : a.price_usd;
+                        const priceB = b.discount_percent > 0 ? b.price_usd * (1 - b.discount_percent / 100) : b.price_usd;
+                        return priceA - priceB;
+                    });
+                    break;
+                case 'price_high':
+                    filteredProducts.sort((a, b) => {
+                        const priceA = a.discount_percent > 0 ? a.price_usd * (1 - a.discount_percent / 100) : a.price_usd;
+                        const priceB = b.discount_percent > 0 ? b.price_usd * (1 - b.discount_percent / 100) : b.price_usd;
+                        return priceB - priceA;
+                    });
+                    break;
+                case 'popular':
+                    filteredProducts.sort((a, b) => (b.is_trending ? 1 : 0) - (a.is_trending ? 1 : 0));
+                    break;
+            }
+            
+            renderProducts(filteredProducts.slice(0, 8));
+            currentPage = 1;
+            
+            if (filteredProducts.length <= 8) {
+                document.getElementById('loadMoreContainer').style.display = 'none';
+            } else {
+                document.getElementById('loadMoreContainer').style.display = 'block';
+            }
+        };
+
+        const applySortAndFilter = () => {
+            applyPlatformFilter();
         };
 
         // =========================================================

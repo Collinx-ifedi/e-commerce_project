@@ -382,11 +382,174 @@
             font-family: monospace; font-size: 14px; word-break: break-all; margin-top: 8px;
         }
         
-        /* Dark Mode Styles */
+        /* Mobile-friendly tab navigation */
+        @media (max-width: 767px) {
+            .tab-nav {
+                display: flex;
+                flex-wrap: wrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding: 8px 4px;
+                gap: 6px;
+                justify-content: flex-start;
+            }
+            .tab-nav::-webkit-scrollbar {
+                display: none;
+            }
+            .tab-btn {
+                flex: 0 0 auto;
+                padding: 10px 12px;
+                min-width: max-content;
+                font-size: 12px;
+                white-space: nowrap;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .tab-btn span {
+                display: none;
+            }
+            .tab-btn i {
+                font-size: 16px;
+                width: 20px;
+            }
+            .tab-btn.active {
+                background: #FFFFFF;
+                color: #2563EB;
+                box-shadow: none;
+            }
+        }
+        
+        /* Dark Mode Styles - Comprehensive */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
-        html.dark .navbar { background: #1E293B; }
-        html.dark .footer { background: #0F172A; }
-        html.dark .profile-card { background: #1E293B; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; border-bottom: 1px solid #334155; }
+        html.dark .navbar .text-secondary { color: #F1F5F9 !important; }
+        html.dark .navbar a span.text-secondary { color: #F1F5F9 !important; }
+        html.dark .navbar a span { color: #F1F5F9 !important; }
+        html.dark #themeToggle { color: #E2E8F0 !important; }
+        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .footer { background: #0F172A; border-top: 1px solid #334155; }
+        html.dark .profile-card { background: #1E293B; color: #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+        html.dark .profile-card .text-secondary { color: #F1F5F9 !important; }
+        html.dark .profile-card .text-gray-500 { color: #94A3B8 !important; }
+        html.dark .profile-card .text-gray-400 { color: #64748B !important; }
+        html.dark .stat-card { background: linear-gradient(135deg, #1E3A5F 0%, #1E40AF 100%); }
+        html.dark .stat-card .text-gray-500 { color: #94A3B8 !important; }
+        html.dark .tab-nav { background: #1E293B; }
+        html.dark .tab-btn { color: #94A3B8; }
+        html.dark .tab-btn.active { background: #334155; color: #60A5FA; }
+        html.dark .tab-btn:hover:not(.active) { color: #E2E8F0; }
+        html.dark .orders-table th { background: #1E293B; color: #94A3B8; }
+        html.dark .orders-table td { border-bottom-color: #334155; color: #E2E8F0; }
+        html.dark .orders-table tr:hover td { background: #334155; }
+        html.dark .form-input { background: #1E293B; border-color: #334155; color: #E2E8F0; }
+        html.dark .form-input:focus { border-color: #60A5FA; }
+        html.dark .form-input:disabled { background: #0F172A; color: #64748B; }
+        html.dark .form-label { color: #E2E8F0; }
+        html.dark .view-btn { background: #334155; color: #E2E8F0; }
+        html.dark .view-btn:hover { background: #2563EB; color: white; }
+        html.dark .empty-icon { background: #334155; }
+        html.dark .order-modal { background: #1E293B; }
+        html.dark .order-modal .text-secondary { color: #F1F5F9 !important; }
+        html.dark #themeToggle { color: #E2E8F0; }
+        html.dark #themeToggle:hover { color: #60A5FA; background: #334155; }
+        html.dark .mobile-menu { background: #1E293B; }
+        html.dark .mobile-menu-header { border-bottom-color: #334155; }
+        html.dark .mobile-menu-header h3 { color: #F1F5F9; }
+        html.dark .mobile-menu-close { color: #F1F5F9; }
+        html.dark .mobile-menu-item { color: #E2E8F0; border-bottom-color: #334155; }
+        html.dark .mobile-menu-item:hover { color: #60A5FA; }
+        html.dark .mobile-menu-button-group { border-top-color: #334155; }
+        html.dark .mobile-menu-button-group .btn-outline { background: #334155; color: #E2E8F0; border-color: #475569; }
+        html.dark #mobileLanguageSelect { background: #334155 !important; color: #E2E8F0 !important; border-color: #475569 !important; }
+        html.dark #mobileLanguageSelect option { background: #1E293B; color: #E2E8F0; }
+        html.dark .hamburger-btn span { background: #60A5FA; }
+        
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #1E293B;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F1F5F9;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        html.dark .mobile-lang-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown {
+            background: #1E293B;
+            border-color: #475569;
+        }
+        html.dark .mobile-lang-dropdown button {
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown button:hover {
+            background: #334155;
+        }
+        html.dark .mobile-lang-dropdown button.active {
+            background: #1E40AF;
+            color: #93C5FD;
+        }
     </style>
 </head>
 <body>
@@ -412,6 +575,12 @@
   
   <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
   <i class="fas fa-store mr-2"></i>Store
+  </a>
+  <a href="/blog.html" class="text-sm text-gray-500 hover:text-primary transition">
+  <i class="fas fa-newspaper mr-2"></i>Blog
+  </a>
+  <a href="/profile.html" class="text-sm text-primary font-semibold">
+  <i class="fas fa-user-circle mr-2"></i>Profile
   </a>
   <button onclick="logout()" class="text-sm text-gray-500 hover:text-danger transition">
   <i class="fas fa-sign-out-alt mr-2"></i>Logout
@@ -449,7 +618,15 @@
                 <i class="fas fa-home"></i>
                 Home
             </a>
-            <a href="/cart" class="mobile-menu-item">
+            <a href="/blog.html" class="mobile-menu-item">
+                <i class="fas fa-newspaper"></i>
+                Blog
+            </a>
+            <a href="/profile.html" class="mobile-menu-item">
+                <i class="fas fa-user-circle"></i>
+                Profile
+            </a>
+            <a href="/cart.html" class="mobile-menu-item">
                 <i class="fas fa-shopping-cart"></i>
                 Cart
             </a>
@@ -468,14 +645,24 @@
 
             <div class="mobile-menu-divider"></div>
 
-            <div class="mobile-menu-item">
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
                 <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
             </div>
 
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-globe"></i>
-                <div id="mobileGoogleTranslate" class="flex-1"></div>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <i class="fas fa-globe"></i>
+                    <span style="font-weight: 500; font-size: 14px;">Language</span>
+                </div>
+                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+                    <option value="en">English 🇺🇸</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="ar">العربية 🇸🇦</option>
+                    <option value="zh-CN">中文 🇨🇳</option>
+                    <option value="ru">Русский 🇷🇺</option>
+                </select>
             </div>
         </div>
 
@@ -1283,10 +1470,47 @@
         ];
 
   // =========================================================
+  // MOBILE LANGUAGE SELECTOR
+  // =========================================================
+  function selectMobileLanguageFromSelect() {
+      const select = document.getElementById('mobileLanguageSelect');
+      const langCode = select.value;
+      
+      // Save preference
+      localStorage.setItem('keyvault_language', langCode);
+      
+      // Trigger Google Translate
+      const element = document.querySelector('.goog-te-combo');
+      if (element) {
+          element.value = langCode;
+          element.dispatchEvent(new Event('change'));
+      }
+      
+      // Handle RTL for Arabic
+      if (langCode === 'ar') {
+          document.documentElement.dir = 'rtl';
+          document.documentElement.lang = 'ar';
+      } else {
+          document.documentElement.dir = 'ltr';
+          document.documentElement.lang = langCode;
+      }
+  }
+  
+  // Load saved language on init
+  function loadSavedMobileLanguage() {
+      const savedLang = localStorage.getItem('keyvault_language') || 'en';
+      const select = document.getElementById('mobileLanguageSelect');
+      if (select) {
+          select.value = savedLang;
+      }
+  }
+
+  // =========================================================
   // INIT
   // =========================================================
   document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
+  loadSavedMobileLanguage();
   if (checkAuth()) {
   updateCartBadge();
   loadUserData();
