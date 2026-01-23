@@ -8,6 +8,7 @@
 # - Automatic Background Cleanup of Unverified Users
 # - Wallet System Integration (Profile & Deposit)
 # - Manual Delivery & Top-up Workflow Support
+# - Flexible Blog Creation (Server-side Defaults)
 
 import os
 import shutil
@@ -170,7 +171,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.6.0", # Bumped for Manual Workflow
+    version="2.6.1", # Bumped for Flexible Blog Fix
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -799,14 +800,19 @@ async def get_admin_blog_posts(
 
 @admin_blog_router.post("/posts")
 async def create_blog_post(
-    title: str = Form(...),
-    content: str = Form(...),
-    image: UploadFile = File(None),
+    title: Optional[str] = Form(None),
+    content: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
     is_published: bool = Form(True),
     current_admin: Admin = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a new Blog Post (Admin)"""
+    """Create a new Blog Post (Admin) with Robust Defaults"""
+    
+    # Apply defaults if fields are missing or empty
+    final_title = title.strip() if title and title.strip() else f"Untitled Post {datetime.utcnow().strftime('%Y-%m-%d')}"
+    final_content = content.strip() if content and content.strip() else "No content provided."
+
     img_url = None
     if image:
         try:
@@ -816,19 +822,24 @@ async def create_blog_post(
             logger.error(f"Cloudinary upload failed: {e}")
             raise HTTPException(status_code=400, detail="Image upload failed")
 
-    slug = title.lower().replace(" ", "-")[:50] + f"-{int(time.time())}"
+    # Generate a secure slug, appending unique ID if it's a generic title
+    base_slug = final_title.lower().replace(" ", "-")[:50]
+    unique_suffix = f"-{int(time.time())}"
+    slug = f"{base_slug}{unique_suffix}"
     
     new_post = BlogPost(
-        title=title,
+        title=final_title,
         slug=slug,
-        content=content,
+        content=final_content,
         image_url=img_url,
         is_published=is_published,
         author_id=current_admin.id
     )
     db.add(new_post)
     await db.commit()
-    return {"status": "success", "slug": slug}
+    await db.refresh(new_post)
+    
+    return {"status": "success", "slug": slug, "post": new_post}
 
 @admin_blog_router.put("/posts/{post_id}")
 async def update_blog_post(
