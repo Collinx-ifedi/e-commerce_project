@@ -721,8 +721,8 @@ async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     await handle_bybit_webhook(db, payload)
     return {"status": "success"}
 
-# --- G. BLOG ROUTER ---
-blog_router = APIRouter(prefix="/api/blog", tags=["Blog"])
+# --- G. BLOG ROUTER (Public) ---
+blog_router = APIRouter(prefix="/api/blog", tags=["Blog (Public)"])
 
 @blog_router.get("/posts", response_model=List[BlogResponse])
 async def get_blog_posts(db: AsyncSession = Depends(get_db)):
@@ -751,55 +751,6 @@ async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Blog post not found")
     return post
 
-@blog_router.post("/posts")
-async def create_blog_post(
-    title: str = Form(...),
-    content: str = Form(...),
-    image: UploadFile = File(None),
-    is_published: bool = Form(True),
-    current_admin: Admin = Depends(get_current_admin),
-    db: AsyncSession = Depends(get_db)
-):
-    img_url = None
-    if image:
-        try:
-            upload_result = cloudinary.uploader.upload(image.file, folder="keyvault_blog")
-            img_url = upload_result.get("secure_url")
-        except Exception as e:
-            logger.error(f"Cloudinary upload failed: {e}")
-            raise HTTPException(status_code=400, detail="Image upload failed")
-
-    slug = title.lower().replace(" ", "-")[:50] + f"-{int(time.time())}"
-    
-    new_post = BlogPost(
-        title=title,
-        slug=slug,
-        content=content,
-        image_url=img_url,
-        is_published=is_published,
-        author_id=current_admin.id
-    )
-    db.add(new_post)
-    await db.commit()
-    return {"status": "success", "slug": slug}
-
-@blog_router.delete("/posts/{post_id}")
-async def delete_blog_post(
-    post_id: int,
-    admin: Admin = Depends(require_superadmin),
-    db: AsyncSession = Depends(get_db)
-):
-    stmt = update(BlogPost).where(BlogPost.id == post_id).values(
-        is_deleted=True,
-        deleted_at=datetime.utcnow()
-    )
-    result = await db.execute(stmt)
-    if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Post not found")
-        
-    await db.commit()
-    return {"detail": "Post moderated/removed by Superadmin"}
-
 @blog_router.post("/posts/{post_id}/comments")
 async def add_comment(
     post_id: int,
@@ -827,6 +778,144 @@ async def delete_comment(
     await db.commit()
     return {"detail": "Comment removed"}
 
+# --- H. ADMIN BLOG ROUTER (Protected) ---
+# New router to handle Admin Blog Management
+admin_blog_router = APIRouter(prefix="/api/admin/blog", tags=["Admin Blog"])
+
+@admin_blog_router.get("/posts", response_model=List[BlogResponse])
+async def get_admin_blog_posts(
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """List ALL blog posts (Published & Drafts) for Admin Table"""
+    stmt = (
+        select(BlogPost)
+        .where(BlogPost.is_deleted == False)
+        .options(selectinload(BlogPost.author))
+        .order_by(desc(BlogPost.created_at))
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@admin_blog_router.post("/posts")
+async def create_blog_post(
+    title: str = Form(...),
+    content: str = Form(...),
+    image: UploadFile = File(None),
+    is_published: bool = Form(True),
+    current_admin: Admin = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new Blog Post (Admin)"""
+    img_url = None
+    if image:
+        try:
+            upload_result = cloudinary.uploader.upload(image.file, folder="keyvault_blog")
+            img_url = upload_result.get("secure_url")
+        except Exception as e:
+            logger.error(f"Cloudinary upload failed: {e}")
+            raise HTTPException(status_code=400, detail="Image upload failed")
+
+    slug = title.lower().replace(" ", "-")[:50] + f"-{int(time.time())}"
+    
+    new_post = BlogPost(
+        title=title,
+        slug=slug,
+        content=content,
+        image_url=img_url,
+        is_published=is_published,
+        author_id=current_admin.id
+    )
+    db.add(new_post)
+    await db.commit()
+    return {"status": "success", "slug": slug}
+
+@admin_blog_router.put("/posts/{post_id}")
+async def update_blog_post(
+    post_id: int,
+    title: str = Body(None),
+    content: str = Body(None),
+    is_published: bool = Body(None),
+    image_url: str = Body(None), # For frontend sending existing or new URL
+    current_admin: Admin = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update Blog Post (Admin)"""
+    stmt = select(BlogPost).where(BlogPost.id == post_id)
+    result = await db.execute(stmt)
+    post = result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+        
+    if title: post.title = title
+    if content: post.content = content
+    if is_published is not None: post.is_published = is_published
+    if image_url: post.image_url = image_url
+    
+    await db.commit()
+    return {"status": "updated"}
+
+@admin_blog_router.delete("/posts/{post_id}")
+async def delete_blog_post(
+    post_id: int,
+    admin: Admin = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Soft Delete Blog Post (Admin)"""
+    stmt = update(BlogPost).where(BlogPost.id == post_id).values(
+        is_deleted=True,
+        deleted_at=datetime.utcnow()
+    )
+    result = await db.execute(stmt)
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+        
+    await db.commit()
+    return {"detail": "Post deleted"}
+
+@admin_blog_router.get("/comments")
+async def get_all_comments(
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """List ALL comments for moderation"""
+    # Fetch comments with related User and Post info
+    stmt = (
+        select(BlogComment)
+        .options(
+            selectinload(BlogComment.user),
+            selectinload(BlogComment.post)
+        )
+        .order_by(desc(BlogComment.created_at))
+    )
+    result = await db.execute(stmt)
+    comments = result.scalars().all()
+    
+    # Manually construct response to include needed fields for table
+    return [
+        {
+            "id": c.id,
+            "content": c.content,
+            "created_at": c.created_at,
+            "username": c.user.email if c.user else "Anonymous",
+            "post_title": c.post.title if c.post else "Unknown Post",
+            "post_id": c.post_id
+        } 
+        for c in comments
+    ]
+
+@admin_blog_router.delete("/comment/{comment_id}")
+async def admin_delete_comment(
+    comment_id: int,
+    admin: Admin = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete specific comment (Admin Moderation)"""
+    await db.execute(delete(BlogComment).where(BlogComment.id == comment_id))
+    await db.commit()
+    return {"detail": "Comment removed"}
+
 
 # =========================================================
 # 6. REGISTER API ROUTERS
@@ -839,7 +928,8 @@ app.include_router(wallet_router)
 app.include_router(order_router)
 app.include_router(admin_router)
 app.include_router(webhook_router)
-app.include_router(blog_router)    
+app.include_router(blog_router)
+app.include_router(admin_blog_router) # Registered new admin blog router
 
 # =========================================================
 # 7. FRONTEND PAGE ROUTES
