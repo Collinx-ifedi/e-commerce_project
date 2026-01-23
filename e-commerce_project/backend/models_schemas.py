@@ -1,6 +1,6 @@
 # models_schemas.py
 # Production-level Database Models & Pydantic Schemas
-# Updated: Manual Delivery Categories, Order Metadata, and Statuses
+# Updated: Flexible Blog Creation (Title/Content Defaults)
 
 from datetime import datetime
 from enum import Enum
@@ -607,8 +607,12 @@ class BannerSchema(ORMBase):
 # --- BLOG & SOCIAL SCHEMAS ---
 
 class BlogCreate(BaseModel):
-    title: str = Field(..., min_length=5, max_length=255)
-    content: str = Field(..., min_length=10)
+    """
+    Modified to be flexible.
+    Allows creating drafts even if Title or Content is missing initially.
+    """
+    title: Optional[str] = Field(default="Untitled Post", min_length=0, max_length=255)
+    content: Optional[str] = Field(default="No content provided", min_length=0)
     image_url: Optional[str] = None
     is_published: bool = True
 
