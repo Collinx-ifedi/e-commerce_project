@@ -171,7 +171,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.6.1", # Bumped for Flexible Blog Fix
+    version="2.6.2", # Bumped for Blog Route Fix
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -736,11 +736,13 @@ async def get_blog_posts(db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     return result.scalars().all()
 
-@blog_router.get("/posts/detail/{slug}", response_model=BlogDetailResponse)
+# --- FIXED ROUTE: Replaced '/posts/detail/{slug}' with '/posts/{slug}' to match frontend ---
+@blog_router.get("/posts/{slug}", response_model=BlogDetailResponse)
 async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(BlogPost)
-        .where(BlogPost.slug == slug, BlogPost.is_deleted == False)
+        # Added explicit 'is_published' check for public access security
+        .where(BlogPost.slug == slug, BlogPost.is_deleted == False, BlogPost.is_published == True)
         .options(
             selectinload(BlogPost.author),
             selectinload(BlogPost.comments).selectinload(BlogComment.user)
