@@ -158,11 +158,23 @@ function updateLanguageSwitcherUI(langCode) {
  * Trigger Google Translate for specific language
  */
 function triggerGoogleTranslate(langCode) {
-  const element = document.querySelector('.goog-te-combo');
-  if (element) {
-    element.value = langCode;
-    element.dispatchEvent(new Event('change'));
-  }
+  // Wait a bit for Google Translate to be fully loaded
+  const checkInterval = setInterval(() => {
+    const element = document.querySelector('.goog-te-combo');
+    if (element) {
+      clearInterval(checkInterval);
+      element.value = langCode;
+      element.dispatchEvent(new Event('change'));
+      
+      // Also try triggering the change event multiple times to ensure it works
+      setTimeout(() => {
+        element.dispatchEvent(new Event('change'));
+      }, 100);
+    }
+  }, 50);
+
+  // Clear interval after 5 seconds if element not found
+  setTimeout(() => clearInterval(checkInterval), 5000);
 }
 
 /**

@@ -141,8 +141,46 @@
         .footer { background: #1E293B; color: #94A3B8; padding: 60px 0 30px; }
         .footer a { color: #94A3B8; text-decoration: none; transition: color 0.2s; }
         .footer a:hover { color: #FFFFFF; }
-        .social-icon { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .social-icon { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: #FFFFFF; }
         .social-icon:hover { background: #2563EB; color: white; }
+
+        /* Dark Mode Styles */
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B !important; border-bottom: 1px solid #334155; }
+        html.dark .navbar a { color: #E2E8F0; }
+        html.dark .navbar a:hover { color: #60A5FA; }
+        html.dark .navbar span { color: #E2E8F0; }
+        html.dark #themeToggle { color: #E2E8F0 !important; }
+        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .article-content { color: #E2E8F0; }
+        html.dark .article-content p { color: #CBD5E1; }
+        html.dark .article-content li { color: #CBD5E1; }
+        html.dark .article-content h1,
+        html.dark .article-content h2,
+        html.dark .article-content h3 { color: #F1F5F9; }
+        html.dark .article-content a { color: #60A5FA; }
+        html.dark .article-content blockquote { color: #94A3B8; border-left-color: #60A5FA; }
+        html.dark .comment-card { background: #1E293B; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+        html.dark .comment-input { background: #334155; color: #E2E8F0; border-color: #475569; }
+        html.dark .comment-input:focus { border-color: #60A5FA; box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.1); }
+        html.dark .like-btn { background: #334155; border-color: #475569; color: #E2E8F0; }
+        html.dark .like-btn:hover:not(:disabled) { background: #7F1D1D; border-color: #DC2626; color: #FCA5A5; }
+        html.dark .like-btn.liked { background: #7F1D1D; border-color: #DC2626; color: #FCA5A5; }
+        html.dark .login-prompt { background: #1E40AF; border-color: #1E3A8A; color: #DBEAFE; }
+        html.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); }
+        html.dark .footer { background: #0F172A; border-top: 1px solid #334155; }
+        html.dark .mobile-menu { background: #1E293B; }
+        html.dark .mobile-menu-header { border-color: #334155; }
+        html.dark .mobile-menu-header h3 { color: #E2E8F0; }
+        html.dark .mobile-menu-close { color: #E2E8F0; }
+        html.dark .mobile-menu-item { color: #E2E8F0; border-color: #334155; }
+        html.dark .mobile-menu-item:hover { color: #60A5FA; }
+        html.dark .hamburger-btn span { background: #E2E8F0; }
+        html.dark .meta-badge { background: #334155; color: #CBD5E1; }
+        html.dark .btn-submit { background: #2563EB; }
+        html.dark .btn-submit:hover:not(:disabled) { background: #1D4ED8; }
+        html.dark #mobileLanguageSelect { background: #334155 !important; color: #E2E8F0 !important; border-color: #475569 !important; }
+        html.dark #mobileLanguageSelect option { background: #1E293B; color: #E2E8F0; }
 
         /* Mobile Menu Styles */
         .hamburger-btn { display: none; flex-direction: column; gap: 6px; background: none; border: none; cursor: pointer; padding: 8px; }
@@ -226,9 +264,23 @@
             <a href="/cart" class="mobile-menu-item"><i class="fas fa-shopping-cart"></i> Cart</a>
             <a href="/profile" class="mobile-menu-item"><i class="fas fa-user"></i> Profile</a>
             <div class="mobile-menu-divider"></div>
-            <div class="mobile-menu-item">
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
                 <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
+            </div>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <i class="fas fa-globe"></i>
+                    <span style="font-weight: 500; font-size: 14px;">Language</span>
+                </div>
+                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+                    <option value="en">English 🇺🇸</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="ar">العربية 🇸🇦</option>
+                    <option value="zh-CN">中文 🇨🇳</option>
+                    <option value="ru">Русский 🇷🇺</option>
+                </select>
             </div>
         </div>
         <div class="mobile-menu-button-group" id="mobileAuthButtons">
@@ -357,9 +409,9 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Connect</h4>
                     <div class="flex gap-3">
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Join our Discord"><i class="fab fa-discord"></i></a>
+                        <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" class="social-icon" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
                     </div>
                 </div>
             </div>
@@ -592,10 +644,47 @@
             return Math.ceil(wordCount / wordsPerMinute) || 1;
         }
 
+        // =========================================================
+        // MOBILE LANGUAGE SELECTOR
+        // =========================================================
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const langCode = select.value;
+            
+            // Save preference
+            localStorage.setItem('keyvault_language', langCode);
+            
+            // Trigger Google Translate
+            const element = document.querySelector('.goog-te-combo');
+            if (element) {
+                element.value = langCode;
+                element.dispatchEvent(new Event('change'));
+            }
+            
+            // Handle RTL for Arabic
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+                document.documentElement.lang = 'ar';
+            } else {
+                document.documentElement.dir = 'ltr';
+                document.documentElement.lang = langCode;
+            }
+        }
+        
+        // Load saved language on init
+        function loadSavedMobileLanguage() {
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            const select = document.getElementById('mobileLanguageSelect');
+            if (select) {
+                select.value = savedLang;
+            }
+        }
+
         // Initialize
         checkAuth();
         updateCartBadge();
         loadBlogPost();
+        loadSavedMobileLanguage();
     </script>
 </body>
 </html>
