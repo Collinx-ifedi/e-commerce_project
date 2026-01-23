@@ -94,6 +94,7 @@ from .models_schemas import (
     # --- BLOG SYSTEM MODELS & SCHEMAS ---
     BlogPost,
     BlogComment,
+    BlogReaction, # Added for Like functionality
     BlogResponse,
     BlogDetailResponse,
     CommentCreate
@@ -171,7 +172,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.6.2", # Bumped for Blog Route Fix
+    version="2.6.3", # Bumped for Blog Interaction Fixes
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -695,8 +696,12 @@ async def upload_product_codes(
         logger.error(f"Upload failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to process file")
     finally:
-        if file_path.exists():
-            os.remove(file_path)
+        if file:
+            try:
+                if file_path.exists():
+                    os.remove(file_path)
+            except Exception:
+                pass
 
 
 # --- F. WEBHOOK ROUTER ---
@@ -736,12 +741,10 @@ async def get_blog_posts(db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     return result.scalars().all()
 
-# --- FIXED ROUTE: Replaced '/posts/detail/{slug}' with '/posts/{slug}' to match frontend ---
 @blog_router.get("/posts/{slug}", response_model=BlogDetailResponse)
 async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(BlogPost)
-        # Added explicit 'is_published' check for public access security
         .where(BlogPost.slug == slug, BlogPost.is_deleted == False, BlogPost.is_published == True)
         .options(
             selectinload(BlogPost.author),
@@ -754,6 +757,73 @@ async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Blog post not found")
     return post
 
+# --- NEW: REACT (LIKE) ENDPOINT FOR FRONTEND ---
+@blog_router.post("/{post_id}/react")
+async def react_to_post(
+    post_id: int, 
+    payload: dict = Body(...), # Expects {"reaction_type": "like"}
+    user: User = Depends(get_current_user), 
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Toggles a reaction (Like) for the post. 
+    Matches frontend call: POST /api/blog/{id}/react
+    """
+    # Check if post exists
+    post_res = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
+    post = post_res.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Check for existing reaction
+    stmt = select(BlogReaction).where(
+        BlogReaction.post_id == post_id,
+        BlogReaction.user_id == user.id
+    )
+    result = await db.execute(stmt)
+    existing_reaction = result.scalar_one_or_none()
+
+    if existing_reaction:
+        # Toggle OFF (Unlike)
+        await db.delete(existing_reaction)
+        message = "Reaction removed"
+    else:
+        # Toggle ON (Like)
+        new_reaction = BlogReaction(
+            post_id=post_id,
+            user_id=user.id,
+            reaction_type=payload.get("reaction_type", "like")
+        )
+        db.add(new_reaction)
+        message = "Reaction added"
+    
+    await db.commit()
+    return {"status": "success", "detail": message}
+
+# --- NEW: COMMENT ENDPOINT MATCHING FRONTEND PATH ---
+@blog_router.post("/{post_id}/comment")
+async def add_comment_frontend(
+    post_id: int,
+    content: str = Body(..., embed=True), # Expects {"content": "..."}
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Adds a comment. 
+    Matches frontend call: POST /api/blog/{id}/comment
+    """
+    # Check Post
+    stmt = select(BlogPost).where(BlogPost.id == post_id)
+    result = await db.execute(stmt)
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    new_comment = BlogComment(post_id=post_id, user_id=user.id, content=content)
+    db.add(new_comment)
+    await db.commit()
+    return {"status": "success"}
+
+# --- ORIGINAL COMMENT ENDPOINT (KEPT FOR COMPATIBILITY) ---
 @blog_router.post("/posts/{post_id}/comments")
 async def add_comment(
     post_id: int,
