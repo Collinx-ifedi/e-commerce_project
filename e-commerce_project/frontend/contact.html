@@ -202,7 +202,17 @@
         
         // Note: googleTranslateElementInit is now defined in translate-config.js
         
-        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+        document.addEventListener('DOMContentLoaded', () => {
+            updateThemeIcon();
+            
+            // Trigger translation after content is loaded
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            if (savedLang !== 'en') {
+                setTimeout(() => {
+                    triggerGoogleTranslate(savedLang);
+                }, 300);
+            }
+        });
         
         // =========================================================
         // CONTACT FORM HANDLER

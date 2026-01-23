@@ -571,7 +571,7 @@
   <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
   <i class="fas fa-moon"></i>
   </button>
-  <div id="googleTranslate" class="flex items-center"></div>
+  <div id="googleTranslate" class="flex items-center" style="margin: 0 8px;"></div>
   
   <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
   <i class="fas fa-store mr-2"></i>Store
@@ -1508,14 +1508,25 @@
   // =========================================================
   // INIT
   // =========================================================
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
   initMobileMenu();
   loadSavedMobileLanguage();
   if (checkAuth()) {
   updateCartBadge();
-  loadUserData();
+  await loadUserData();
+  }
+  
+  // Trigger translation after content is loaded
+  const savedLang = localStorage.getItem('keyvault_language') || 'en';
+  if (savedLang !== 'en') {
+    triggerGoogleTranslate(savedLang);
   }
   });
   </script>
+  
+  <!-- Google Translate API -->
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <!-- Custom Translation Config -->
+  <script src="/translate-config.js"></script>
 </body>
 </html>

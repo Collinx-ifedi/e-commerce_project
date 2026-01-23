@@ -22,14 +22,18 @@ const google = window.google;
  * Initialize Google Translate (called by Google API callback)
  */
 function googleTranslateElementInit() {
-  new google.translate.TranslateElement(
-    {
-      pageLanguage: 'en',
-      includedLanguages: Object.keys(LANGUAGES).join(','),
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    },
-    'googleTranslate'
-  );
+  // Safely assign google variable only after API loads
+  if (window.google && window.google.translate) {
+    const google = window.google;
+    new google.translate.TranslateElement(
+      {
+        pageLanguage: 'en',
+        includedLanguages: Object.keys(LANGUAGES).join(','),
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      },
+      'googleTranslate'
+    );
+  }
 }
 
 /**
@@ -117,18 +121,7 @@ function switchLanguage(langCode, event) {
   // Update UI
   updateLanguageSwitcherUI(langCode);
 
-  // Handle RTL for Arabic
-  if (langCode === 'ar') {
-    document.documentElement.dir = 'rtl';
-    document.documentElement.lang = 'ar';
-    document.body.style.textAlign = 'right';
-  } else {
-    document.documentElement.dir = 'ltr';
-    document.documentElement.lang = langCode;
-    document.body.style.textAlign = '';
-  }
-
-  // Trigger Google Translate
+  // Trigger Google Translate (which handles RTL and direction internally)
   triggerGoogleTranslate(langCode);
 }
 
@@ -158,18 +151,32 @@ function updateLanguageSwitcherUI(langCode) {
  * Trigger Google Translate for specific language
  */
 function triggerGoogleTranslate(langCode) {
-  // Wait a bit for Google Translate to be fully loaded
+  // Handle RTL for Arabic
+  if (langCode === 'ar') {
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = 'ar';
+    document.body.style.textAlign = 'right';
+  } else {
+    document.documentElement.dir = 'ltr';
+    document.documentElement.lang = langCode;
+    document.body.style.textAlign = '';
+  }
+
+  // Wait for Google Translate to be fully loaded
   const checkInterval = setInterval(() => {
     const element = document.querySelector('.goog-te-combo');
     if (element) {
       clearInterval(checkInterval);
       element.value = langCode;
-      element.dispatchEvent(new Event('change'));
       
-      // Also try triggering the change event multiple times to ensure it works
+      // Add 150ms delay to ensure widget is fully ready
       setTimeout(() => {
         element.dispatchEvent(new Event('change'));
-      }, 100);
+        // Trigger multiple times to ensure translation happens
+        setTimeout(() => {
+          element.dispatchEvent(new Event('change'));
+        }, 100);
+      }, 150);
     }
   }, 50);
 

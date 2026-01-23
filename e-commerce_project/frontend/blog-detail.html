@@ -681,10 +681,18 @@
         }
 
         // Initialize
-        checkAuth();
-        updateCartBadge();
-        loadBlogPost();
-        loadSavedMobileLanguage();
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            updateCartBadge();
+            await loadBlogPost();
+            loadSavedMobileLanguage();
+            
+            // Trigger translation after content is loaded
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            if (savedLang !== 'en') {
+                triggerGoogleTranslate(savedLang);
+            }
+        });
     </script>
 </body>
 </html>

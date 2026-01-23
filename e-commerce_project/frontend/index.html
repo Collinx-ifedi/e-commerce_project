@@ -2417,15 +2417,22 @@
         // =========================================================
         // INITIALIZATION
         // =========================================================
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             initMobileMenu();
             checkAuthState();
             updateCartBadge();
             loadBanners();
             loadTrendingProducts();
-            loadProducts();
+            await loadProducts();
             initFilters();
             loadSavedMobileLanguage();
+            
+            // Trigger translation after all content is loaded
+            const savedLang = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
+            if (savedLang !== 'en') {
+                triggerGoogleTranslate(savedLang);
+            }
+            
             // Initialize animations after content is loaded
             setTimeout(initAnimations, 500);
         });
