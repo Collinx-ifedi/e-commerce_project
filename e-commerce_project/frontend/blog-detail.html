@@ -491,7 +491,7 @@
             currentPostSlug = slug;
 
             try {
-                const response = await fetch(`${API_BASE}/api/public/blog/${slug}`);
+                const response = await fetch(`${API_BASE}/api/blog/posts/${slug}`);
                 if (!response.ok) throw new Error('Post not found');
                 
                 const post = await response.json();

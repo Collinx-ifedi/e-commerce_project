@@ -389,7 +389,7 @@
         // Fetch Blog Posts
         async function loadBlogPosts() {
             try {
-                const response = await fetch(`${API_BASE}/api/public/blog`);
+                const response = await fetch(`${API_BASE}/api/blog/posts`);
                 if (!response.ok) throw new Error('Failed to fetch posts');
                 
                 const data = await response.json();
