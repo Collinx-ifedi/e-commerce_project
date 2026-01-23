@@ -693,7 +693,7 @@
             opacity: 1;
         }
         
-        /* Dark Mode Styles */
+        /* Dark Mode Styles - Comprehensive */
         html.dark {
             color-scheme: dark;
         }
@@ -705,12 +705,25 @@
         
         html.dark .navbar {
             background: #1E293B;
-            border-bottom-color: #334155;
+            border-bottom: 1px solid #334155;
+        }
+        
+        /* Fix KeyVault name visibility in dark mode */
+        html.dark .navbar .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        html.dark .navbar a span {
+            color: #F1F5F9 !important;
         }
         
         html.dark .search-input {
             background: #334155;
             color: #E2E8F0;
+        }
+        
+        html.dark .search-input::placeholder {
+            color: #94A3B8;
         }
         
         html.dark .search-input:focus {
@@ -725,17 +738,249 @@
             background: #334155;
         }
         
+        html.dark .search-item .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
         html.dark .footer {
             background: #0F172A;
-            border-top-color: #334155;
+            border-top: 1px solid #334155;
         }
         
         html.dark .profile-dropdown {
             background: #1E293B;
         }
         
+        html.dark .profile-dropdown-item {
+            color: #E2E8F0;
+        }
+        
         html.dark .profile-dropdown-item:hover {
             background: #334155;
+        }
+        
+        /* Fix theme toggle icon visibility */
+        html.dark #themeToggle {
+            color: #E2E8F0;
+        }
+        
+        html.dark #themeToggle:hover {
+            color: #60A5FA;
+            background: #334155;
+        }
+        
+        /* Fix product cards in dark mode */
+        html.dark .product-card {
+            background: #1E293B;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        html.dark .product-card .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        html.dark .product-card .text-gray-500 {
+            color: #94A3B8 !important;
+        }
+        
+        /* Fix category cards in dark mode */
+        html.dark .category-card {
+            background: #1E293B;
+        }
+        
+        html.dark .category-card .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        html.dark .category-card .text-gray-500 {
+            color: #94A3B8 !important;
+        }
+        
+        /* Fix feature cards in dark mode */
+        html.dark .feature-card {
+            background: #1E293B;
+        }
+        
+        html.dark .feature-card .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        html.dark .feature-card .text-gray-500 {
+            color: #94A3B8 !important;
+        }
+        
+        /* Fix section titles in dark mode */
+        html.dark section .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        /* Fix section backgrounds */
+        html.dark section.bg-white {
+            background: #1E293B !important;
+        }
+        
+        /* Fix filter bar in dark mode */
+        html.dark #sortSelect,
+        html.dark #platformSelect {
+            background: #1E293B;
+            color: #E2E8F0;
+            border-color: #334155;
+        }
+        
+        html.dark #sortSelect:focus,
+        html.dark #platformSelect:focus {
+            border-color: #60A5FA;
+        }
+        
+        /* Fix load more button in dark mode */
+        html.dark .load-more-btn {
+            background: #334155;
+            color: #E2E8F0;
+        }
+        
+        html.dark .load-more-btn:hover {
+            background: #475569;
+        }
+        
+        /* Fix mobile menu in dark mode */
+        html.dark .mobile-menu {
+            background: #1E293B;
+        }
+        
+        html.dark .mobile-menu-header {
+            border-bottom-color: #334155;
+        }
+        
+        html.dark .mobile-menu-header h3 {
+            color: #F1F5F9;
+        }
+        
+        html.dark .mobile-menu-close {
+            color: #F1F5F9;
+        }
+        
+        html.dark .mobile-menu-item {
+            color: #E2E8F0;
+            border-bottom-color: #334155;
+        }
+        
+        html.dark .mobile-menu-item:hover {
+            color: #60A5FA;
+        }
+        
+        html.dark .mobile-menu-button-group {
+            border-top-color: #334155;
+        }
+        
+        html.dark .mobile-menu-button-group .btn-outline {
+            background: #334155;
+            color: #E2E8F0;
+            border-color: #475569;
+        }
+        
+        html.dark .hamburger-btn span {
+            background: #60A5FA;
+        }
+        
+        /* Fix fund wallet modal in dark mode */
+        html.dark #fundWalletModal > div {
+            background: #1E293B;
+        }
+        
+        html.dark .gateway-option {
+            border-color: #334155;
+        }
+        
+        html.dark .gateway-option:hover {
+            border-color: #60A5FA;
+            background: #334155;
+        }
+        
+        html.dark .gateway-option .text-secondary {
+            color: #F1F5F9 !important;
+        }
+        
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #1E293B;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F1F5F9;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        html.dark .mobile-lang-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown {
+            background: #1E293B;
+            border-color: #475569;
+        }
+        html.dark .mobile-lang-dropdown button {
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown button:hover {
+            background: #334155;
+        }
+        html.dark .mobile-lang-dropdown button.active {
+            background: #1E40AF;
+            color: #93C5FD;
         }
     </style>
 </head>
@@ -886,6 +1131,10 @@
   <i class="fas fa-home"></i>
   Home
   </a>
+  <a href="/blog.html" class="mobile-menu-item">
+  <i class="fas fa-newspaper"></i>
+  Blog
+  </a>
   <a href="/?filter=trending" class="mobile-menu-item">
   <i class="fas fa-fire"></i>
   Trending
@@ -905,6 +1154,10 @@
   <a href="/profile" class="mobile-menu-item">
   <i class="fas fa-user"></i>
   My Profile
+  </a>
+  <a href="/blog.html" class="mobile-menu-item">
+  <i class="fas fa-newspaper"></i>
+  Blog
   </a>
   <a href="/profile?tab=orders" class="mobile-menu-item">
   <i class="fas fa-shopping-bag"></i>
@@ -928,9 +1181,22 @@
   <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
   </div>
 
-  <div class="mobile-menu-item border-b-0" style="padding: 12px 0;">
+  <div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
   <i class="fas fa-globe"></i>
-  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  <div class="mobile-language-selector flex-1">
+      <button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+          <span id="mobileLangLabel">English</span>
+          <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="mobile-lang-dropdown" id="mobileLangDropdown">
+          <button onclick="selectMobileLanguage('en', 'English')" data-lang="en">English</button>
+          <button onclick="selectMobileLanguage('es', 'Espanol')" data-lang="es">Espanol</button>
+          <button onclick="selectMobileLanguage('fr', 'Francais')" data-lang="fr">Francais</button>
+          <button onclick="selectMobileLanguage('ar', 'العربية')" data-lang="ar">العربية</button>
+          <button onclick="selectMobileLanguage('zh-CN', '中文')" data-lang="zh-CN">中文</button>
+          <button onclick="selectMobileLanguage('ru', 'Русский')" data-lang="ru">Русский</button>
+      </div>
+  </div>
   </div>
   </div>
 
@@ -1924,6 +2190,160 @@
         };
 
         // =========================================================
+        // PLATFORM FILTER FUNCTIONALITY
+        // =========================================================
+        const initFilters = () => {
+            const sortSelect = document.getElementById('sortSelect');
+            const platformSelect = document.getElementById('platformSelect');
+            
+            // Populate platform filter with actual platforms from products
+            const populatePlatformFilter = () => {
+                const platforms = [...new Set(allProducts.map(p => p.platform))].sort();
+                platformSelect.innerHTML = '<option value="">All Platforms</option>';
+                platforms.forEach(platform => {
+                    const option = document.createElement('option');
+                    option.value = platform.toLowerCase();
+                    option.textContent = platform;
+                    platformSelect.appendChild(option);
+                });
+            };
+            
+            // Apply filters
+            const applyFilters = () => {
+                const sortValue = sortSelect.value;
+                const platformValue = platformSelect.value;
+                
+                let filteredProducts = [...allProducts];
+                
+                // Filter by platform
+                if (platformValue) {
+                    filteredProducts = filteredProducts.filter(p => 
+                        p.platform.toLowerCase() === platformValue.toLowerCase()
+                    );
+                }
+                
+                // Sort products
+                switch (sortValue) {
+                    case 'price_low':
+                        filteredProducts.sort((a, b) => {
+                            const priceA = a.discount_percent > 0 ? a.price_usd * (1 - a.discount_percent / 100) : a.price_usd;
+                            const priceB = b.discount_percent > 0 ? b.price_usd * (1 - b.discount_percent / 100) : b.price_usd;
+                            return priceA - priceB;
+                        });
+                        break;
+                    case 'price_high':
+                        filteredProducts.sort((a, b) => {
+                            const priceA = a.discount_percent > 0 ? a.price_usd * (1 - a.discount_percent / 100) : a.price_usd;
+                            const priceB = b.discount_percent > 0 ? b.price_usd * (1 - b.discount_percent / 100) : b.price_usd;
+                            return priceB - priceA;
+                        });
+                        break;
+                    case 'popular':
+                        filteredProducts.sort((a, b) => (b.is_trending ? 1 : 0) - (a.is_trending ? 1 : 0));
+                        break;
+                    case 'newest':
+                    default:
+                        // Keep original order (newest first from API)
+                        break;
+                }
+                
+                // Re-render products
+                renderProducts(filteredProducts.slice(0, 8));
+                
+                // Update load more visibility
+                const loadMoreContainer = document.getElementById('loadMoreContainer');
+                if (filteredProducts.length <= 8) {
+                    loadMoreContainer.style.display = 'none';
+                } else {
+                    loadMoreContainer.style.display = 'block';
+                }
+                
+                // Reset page for load more
+                currentPage = 1;
+            };
+            
+            // Event listeners
+            sortSelect.addEventListener('change', applyFilters);
+            platformSelect.addEventListener('change', applyFilters);
+            
+            // Populate platforms after products load
+            setTimeout(populatePlatformFilter, 1500);
+        };
+
+        // =========================================================
+        // MOBILE LANGUAGE DROPDOWN
+        // =========================================================
+        function toggleMobileLangDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown = document.getElementById('mobileLangDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        function selectMobileLanguage(langCode, langName) {
+            document.getElementById('mobileLangLabel').textContent = langName;
+            document.getElementById('mobileLangDropdown').classList.remove('active');
+            
+            // Update active state
+            document.querySelectorAll('#mobileLangDropdown button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === langCode) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Save preference
+            localStorage.setItem('keyvault_language', langCode);
+            
+            // Trigger Google Translate
+            const element = document.querySelector('.goog-te-combo');
+            if (element) {
+                element.value = langCode;
+                element.dispatchEvent(new Event('change'));
+            }
+            
+            // Handle RTL for Arabic
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+                document.documentElement.lang = 'ar';
+            } else {
+                document.documentElement.dir = 'ltr';
+                document.documentElement.lang = langCode;
+            }
+        }
+        
+        // Close mobile language dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('mobileLangDropdown');
+            const wrapper = e.target.closest('.mobile-lang-wrapper');
+            if (!wrapper && dropdown) {
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        // Load saved language on init
+        function loadSavedMobileLanguage() {
+            const savedLang = localStorage.getItem('keyvault_language');
+            const langMap = {
+                'en': 'English',
+                'es': 'Espanol',
+                'fr': 'Francais',
+                'ar': 'العربية',
+                'zh-CN': '中文',
+                'ru': 'Русский'
+            };
+            if (savedLang && langMap[savedLang]) {
+                document.getElementById('mobileLangLabel').textContent = langMap[savedLang];
+                document.querySelectorAll('#mobileLangDropdown button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.lang === savedLang) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // =========================================================
         // INITIALIZATION
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -1933,6 +2353,8 @@
             loadBanners();
             loadTrendingProducts();
             loadProducts();
+            initFilters();
+            loadSavedMobileLanguage();
             // Initialize animations after content is loaded
             setTimeout(initAnimations, 500);
         });
