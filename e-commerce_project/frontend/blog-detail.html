@@ -456,7 +456,7 @@
 
         // Check Authentication
         function checkAuth() {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (token) {
                 document.getElementById('guestActions')?.classList.add('hidden');
                 document.getElementById('userActions')?.classList.remove('hidden');
@@ -563,7 +563,7 @@
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to comment' });
                 return;
@@ -600,7 +600,7 @@
 
         // Toggle Like
         async function toggleLike() {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to like posts' });
                 return;

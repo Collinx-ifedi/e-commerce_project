@@ -370,7 +370,7 @@
 
         // Check Authentication
         function checkAuth() {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (token) {
                 document.getElementById('guestActions')?.classList.add('hidden');
                 document.getElementById('userActions')?.classList.remove('hidden');
