@@ -466,6 +466,11 @@
                 document.getElementById('loginPrompt').style.display = 'none';
                 document.getElementById('likeBtn').disabled = false;
             } else {
+                document.getElementById('guestActions')?.classList.remove('hidden');
+                document.getElementById('userActions')?.classList.add('hidden');
+                document.getElementById('mobileAuthButtons')?.classList.remove('hidden');
+                document.getElementById('mobileUserButtons')?.classList.add('hidden');
+                document.getElementById('commentForm').style.display = 'none';
                 document.getElementById('loginPrompt').style.display = 'block';
                 document.getElementById('likeBtn').disabled = true;
             }
@@ -512,7 +517,8 @@
 
                 document.title = `${post.title} - KeyVault Blog`;
 
-                loadComments();
+                // Render comments directly from post.comments (included in BlogDetailResponse)
+                renderComments(post.comments || []);
 
             } catch (error) {
                 console.error('[v0] Blog post fetch error:', error);
@@ -520,46 +526,33 @@
             }
         }
 
-        // Load Comments
-        async function loadComments() {
-            if (!currentPostId) return;
+        // Render Comments from Post Data
+        function renderComments(comments) {
+            document.getElementById('commentCount').textContent = comments.length;
 
-            try {
-                const response = await fetch(`${API_BASE}/api/public/blog/${currentPostId}/comments`);
-                if (!response.ok) throw new Error('Failed to load comments');
-                
-                const data = await response.json();
-                const comments = data.comments || data || [];
+            if (comments.length === 0) {
+                document.getElementById('emptyComments').style.display = 'block';
+                document.getElementById('commentsList').innerHTML = '';
+                return;
+            }
 
-                document.getElementById('commentCount').textContent = comments.length;
-
-                if (comments.length === 0) {
-                    document.getElementById('emptyComments').style.display = 'block';
-                    document.getElementById('commentsList').innerHTML = '';
-                    return;
-                }
-
-                document.getElementById('emptyComments').style.display = 'none';
-                document.getElementById('commentsList').innerHTML = comments.map(comment => `
-                    <div class="comment-card">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                                ${(comment.user?.email || 'U').charAt(0).toUpperCase()}
+            document.getElementById('emptyComments').style.display = 'none';
+            document.getElementById('commentsList').innerHTML = comments.map(comment => `
+                <div class="comment-card">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                            ${(comment.user?.email || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-1">
+                                <span class="font-semibold text-secondary">${comment.user?.email || 'User'}</span>
+                                <span class="text-xs text-gray-400">${new Date(comment.created_at).toLocaleDateString()}</span>
                             </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-1">
-                                    <span class="font-semibold text-secondary">${comment.user?.email || 'User'}</span>
-                                    <span class="text-xs text-gray-400">${new Date(comment.created_at).toLocaleDateString()}</span>
-                                </div>
-                                <p class="text-gray-600">${comment.content}</p>
-                            </div>
+                            <p class="text-gray-600">${comment.content}</p>
                         </div>
                     </div>
-                `).join('');
-
-            } catch (error) {
-                console.error('[v0] Comments fetch error:', error);
-            }
+                </div>
+            `).join('');
         }
 
         // Submit Comment
@@ -590,7 +583,14 @@
 
                 document.getElementById('commentInput').value = '';
                 Swal.fire({ icon: 'success', title: 'Comment Posted!', timer: 1500, showConfirmButton: false });
-                loadComments();
+                
+                // Reload the full post to get updated comments
+                const slug = new URLSearchParams(window.location.search).get('slug');
+                const postResponse = await fetch(`${API_BASE}/api/blog/posts/${slug}`);
+                if (postResponse.ok) {
+                    const post = await postResponse.json();
+                    renderComments(post.comments || []);
+                }
 
             } catch (error) {
                 console.error('[v0] Comment post error:', error);
