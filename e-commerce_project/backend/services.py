@@ -6,6 +6,7 @@
 # - Payment Gateway Integration
 # - Manual Delivery & Top-up Workflow
 # - Denomination & Code Management
+# - UPDATED: Admin Messaging & User Moderation
 
 import os
 import hmac
@@ -41,7 +42,8 @@ from .models_schemas import (
     PaymentMethod,
     OTPPurpose,
     MultiProductOrderCreate,
-    ProductCategory
+    ProductCategory,
+    InboxMessage
 )
 
 # IMPORT UTILS & CORE
@@ -62,10 +64,16 @@ from .core import (
     settings
 )
 
+# IMPORT DB HELPERS
 from .db import (
     get_unused_code, 
     mark_code_as_used, 
-    add_product_codes_from_file
+    add_product_codes_from_file,
+    # New Helpers for Messaging & Moderation
+    insert_message,
+    fetch_user_messages,
+    mark_message_read,
+    set_user_ban_state
 )
 
 # =========================================================
@@ -839,3 +847,99 @@ async def _process_successful_payment(db: AsyncSession, order_ref: str, provider
             logger.warning(f"Order {order_ref} paid but not fully auto-fulfilled. Status: IN_PROGRESS")
 
         await db.commit()
+
+# =========================================================
+# 7. MESSAGING & MODERATION SERVICES
+# =========================================================
+
+async def send_user_message_service(
+    db: AsyncSession, 
+    user_id: int, 
+    subject: str, 
+    body: str, 
+    sender: str = "admin"
+):
+    """
+    Sends a one-way persistent message to a user's inbox.
+    Typically used by Admins to notify users about top-ups or moderation.
+    """
+    # 1. Validation
+    if not body or not body.strip():
+        raise HTTPException(status_code=400, detail="Message body cannot be empty.")
+
+    # 2. Check User Exists
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Target user not found.")
+
+    # 3. Persist Message
+    success = await insert_message(user_id, subject, body, db, sender)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to persist message.")
+    
+    # Commit the transaction (insert_message does a flush, but we need to commit)
+    await db.commit()
+    
+    # Audit Log
+    log_action("send_message", actor=sender, metadata={"target_user_id": user_id, "subject": subject})
+    
+    return {"status": "success", "detail": "Message sent successfully."}
+
+async def get_user_inbox_service(db: AsyncSession, user_id: int, limit: int = 50) -> List[InboxMessage]:
+    """
+    Retrieves the inbox for a specific user.
+    """
+    messages = await fetch_user_messages(user_id, db, limit)
+    return messages
+
+async def mark_inbox_message_read_service(db: AsyncSession, message_id: int, user_id: int):
+    """
+    Marks a specific message as read. 
+    Securely ensures the message belongs to the requesting user.
+    """
+    success = await mark_message_read(message_id, user_id, db)
+    if not success:
+        # Could mean message doesn't exist OR belongs to another user
+        raise HTTPException(status_code=404, detail="Message not found or access denied.")
+    
+    await db.commit()
+    return {"status": "success"}
+
+async def moderate_user_service(
+    db: AsyncSession, 
+    user_id: int, 
+    action: str, 
+    reason: Optional[str] = None,
+    admin_username: str = "system"
+):
+    """
+    Handles Ban/Unban logic for users.
+    Args:
+        action: 'ban' or 'unban'
+    """
+    # 1. Check User
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    is_banned = (action == "ban")
+    
+    # 2. Update Status
+    success = await set_user_ban_state(user_id, is_banned, db)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail=f"Failed to {action} user.")
+
+    await db.commit()
+
+    # 3. Audit Log
+    log_action(f"{action}_user", actor=admin_username, metadata={"target_user_id": user_id, "reason": reason})
+
+    return {"status": "success", "user_id": user_id, "is_banned": is_banned}

@@ -9,7 +9,8 @@
 # - Wallet System Integration (Profile & Deposit)
 # - Manual Delivery & Top-up Workflow Support
 # - Flexible Blog Creation (Server-side Defaults)
-# - UPDATED: Multi-Denomination Support for Admin Panel & Order Fixes
+# - Multi-Denomination Support for Admin Panel & Order Fixes
+# - UPDATED: Messaging & User Moderation APIs
 
 import os
 import shutil
@@ -74,7 +75,12 @@ from .services import (
     # NEW SERVICES FOR DENOMINATIONS
     create_denomination_service,
     get_product_denominations_service,
-    upload_denomination_codes_service
+    upload_denomination_codes_service,
+    # NEW SERVICES FOR MESSAGING & MODERATION
+    send_user_message_service,
+    get_user_inbox_service,
+    mark_inbox_message_read_service,
+    moderate_user_service
 )
 
 # --- SCHEMAS & MODELS ---
@@ -105,7 +111,10 @@ from .models_schemas import (
     CommentCreate,
     # --- NEW DENOMINATION SCHEMAS ---
     DenominationCreate,
-    DenominationResponse
+    DenominationResponse,
+    # --- NEW MESSAGING SCHEMAS ---
+    InboxMessageCreate,
+    InboxMessageResponse
 )
 
 # =========================================================
@@ -180,7 +189,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.7.1", # Updated version for Order fix
+    version="2.8.0", # Updated version for Messaging/Moderation
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -366,7 +375,28 @@ async def create_deposit(
         raise HTTPException(status_code=500, detail="Could not create deposit link.")
 
 
-# --- D. ORDER ROUTER ---
+# --- D. INBOX ROUTER (NEW) ---
+inbox_router = APIRouter(prefix="/api/inbox", tags=["Inbox"])
+
+@inbox_router.get("", response_model=List[InboxMessageResponse])
+async def get_my_inbox(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Fetches the authenticated user's messages."""
+    return await get_user_inbox_service(db, user.id)
+
+@inbox_router.post("/{message_id}/read")
+async def mark_message_as_read(
+    message_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Marks a specific message as read."""
+    return await mark_inbox_message_read_service(db, message_id, user.id)
+
+
+# --- E. ORDER ROUTER ---
 order_router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 @order_router.post("/checkout", status_code=status.HTTP_201_CREATED)
@@ -390,7 +420,7 @@ async def get_user_orders(user: User = Depends(get_current_user), db: AsyncSessi
     return result.scalars().all()
 
 
-# --- E. ADMIN ROUTER ---
+# --- F. ADMIN ROUTER ---
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @admin_router.post("/login")
@@ -459,6 +489,59 @@ async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = 
     )
     result = await db.execute(query)
     return result.scalars().all()
+
+# -- ADMIN USERS MANAGEMENT (NEW) --
+
+@admin_router.get("/users", response_model=List[UserResponse])
+async def get_admin_users(
+    limit: int = 50, 
+    search: Optional[str] = None,
+    db: AsyncSession = Depends(get_db), 
+    admin: Admin = Depends(get_current_admin)
+):
+    """
+    List all users for moderation.
+    """
+    query = select(User).order_by(desc(User.created_at)).limit(limit)
+    if search:
+        query = query.where(User.email.ilike(f"%{search}%"))
+    
+    result = await db.execute(query)
+    return result.scalars().all()
+
+@admin_router.post("/users/{user_id}/ban")
+async def ban_user_route(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db), 
+    admin: Admin = Depends(get_current_admin)
+):
+    """Suspend a user account."""
+    return await moderate_user_service(db, user_id, "ban", admin_username=admin.username)
+
+@admin_router.post("/users/{user_id}/unban")
+async def unban_user_route(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db), 
+    admin: Admin = Depends(get_current_admin)
+):
+    """Restore a user account."""
+    return await moderate_user_service(db, user_id, "unban", admin_username=admin.username)
+
+@admin_router.post("/users/{user_id}/messages")
+async def message_user_route(
+    user_id: int,
+    payload: InboxMessageCreate,
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """Send a persistent message to a user."""
+    return await send_user_message_service(
+        db, 
+        user_id, 
+        payload.subject or "Notification from Admin", 
+        payload.body,
+        sender="admin"
+    )
 
 # -- ADMIN BANNERS LIST --
 @admin_router.get("/banners", response_model=List[BannerSchema])
@@ -744,7 +827,7 @@ async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admi
     return {"message": "Banner deleted successfully"}
 
 
-# --- F. WEBHOOK ROUTER ---
+# --- G. WEBHOOK ROUTER ---
 webhook_router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
 
 @webhook_router.post("/nowpayments")
@@ -767,7 +850,7 @@ async def bybit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     await handle_bybit_webhook(db, payload)
     return {"status": "success"}
 
-# --- G. BLOG ROUTER (Public) ---
+# --- H. BLOG ROUTER (Public) ---
 blog_router = APIRouter(prefix="/api/blog", tags=["Blog (Public)"])
 
 @blog_router.get("/posts", response_model=List[BlogResponse])
@@ -875,7 +958,7 @@ async def delete_comment(
     await db.commit()
     return {"detail": "Comment removed"}
 
-# --- H. ADMIN BLOG ROUTER (Protected) ---
+# --- I. ADMIN BLOG ROUTER (Protected) ---
 admin_blog_router = APIRouter(prefix="/api/admin/blog", tags=["Admin Blog"])
 
 @admin_blog_router.get("/posts", response_model=List[BlogResponse])
@@ -1019,7 +1102,8 @@ async def admin_delete_comment(
 app.include_router(catalog_router)
 app.include_router(auth_router)
 app.include_router(user_router)    
-app.include_router(wallet_router)  
+app.include_router(wallet_router)
+app.include_router(inbox_router) # Registered new router
 app.include_router(order_router)
 app.include_router(admin_router)
 app.include_router(webhook_router)

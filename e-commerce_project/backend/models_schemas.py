@@ -1,6 +1,7 @@
 # models_schemas.py
 # Production-level Database Models & Pydantic Schemas
 # Updated: Multi-Denomination Support & Multi-Item Orders
+# Updated: Admin->User Inbox Messaging & Moderation Support
 
 from datetime import datetime
 from enum import Enum
@@ -127,7 +128,7 @@ class User(Base, TimestampMixin):
     
     # Status
     is_verified = Column(Boolean, default=False)
-    is_banned = Column(Boolean, default=False)
+    is_banned = Column(Boolean, default=False) # Moderation Field
     
     # Security
     email_otp = Column(String(10), nullable=True)
@@ -141,6 +142,7 @@ class User(Base, TimestampMixin):
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
     support_messages = relationship("SupportMessage", back_populates="user")
+    inbox_messages = relationship("InboxMessage", back_populates="user", cascade="all, delete-orphan") # New Inbox Relationship
     addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan")
     reviews = relationship("ProductReview", back_populates="user")
     wishlist = relationship("Wishlist", back_populates="user", cascade="all, delete-orphan")
@@ -457,6 +459,23 @@ class SupportMessage(Base, TimestampMixin):
     
     user = relationship("User", back_populates="support_messages")
 
+class InboxMessage(Base, TimestampMixin):
+    """
+    One-way persistent messages from System/Admin to User.
+    Displayed in User Inbox.
+    """
+    __tablename__ = "inbox_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    
+    sender = Column(String(50), default="system") # e.g. "admin", "system"
+    subject = Column(String(255), nullable=True)
+    body = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+
+    user = relationship("User", back_populates="inbox_messages")
+
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
@@ -496,6 +515,7 @@ class UserResponse(ORMBase):
     country: Optional[str]
     balance_usd: float
     is_verified: bool
+    is_banned: bool
     avatar_url: Optional[str]
 
 # --- Product Code Schemas ---
@@ -696,4 +716,22 @@ class BlogDetailResponse(BlogResponse):
     likes_count: int = 0
     has_liked: bool = False
     
+    model_config = ConfigDict(from_attributes=True)
+
+# --- ADMIN MESSAGING & INBOX SCHEMAS ---
+
+class InboxMessageCreate(BaseModel):
+    """Schema for Admin creating a message."""
+    user_id: int
+    subject: Optional[str] = "Notification"
+    body: str
+
+class InboxMessageResponse(ORMBase):
+    """Schema for User Inbox."""
+    subject: Optional[str]
+    body: str
+    sender: str
+    is_read: bool
+    
+    # ID and Created_At are inherited from ORMBase
     model_config = ConfigDict(from_attributes=True)

@@ -13,12 +13,13 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncEngine
 )
-from sqlalchemy import text, select, update, func
+from sqlalchemy import text, select, update, func, desc
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 
 # Import ProductCategory to ensure Enum types are registered in Metadata for init_db
-from .models_schemas import Base, Product, ProductCode, ProductCategory
+# Added User and InboxMessage to imports for new functionality
+from .models_schemas import Base, Product, ProductCode, ProductCategory, User, InboxMessage
 
 # ======================================================
 # CONFIGURATION & LOGGING
@@ -101,7 +102,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     """
     Creates tables if they don't exist.
-    Ensures new Enum types (ProductCategory) are correctly registered in Postgres.
+    Ensures new Enum types (ProductCategory) and Tables (InboxMessage) are correctly registered.
     Run this on startup (or use Alembic for migrations in strict prod).
     """
     try:
@@ -309,4 +310,84 @@ async def mark_code_as_used(code_value: str, db: AsyncSession) -> bool:
 
     except Exception as e:
         logger.error(f"Error marking code as used: {e}")
+        return False
+
+# ======================================================
+# MESSAGING & MODERATION HELPERS
+# ======================================================
+
+async def insert_message(user_id: int, subject: str, body: str, db: AsyncSession, sender: str = "admin") -> bool:
+    """
+    Inserts a one-way message into the user's inbox.
+    """
+    try:
+        new_message = InboxMessage(
+            user_id=user_id,
+            sender=sender,
+            subject=subject,
+            body=body,
+            is_read=False
+        )
+        db.add(new_message)
+        # Note: commit is typically handled by caller/service, but helpers can flush
+        await db.flush()
+        return True
+    except Exception as e:
+        logger.error(f"Failed to insert message for user {user_id}: {e}")
+        return False
+
+async def fetch_user_messages(user_id: int, db: AsyncSession, limit: int = 50) -> List[InboxMessage]:
+    """
+    Retrieves messages for a specific user, ordered by newest first.
+    """
+    try:
+        stmt = (
+            select(InboxMessage)
+            .where(InboxMessage.user_id == user_id)
+            .order_by(desc(InboxMessage.created_at))
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return result.scalars().all()
+    except Exception as e:
+        logger.error(f"Failed to fetch messages for user {user_id}: {e}")
+        return []
+
+async def mark_message_read(message_id: int, user_id: int, db: AsyncSession) -> bool:
+    """
+    Marks a specific message as read. 
+    Includes user_id check to ensure users can only mark their own messages.
+    """
+    try:
+        stmt = (
+            update(InboxMessage)
+            .where(InboxMessage.id == message_id)
+            .where(InboxMessage.user_id == user_id)
+            .values(is_read=True)
+        )
+        result = await db.execute(stmt)
+        return result.rowcount > 0
+    except Exception as e:
+        logger.error(f"Failed to mark message {message_id} as read: {e}")
+        return False
+
+async def set_user_ban_state(user_id: int, is_banned: bool, db: AsyncSession) -> bool:
+    """
+    Updates the is_banned status of a user.
+    """
+    try:
+        stmt = (
+            update(User)
+            .where(User.id == user_id)
+            .values(is_banned=is_banned)
+        )
+        result = await db.execute(stmt)
+        if result.rowcount > 0:
+            logger.info(f"User {user_id} ban status updated to: {is_banned}")
+            return True
+        else:
+            logger.warning(f"User {user_id} not found when updating ban status.")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to set ban state for user {user_id}: {e}")
         return False
