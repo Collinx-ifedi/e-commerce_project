@@ -11,6 +11,7 @@
 # - Flexible Blog Creation (Server-side Defaults)
 # - Multi-Denomination Support for Admin Panel & Order Fixes
 # - UPDATED: Messaging & User Moderation APIs
+# - AUTH FIX: Handles Unverified User Registration (HTTP 200 Resend)
 
 import os
 import shutil
@@ -36,7 +37,8 @@ from fastapi import (
     File,
     Form,
     Query,
-    Body
+    Body,
+    Response
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -285,9 +287,32 @@ auth_router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(data: UserCreateSchema, db: AsyncSession = Depends(get_db)):
+    """
+    Registers a user. 
+    - If new: Returns 201 Created.
+    - If existing but unverified: Resends OTP and returns 200 OK.
+    - If verified: Returns 400 Error.
+    """
     try:
-        await create_user_service(db, data.email, data.password, data.country)
-        return {"message": "Account created. Check email for OTP."}
+        user = await create_user_service(db, data.email, data.password, data.country)
+        
+        # Check if this is a "Resend" scenario.
+        # Logic: If the user record was created more than 10 seconds ago, it's an existing unverified user.
+        time_since_creation = (datetime.utcnow() - user.created_at).total_seconds()
+        is_existing_resend = time_since_creation > 10
+
+        response_payload = {
+            "pending_verification": True,
+            "user_email": user.email
+        }
+
+        if is_existing_resend:
+            response_payload["message"] = "Verification code resent"
+            return JSONResponse(status_code=status.HTTP_200_OK, content=response_payload)
+        else:
+            response_payload["message"] = "Account created. Check email for OTP."
+            return response_payload
+
     except HTTPException as he:
         raise he
 

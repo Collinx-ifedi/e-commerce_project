@@ -100,28 +100,50 @@ BYBIT_SECRET_KEY = os.getenv("BYBIT_SECRET_KEY")
 
 async def create_user_service(db: AsyncSession, email: str, password: str, country: str):
     """
-    Registers a new user. Handles 'User Exists' states gracefully.
+    Registers a new user. 
+    Handles 'User Exists' states:
+    1. If user exists and is VERIFIED -> Raise Error.
+    2. If user exists and is UNVERIFIED -> Update creds, regen OTP, resend email (Allow retry).
     """
     result = await db.execute(select(User).where(User.email == email))
     existing_user = result.scalar_one_or_none()
 
-    if existing_user:
-        if not existing_user.is_verified:
-            raise HTTPException(
-                status_code=400, 
-                detail="User exists but is unverified. Please verify your email."
-            )
-        raise HTTPException(status_code=400, detail="User with this email already exists.")
-
+    # Pre-calculate hash and OTP for use in either path
     hashed_pw = hash_password(password)
     otp_code = generate_otp()
-    
+    otp_expiry_dt = datetime.utcnow() + timedelta(minutes=10)
+
+    if existing_user:
+        if existing_user.is_verified:
+            # Case 1: Strictly block verified users
+            raise HTTPException(status_code=400, detail="User with this email already exists.")
+        
+        # Case 2: User exists but abandoned verification.
+        # Action: Treat as a new attempt. Update password/country to match current request.
+        existing_user.password_hash = hashed_pw
+        existing_user.country = country
+        existing_user.email_otp = otp_code
+        existing_user.otp_expiry = otp_expiry_dt
+        
+        # We do not change is_verified (remains False)
+        await db.commit()
+        
+        # Resend Email
+        try:
+            await send_email_otp(email, otp_code, OTPPurpose.EMAIL_VERIFY)
+        except Exception as e:
+            logger.error(f"Failed to resend welcome email to {email}: {e}")
+        
+        # Return existing user object
+        return existing_user
+
+    # Case 3: Fresh User
     new_user = User(
         email=email,
         password_hash=hashed_pw,
         country=country,
         email_otp=otp_code,
-        otp_expiry=datetime.utcnow() + timedelta(minutes=10),
+        otp_expiry=otp_expiry_dt,
         is_verified=False,
         balance_usd=0.0
     )
