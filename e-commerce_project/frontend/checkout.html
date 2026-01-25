@@ -670,13 +670,22 @@
         // =========================================================
         // CHECK AUTH ON LOAD
         // =========================================================
-        const checkAuth = () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/auth.html?redirect=/checkout.html';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Auth check failed:', error);
                 window.location.href = '/auth.html?redirect=/checkout.html';
                 return false;
             }
-            return true;
         };
 
         // =========================================================
@@ -853,12 +862,12 @@
         // =========================================================
         // INIT
         // =========================================================
-  document.addEventListener('DOMContentLoaded', () => {
-  initMobileMenu();
-  if (checkAuth()) {
-  renderOrderSummary();
-  }
-  });
+        document.addEventListener('DOMContentLoaded', async () => {
+            initMobileMenu();
+            if (await checkAuth()) {
+                renderOrderSummary();
+            }
+        });
   </script>
 </body>
 </html>

@@ -489,10 +489,10 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             updateThemeIcon();
             initMobileMenu();
-            checkAuthState();
+            await checkAuthState();
             loadInboxMessages();
         });
 
@@ -538,20 +538,35 @@
             document.getElementById('progressBar').style.width = '0%';
         };
 
-        const checkAuthState = () => {
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || 'null');
-            if (token && user) {
-                document.getElementById('guestActions').classList.add('hidden');
-                document.getElementById('userActions').classList.remove('hidden');
-                document.getElementById('userActions').classList.add('flex');
-                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
-                document.getElementById('mobileAuthButtons').classList.add('hidden');
-                document.getElementById('mobileUserButtons').classList.remove('hidden');
+        const checkAuthState = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('guestActions').classList.add('hidden');
+                    document.getElementById('userActions').classList.remove('hidden');
+                    document.getElementById('userActions').classList.add('flex');
+                    document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+                    document.getElementById('mobileAuthButtons').classList.add('hidden');
+                    document.getElementById('mobileUserButtons').classList.remove('hidden');
+                    return user;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
             }
         };
 
-        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
+        const logout = async () => { 
+            try {
+                await fetch('/api/auth/logout', { credentials: 'include', method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            window.location.href = '/'; 
+        };
 
         // =========================================================
         // INBOX LOADING
