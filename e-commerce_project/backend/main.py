@@ -12,6 +12,7 @@
 # - Multi-Denomination Support for Admin Panel & Order Fixes
 # - UPDATED: Messaging & User Moderation APIs
 # - AUTH FIX: Handles Unverified User Registration (HTTP 200 Resend)
+# - BUG FIX: Solved Lazy Loading (MissingGreenlet) errors in Product CRUD
 
 import os
 import shutil
@@ -634,7 +635,7 @@ async def create_product(
 ):
     """
     Create a Product Container. 
-    Note: Pricing and Stock are now handled via Denominations.
+    BUG FIX: Explicitly eager loads 'denominations' to prevent MissingGreenlet error on response serialization.
     """
     try:
         logger.info(f"Attempting Cloudinary upload for file: {file.filename}")
@@ -657,8 +658,18 @@ async def create_product(
     )
     db.add(new_product)
     await db.commit()
-    await db.refresh(new_product)
-    return new_product
+    
+    # LAZY LOADING FIX: Fetch the product again with denominations loaded
+    # Even though denominations is empty, Pydantic access to the attribute triggers a query.
+    stmt = (
+        select(Product)
+        .options(selectinload(Product.denominations))
+        .where(Product.id == new_product.id)
+    )
+    result = await db.execute(stmt)
+    loaded_product = result.scalar_one()
+    
+    return loaded_product
 
 # -- UPDATE PRODUCT (Price/Stock Removed) --
 @admin_router.put("/products/{product_id}", response_model=ProductSchema)
@@ -676,7 +687,12 @@ async def update_product(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    result = await db.execute(select(Product).where(Product.id == product_id))
+    # LAZY LOADING FIX: Eager load denominations on initial fetch
+    result = await db.execute(
+        select(Product)
+        .options(selectinload(Product.denominations))
+        .where(Product.id == product_id)
+    )
     product = result.scalar_one_or_none()
     
     if not product:
@@ -702,7 +718,8 @@ async def update_product(
     product.requires_player_id = requires_player_id
 
     await db.commit()
-    await db.refresh(product)
+    # Note: No db.refresh() needed if expire_on_commit=False, keeping the relationship loaded.
+    # Pydantic will use the in-memory state.
     return product
 
 # -- DELETE PRODUCT --

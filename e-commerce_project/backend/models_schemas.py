@@ -2,6 +2,7 @@
 # Production-level Database Models & Pydantic Schemas
 # Updated: Multi-Denomination Support & Multi-Item Orders
 # Updated: Admin->User Inbox Messaging & Moderation Support
+# FIX: InboxMessageCreate user_id made optional for URL-based routing
 
 from datetime import datetime
 from enum import Enum
@@ -722,7 +723,7 @@ class BlogDetailResponse(BlogResponse):
 
 class InboxMessageCreate(BaseModel):
     """Schema for Admin creating a message."""
-    user_id: int
+    user_id: Optional[int] = None # Updated: Made Optional to handle URL-based ID passing
     subject: Optional[str] = "Notification"
     body: str
 
