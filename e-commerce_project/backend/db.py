@@ -18,8 +18,16 @@ from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 
 # Import ProductCategory to ensure Enum types are registered in Metadata for init_db
-# Added User and InboxMessage to imports for new functionality
-from .models_schemas import Base, Product, ProductCode, ProductCategory, User, InboxMessage
+# Added User, InboxMessage, and Denomination to imports for functionality
+from .models_schemas import (
+    Base, 
+    Product, 
+    Denomination, 
+    ProductCode, 
+    ProductCategory, 
+    User, 
+    InboxMessage
+)
 
 # ======================================================
 # CONFIGURATION & LOGGING
@@ -157,14 +165,13 @@ def _parse_codes_sync(file_path: str) -> List[str]:
 
 async def add_denomination_codes_from_file(file_path: str, denomination_id: int, db: AsyncSession) -> int:
     """
-    Reads a file (TXT/CSV), parses codes, and bulk inserts them into the DB.
-    Updates the Product's stock_quantity counter upon success.
-    
-    Now includes validation for Product existence and category checks (e.g. Direct Topup warnings).
+    Reads a file (TXT/CSV), parses codes, and bulk inserts them into the DB
+    linked to a specific Denomination.
+    Updates the Denomination's stock_quantity counter upon success.
     
     Args:
         file_path: Path to the local file.
-        product_id: ID of the product to associate codes with.
+        denomination_id: ID of the denomination to associate codes with.
         db: Active AsyncSession.
         
     Returns:
@@ -178,28 +185,23 @@ async def add_denomination_codes_from_file(file_path: str, denomination_id: int,
             logger.warning(f"No codes found in file: {file_path}")
             return 0
 
-        # 2. Validate Product Existence & Category
-        # We fetch the product to ensure we aren't adding codes to a soft-deleted item
-        # or misconfigured category.
-        stmt = select(Product).where(product.id == product_id)
+        # 2. Validate Denomination Existence
+        # Ensure we are not adding codes to a non-existent or deleted denomination
+        stmt = select(Denomination).where(Denomination.id == denomination_id)
         result = await db.execute(stmt)
-        product = result.scalar_one_or_none()
+        denomination = result.scalar_one_or_none()
 
-        if not product:
-            logger.error(f"Product ID {product_id} not found. Cannot add codes.")
+        if not denomination:
+            logger.error(f"Denomination ID {denomination_id} not found. Cannot add codes.")
             return 0
         
-        if product.is_deleted:
-             logger.error(f"Product ID {product_id} is soft-deleted. Cannot add codes.")
+        # Check soft delete if applicable
+        if hasattr(denomination, 'is_deleted') and denomination.is_deleted:
+             logger.error(f"Denomination ID {denomination_id} is soft-deleted. Cannot add codes.")
              return 0
 
-        # Optional Warning for Direct Topup
-        # Usually Direct Topup (requires_player_id) is manual, but some use "Voucher Codes".
-        # We log this for audit purposes.
-        if product.product_category == ProductCategory.DIRECT_TOPUP:
-            logger.info(f"Adding stock codes to DIRECT_TOPUP product (ID: {product_id}). Ensure these are valid vouchers.")
-
         # 3. Prepare Code Objects
+        # explicitly using denomination_id from arguments
         new_code_objects = [
             ProductCode(denomination_id=denomination_id, code_value=code, is_used=False) 
             for code in codes
@@ -225,22 +227,20 @@ async def add_denomination_codes_from_file(file_path: str, denomination_id: int,
         db.add_all(filtered_objects)
         await db.flush() # Check for errors before committing
 
-        # 5. Update Product Stock Counter
-        # Only update if the product is not deleted (redundant check, but safe for concurrency)
+        # 5. Update Denomination Stock Counter
         count_added = len(filtered_objects)
         
         await db.execute(
-            update(Product)
-            .where(Product.id == product_id)
-            .where(Product.is_deleted == False) 
+            update(Denomination)
+            .where(Denomination.id == denomination_id)
             .values(
-                stock_quantity=Product.stock_quantity + count_added,
+                stock_quantity=Denomination.stock_quantity + count_added,
                 in_stock=True # Re-enable stock if it was 0
             )
         )
 
         await db.commit()
-        logger.info(f"Successfully added {count_added} codes for Product ID {product_id} ({product.product_category.value}).")
+        logger.info(f"Successfully added {count_added} codes for Denomination ID {denomination_id}.")
         return count_added
 
     except Exception as e:
@@ -248,11 +248,13 @@ async def add_denomination_codes_from_file(file_path: str, denomination_id: int,
         logger.error(f"Failed to batch add codes: {e}")
         return 0
 
-async def get_unused_code(product_id: int, db: AsyncSession) -> Optional[str]:
+async def get_unused_code(denomination_id: int, db: AsyncSession) -> Optional[str]:
     """
     Fetches a single unused code for automatic delivery.
     Uses 'SKIP LOCKED' to prevent race conditions where two concurrent requests 
     grab the same code before marking it used.
+    
+    Fixed: Accepts denomination_id instead of product_id.
     """
     try:
         # Postgres-specific: FOR UPDATE SKIP LOCKED
@@ -269,14 +271,14 @@ async def get_unused_code(product_id: int, db: AsyncSession) -> Optional[str]:
         code_value = result.scalar_one_or_none()
         
         if code_value:
-            logger.debug(f"Reserved code for product {product_id}: {code_value[:4]}***")
+            logger.debug(f"Reserved code for Denomination {denomination_id}: {code_value[:4]}***")
         else:
-            logger.warning(f"No unused codes available for product {product_id}")
+            logger.warning(f"No unused codes available for Denomination {denomination_id}")
             
         return code_value
 
     except Exception as e:
-        logger.error(f"Error fetching unused code for Product {product_id}: {e}")
+        logger.error(f"Error fetching unused code for Denomination {denomination_id}: {e}")
         return None
 
 async def mark_code_as_used(code_value: str, db: AsyncSession) -> bool:
@@ -300,9 +302,9 @@ async def mark_code_as_used(code_value: str, db: AsyncSession) -> bool:
             logger.warning(f"Attempted to mark code used, but it was not found or already used: {code_value}")
             return False
 
-        # Note: We do NOT decrement Product.stock_quantity here.
-        # That logic usually lives in the Service layer (handle_btcpay_webhook) 
-        # because one order might contain multiple items, and we update stock per product.
+        # Note: We do NOT decrement Stock quantity here.
+        # That logic usually lives in the Service layer (handle_webhook / fulfill_order) 
+        # because one order might contain multiple items.
         
         await db.flush() # Ensure update is pending
         logger.info(f"Code marked as used: {code_value[:4]}***")
