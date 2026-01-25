@@ -1,10 +1,10 @@
 # models_schemas.py
 # Production-level Database Models & Pydantic Schemas
-# Updated: Flexible Blog Creation (Title/Content Defaults)
+# Updated: Multi-Denomination Support & Multi-Item Orders
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Any, Union, Dict
+from typing import Optional, List, Any, Dict
 
 from sqlalchemy import (
     Column,
@@ -52,7 +52,7 @@ class SoftDeleteMixin:
 
 class ProductCategory(str, Enum):
     """
-    New Delivery Logic Categories.
+    Delivery Logic Categories.
     Determines if an order requires email delivery or manual top-up.
     """
     GIFT_CARDS = "gift_cards"      # Manual Email Delivery
@@ -64,11 +64,11 @@ class OrderStatus(str, Enum):
     PENDING = "pending"
     PROCESSING = "processing"
     PAID = "paid"
-    IN_PROGRESS = "in_progress" # NEW: Paid, waiting for Admin manual action
+    IN_PROGRESS = "in_progress" # Paid, waiting for Admin manual action
     SHIPPED = "shipped"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
-    REJECTED = "rejected"       # NEW: Admin declined (e.g., bad Player ID)
+    REJECTED = "rejected"       # Admin declined (e.g., bad Player ID)
     REFUNDED = "refunded"
     FAILED = "failed"
 
@@ -182,7 +182,6 @@ class OTPRecord(Base):
 class Category(Base, TimestampMixin):
     """
     Legacy Table for hierarchical organization.
-    Kept for backward compatibility if needed, but logic now favors Product.product_category enum.
     """
     __tablename__ = "categories"
 
@@ -198,18 +197,21 @@ class Category(Base, TimestampMixin):
 
 
 class Product(Base, TimestampMixin, SoftDeleteMixin):
+    """
+    Represents the 'Game' or 'Service' (e.g., PUBG Mobile, iTunes).
+    Does NOT hold price or stock anymore.
+    """
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True) # Keeping FK for now
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     
-    # NEW: Core Logic Fields
+    # Core Logic
     product_category = Column(SQLEnum(ProductCategory), default=ProductCategory.OTHERS, nullable=False, index=True)
     requires_player_id = Column(Boolean, default=False)
     
     name = Column(String(255), nullable=False, index=True)
     slug = Column(String(255), nullable=True, unique=True, index=True)
-    
     platform = Column(String(100), nullable=False) 
     
     description = Column(Text)
@@ -218,19 +220,40 @@ class Product(Base, TimestampMixin, SoftDeleteMixin):
     image_url = Column(Text, nullable=True)
     gallery_images = Column(JSON, default=list)
     
+    # Marketing
+    is_featured = Column(Boolean, default=False)
+    is_trending = Column(Boolean, default=False)
+    
+    # Relationships
+    category = relationship("Category", back_populates="products")
+    reviews = relationship("ProductReview", back_populates="product", cascade="all, delete-orphan")
+    
+    # ONE Product has MANY Denominations (Variants)
+    denominations = relationship("Denomination", back_populates="product", cascade="all, delete-orphan")
+
+
+class Denomination(Base, TimestampMixin, SoftDeleteMixin):
+    """
+    Represents a specific variant of a Product (e.g., "60 UC", "100 USD Card").
+    Holds the Price and Stock logic.
+    """
+    __tablename__ = "denominations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    
+    label = Column(String(100), nullable=False) # e.g. "60 UC", "Premium Pass"
+    
     price_usd = Column(Float, nullable=False)
     discount_percent = Column(Integer, default=0)
     
     in_stock = Column(Boolean, default=True)
-    stock_quantity = Column(Integer, default=999)
+    stock_quantity = Column(Integer, default=0) # Derived from codes count or manual
     
-    is_featured = Column(Boolean, default=False)
-    is_trending = Column(Boolean, default=False)
-    
-    category = relationship("Category", back_populates="products")
-    order_items = relationship("OrderItem", back_populates="product")
-    reviews = relationship("ProductReview", back_populates="product", cascade="all, delete-orphan")
-    codes = relationship("ProductCode", back_populates="product", cascade="all, delete-orphan")
+    # Relationships
+    product = relationship("Product", back_populates="denominations")
+    codes = relationship("ProductCode", back_populates="denomination", cascade="all, delete-orphan")
+    order_items = relationship("OrderItem", back_populates="denomination")
 
     @property
     def final_price(self) -> float:
@@ -238,15 +261,16 @@ class Product(Base, TimestampMixin, SoftDeleteMixin):
             return round(self.price_usd * (1 - self.discount_percent / 100), 2)
         return self.price_usd
 
+
 class ProductCode(Base, TimestampMixin):
     """
     Stores individual digital keys/codes.
-    In the new Manual Workflow, this serves as an admin repository/backstock.
+    Now linked to a specific Denomination (Variant), not the parent Product.
     """
     __tablename__ = "product_codes"
 
     id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    denomination_id = Column(Integer, ForeignKey("denominations.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     
     code_value = Column(String(500), nullable=False, unique=True)
@@ -257,11 +281,11 @@ class ProductCode(Base, TimestampMixin):
     source = Column(String(100), nullable=True)
     version_id = Column(Integer, default=1, nullable=False)
 
-    product = relationship("Product", back_populates="codes")
+    denomination = relationship("Denomination", back_populates="codes")
     order = relationship("Order", back_populates="delivered_codes")
 
     __table_args__ = (
-        Index("idx_product_available_codes", "product_id", "is_used"),
+        Index("idx_denom_available_codes", "denomination_id", "is_used"),
     )
 
 class ProductReview(Base, TimestampMixin):
@@ -304,8 +328,9 @@ class Order(Base, TimestampMixin):
     customer_ip = Column(String(50))
     
     is_deposit = Column(Boolean, default=False, index=True)
+    fulfillment_note = Column(Text, nullable=True) # Admin manual note
     
-    # NEW: Metadata for capturing Player ID / User ID for Direct Topup
+    # Metadata for capturing Player ID / User ID for Direct Topup
     order_metadata = Column(JSON, nullable=True, default={})
 
     user = relationship("User", back_populates="orders")
@@ -314,16 +339,24 @@ class Order(Base, TimestampMixin):
     delivered_codes = relationship("ProductCode", back_populates="order")
 
 class OrderItem(Base):
+    """
+    Links an Order to specific Denominations (Variants).
+    """
     __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    quantity = Column(Integer, default=1, nullable=False)
-    unit_price_at_purchase = Column(Float, nullable=False)
+    denomination_id = Column(Integer, ForeignKey("denominations.id"), nullable=False)
     
+    quantity = Column(Integer, default=1, nullable=False)
+    unit_price_at_purchase = Column(Float, nullable=False) # Snapshot of price
+    
+    # Metadata Snapshot (In case Denomination/Product is deleted later)
+    product_name_snapshot = Column(String(255), nullable=True)
+    variant_label_snapshot = Column(String(100), nullable=True)
+
     order = relationship("Order", back_populates="items")
-    product = relationship("Product", back_populates="order_items")
+    denomination = relationship("Denomination", back_populates="order_items")
 
 class Transaction(Base, TimestampMixin):
     __tablename__ = "transactions"
@@ -482,24 +515,14 @@ class ProductCodeResponse(ORMBase):
     
     model_config = ConfigDict(from_attributes=True)
 
-# --- Product Schemas ---
+# --- Denomination Schemas (New) ---
 
-class ProductBaseSchema(BaseModel):
-    name: str
-    platform: str
-    product_category: ProductCategory = Field(default=ProductCategory.OTHERS) # NEW Schema Field
-    category_id: Optional[int] = None # Keeping for compatibility
-    requires_player_id: bool = False  # NEW Schema Field
-    
-    description: Optional[str] = None
-    short_description: Optional[str] = None
-    
+class DenominationBase(BaseModel):
+    label: str
     price_usd: float = Field(..., gt=0)
     discount_percent: int = Field(0, ge=0, le=100)
-    stock_quantity: int = Field(..., ge=0)
-    
-    is_featured: bool = False
-    is_trending: bool = False
+    stock_quantity: int = Field(0, ge=0)
+    in_stock: bool = True
 
     @field_validator('price_usd', mode='before')
     @classmethod
@@ -508,63 +531,86 @@ class ProductBaseSchema(BaseModel):
             return float(v.strip())
         return v
 
-    @field_validator('stock_quantity', 'discount_percent', mode='before')
-    @classmethod
-    def parse_int_fields(cls, v: Any) -> int:
-        if isinstance(v, str):
-            return int(v.strip()) if v.strip() else 0
-        return v
+class DenominationCreate(DenominationBase):
+    pass
+
+class DenominationResponse(ORMBase):
+    label: str
+    price_usd: float
+    discount_percent: int
+    final_price: float
+    stock_quantity: int
+    in_stock: bool
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Product Schemas (Updated) ---
+
+class ProductBaseSchema(BaseModel):
+    name: str
+    platform: str
+    product_category: ProductCategory = Field(default=ProductCategory.OTHERS)
+    requires_player_id: bool = False
+    
+    category_id: Optional[int] = None
+    description: Optional[str] = None
+    short_description: Optional[str] = None
+    
+    is_featured: bool = False
+    is_trending: bool = False
 
 class ProductCreateSchema(ProductBaseSchema):
     image_url: str 
-
+    # Optional: Initial denominations can be passed here if logic allows,
+    # but typically handled separately or via nested list.
+    
 class ProductUpdateSchema(ProductBaseSchema):
     name: Optional[str] = None
     platform: Optional[str] = None
     product_category: Optional[ProductCategory] = None
     requires_player_id: Optional[bool] = None
-    price_usd: Optional[float] = None
-    stock_quantity: Optional[int] = None
     image_url: Optional[str] = None 
 
 class ProductSchema(ORMBase):
+    """
+    Response schema for Product.
+    Includes list of available denominations.
+    """
     name: str
     slug: Optional[str]
     platform: str
-    product_category: ProductCategory # Exposed to frontend
+    product_category: ProductCategory
     requires_player_id: bool
     image_url: Optional[str]
-    price_usd: float
-    discount_percent: int
-    final_price: float = 0.0
-    in_stock: bool
-    stock_quantity: int
     is_featured: bool
     is_trending: bool
     
+    denominations: List[DenominationResponse] = []
+    
     model_config = ConfigDict(from_attributes=True)
 
-# --- Cart & Order Schemas ---
+# --- Cart & Order Schemas (Updated) ---
 
 class CartItemSchema(BaseModel):
-    product_id: int
+    denomination_id: int # Changed from product_id
     quantity: int = Field(1, ge=1)
 
 class MultiProductOrderCreate(BaseModel):
     items: List[CartItemSchema]
     payment_method: PaymentMethod = PaymentMethod.NOWPAYMENTS
-    player_id: Optional[str] = None # Added for Direct Topup flow
+    player_id: Optional[str] = None
 
 class OrderItemResponse(BaseModel):
-    product_id: int
-    product_name: str 
+    denomination_id: int
+    product_name_snapshot: Optional[str]
+    variant_label_snapshot: Optional[str]
     quantity: int
     unit_price_at_purchase: float
     
     model_config = ConfigDict(from_attributes=True)
 
 class DeliveredCodeSchema(BaseModel):
-    product_id: int
+    denomination_id: int
     code_value: str
     
     model_config = ConfigDict(from_attributes=True)
@@ -575,7 +621,7 @@ class OrderResponse(ORMBase):
     status: OrderStatus
     payment_method: PaymentMethod
     is_deposit: bool
-    order_metadata: Optional[Dict[str, Any]] = None # Exposed to frontend
+    order_metadata: Optional[Dict[str, Any]] = None
     items: List[OrderItemResponse] = [] 
     delivered_codes: List[DeliveredCodeSchema] = []
 
@@ -607,10 +653,6 @@ class BannerSchema(ORMBase):
 # --- BLOG & SOCIAL SCHEMAS ---
 
 class BlogCreate(BaseModel):
-    """
-    Modified to be flexible.
-    Allows creating drafts even if Title or Content is missing initially.
-    """
     title: Optional[str] = Field(default="Untitled Post", min_length=0, max_length=255)
     content: Optional[str] = Field(default="No content provided", min_length=0)
     image_url: Optional[str] = None

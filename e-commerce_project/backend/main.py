@@ -9,6 +9,7 @@
 # - Wallet System Integration (Profile & Deposit)
 # - Manual Delivery & Top-up Workflow Support
 # - Flexible Blog Creation (Server-side Defaults)
+# - UPDATED: Multi-Denomination Support for Admin Panel
 
 import os
 import shutil
@@ -45,7 +46,7 @@ from sqlalchemy import select, desc, delete, func, case, update, or_
 from sqlalchemy.orm import selectinload
 
 # --- LOCAL MODULES ---
-from .db import get_db, init_db, add_product_codes_from_file
+from .db import get_db, init_db
 from .core import (
     settings, 
     get_current_admin, 
@@ -70,7 +71,11 @@ from .services import (
     handle_nowpayments_webhook,
     handle_binance_webhook,
     handle_bybit_webhook,
-    process_admin_order_action # NEW: Manual Fulfillment Service
+    process_admin_order_action,
+    # NEW SERVICES FOR DENOMINATIONS
+    create_denomination_service,
+    get_product_denominations_service,
+    upload_denomination_codes_service
 )
 
 # --- SCHEMAS & MODELS ---
@@ -90,14 +95,17 @@ from .models_schemas import (
     OrderResponse,
     OrderStatus,
     PaymentMethod,
-    ProductCategory, # NEW: For Categorization
+    ProductCategory, 
     # --- BLOG SYSTEM MODELS & SCHEMAS ---
     BlogPost,
     BlogComment,
-    BlogReaction, # Added for Like functionality
+    BlogReaction, 
     BlogResponse,
     BlogDetailResponse,
-    CommentCreate
+    CommentCreate,
+    # --- NEW DENOMINATION SCHEMAS ---
+    DenominationCreate,
+    DenominationResponse
 )
 
 # =========================================================
@@ -172,7 +180,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.6.3", # Bumped for Blog Interaction Fixes
+    version="2.7.0", # Updated for Denomination Support
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -216,19 +224,22 @@ catalog_router = APIRouter(prefix="/api", tags=["Catalog"])
 @catalog_router.get("/products", response_model=List[ProductSchema])
 async def get_products(
     platform: Optional[str] = None, 
-    category: Optional[str] = None, # NEW: Filter by Category Enum
+    category: Optional[str] = None, 
     limit: int = 50, 
     db: AsyncSession = Depends(get_db)
 ):
-    """Fetch active products with optional platform or category filters."""
+    """
+    Fetch active products. 
+    Returns ProductSchema which includes list of 'denominations'.
+    """
     query = select(Product).where(
         or_(Product.is_deleted == False, Product.is_deleted.is_(None))
-    )
+    ).options(selectinload(Product.denominations)) # Eager load for schema
+
     if platform:
         query = query.where(Product.platform == platform)
     
     if category:
-        # Match against ProductCategory enum value
         query = query.where(Product.product_category == category)
     
     query = query.order_by(desc(Product.id)).limit(limit)
@@ -238,7 +249,13 @@ async def get_products(
 
 @catalog_router.get("/products/{product_id}", response_model=ProductSchema)
 async def get_product_detail(product_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Product).where(Product.id == product_id))
+    # Eager load denominations for the detail view
+    stmt = (
+        select(Product)
+        .where(Product.id == product_id)
+        .options(selectinload(Product.denominations))
+    )
+    result = await db.execute(stmt)
     product = result.scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -358,9 +375,6 @@ async def checkout_route(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Handles Checkout. Now supports capturing 'player_id' for Direct Topup.
-    """
     try:
         checkout_url = await create_order_service(db, user.id, order_data)
         return {"checkout_url": checkout_url}
@@ -432,9 +446,14 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db), admin: Admin = Dep
 # -- ADMIN PRODUCTS LIST --
 @admin_router.get("/products", response_model=List[ProductSchema])
 async def get_admin_products(db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    """
+    Returns products for the Admin Table.
+    Uses ProductSchema which now nests Denominations for the UI to display 'Variants Available'.
+    """
     query = (
         select(Product)
         .where(or_(Product.is_deleted == False, Product.is_deleted.is_(None)))
+        .options(selectinload(Product.denominations)) # Important: Eager load variants
         .order_by(desc(Product.id))
     )
     result = await db.execute(query)
@@ -465,7 +484,7 @@ async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), 
         logger.error(f"Order Fetch Error: {str(e)}")
         raise HTTPException(status_code=500, detail="Database error while fetching orders.")
 
-# -- NEW: ADMIN MANUAL ORDER ACTION --
+# -- ADMIN MANUAL ORDER ACTION --
 @admin_router.post("/orders/{order_id}/action")
 async def admin_order_action(
     order_id: int,
@@ -473,10 +492,6 @@ async def admin_order_action(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    """
-    Approve or Reject an order manually.
-    Payload: {"action": "complete" | "reject", "manual_content": "codes..."}
-    """
     action = payload.get("action")
     manual_content = payload.get("manual_content")
     
@@ -485,15 +500,15 @@ async def admin_order_action(
         
     return await process_admin_order_action(db, order_id, action, manual_content)
 
-# -- CREATE PRODUCT (Updated for New Categories) --
+# =========================================================
+# DENOMINATION & PRODUCT MANAGEMENT (Refactored)
+# =========================================================
+
+# -- CREATE PRODUCT (Price/Stock Removed) --
 @admin_router.post("/products", response_model=ProductSchema)
 async def create_product(
     name: str = Form(...),
     platform: str = Form(...),
-    price_usd: float = Form(...),
-    stock_quantity: int = Form(0),
-    discount_percent: int = Form(0),
-    # NEW FIELDS:
     product_category: ProductCategory = Form(ProductCategory.OTHERS),
     requires_player_id: bool = Form(False),
     
@@ -504,6 +519,10 @@ async def create_product(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
+    """
+    Create a Product Container. 
+    Note: Pricing and Stock are now handled via Denominations.
+    """
     try:
         logger.info(f"Attempting Cloudinary upload for file: {file.filename}")
         upload_result = cloudinary.uploader.upload(file.file, folder="keyvault_products")
@@ -512,36 +531,28 @@ async def create_product(
         logger.error(f"Cloudinary upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Image Provider Error: {str(e)}")
 
-    # Inline Creation to ensure new fields are saved
     new_product = Product(
         name=name,
         platform=platform,
-        product_category=product_category, # New field
-        requires_player_id=requires_player_id, # New field
-        price_usd=price_usd,
-        stock_quantity=stock_quantity,
-        in_stock=(stock_quantity > 0),
-        discount_percent=discount_percent,
+        product_category=product_category,
+        requires_player_id=requires_player_id,
         description=description,
         image_url=secure_url,
         is_featured=is_featured,
         is_trending=is_trending
+        # Price/Stock fields removed here.
     )
     db.add(new_product)
     await db.commit()
     await db.refresh(new_product)
     return new_product
 
-# -- UPDATE PRODUCT (PUT) --
+# -- UPDATE PRODUCT (Price/Stock Removed) --
 @admin_router.put("/products/{product_id}", response_model=ProductSchema)
 async def update_product(
     product_id: int,
     name: str = Form(...),
     platform: str = Form(...),
-    price_usd: float = Form(...),
-    stock_quantity: int = Form(...),
-    discount_percent: int = Form(0),
-    # NEW FIELDS:
     product_category: Optional[ProductCategory] = Form(None),
     requires_player_id: bool = Form(False),
     
@@ -569,15 +580,10 @@ async def update_product(
 
     product.name = name
     product.platform = platform
-    product.price_usd = price_usd
-    product.stock_quantity = stock_quantity
-    product.discount_percent = discount_percent
     product.description = description
     product.is_featured = is_featured
     product.is_trending = is_trending
-    product.in_stock = (stock_quantity > 0)
     
-    # Update new fields
     if product_category:
         product.product_category = product_category
     product.requires_player_id = requires_player_id
@@ -600,7 +606,70 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_db), ad
     await db.commit()
     return {"message": "Product deleted successfully"}
 
-# -- CREATE BANNER --
+# --- DENOMINATION ROUTES (Nested under Admin) ---
+
+@admin_router.get("/products/{product_id}/denominations", response_model=List[DenominationResponse])
+async def list_denominations(
+    product_id: int, 
+    db: AsyncSession = Depends(get_db), 
+    admin: Admin = Depends(get_current_admin)
+):
+    """Get all variants for a specific product."""
+    return await get_product_denominations_service(db, product_id)
+
+@admin_router.post("/products/{product_id}/denominations", response_model=DenominationResponse)
+async def create_denomination(
+    product_id: int,
+    payload: DenominationCreate,
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """Create a new variant (e.g., '100 UC') for a product."""
+    return await create_denomination_service(
+        db, 
+        product_id, 
+        payload.label, 
+        payload.price_usd, 
+        payload.discount_percent
+    )
+
+@admin_router.post("/denominations/{denomination_id}/upload-codes")
+async def upload_denomination_codes(
+    denomination_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin)
+):
+    """
+    Bulk upload codes for a specific denomination.
+    Accepts .txt or .csv files.
+    """
+    if not file.filename.endswith(('.txt', '.csv')):
+        raise HTTPException(status_code=400, detail="Only .txt or .csv files allowed")
+
+    temp_filename = f"{uuid.uuid4()}_{file.filename}"
+    file_path = UPLOAD_DIR / temp_filename
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        count = await upload_denomination_codes_service(db, denomination_id, str(file_path))
+        return {"status": "success", "codes_added": count}
+        
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process file")
+    finally:
+        # Cleanup
+        if file_path.exists():
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+# --- BANNER ROUTES ---
+
 @admin_router.post("/banners", response_model=BannerSchema)
 async def create_banner(
     title: Optional[str] = Form(None),
@@ -622,7 +691,6 @@ async def create_banner(
 
     return await create_banner_service(db, title, secure_url)
 
-# -- UPDATE BANNER (PUT) --
 @admin_router.put("/banners/{banner_id}", response_model=BannerSchema)
 async def update_banner(
     banner_id: int,
@@ -658,7 +726,6 @@ async def update_banner(
     await db.refresh(banner)
     return banner
 
-# -- DELETE BANNER --
 @admin_router.delete("/banners/{banner_id}")
 async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
     result = await db.execute(select(Banner).where(Banner.id == banner_id))
@@ -670,38 +737,6 @@ async def delete_banner(banner_id: int, db: AsyncSession = Depends(get_db), admi
     await db.delete(banner)
     await db.commit()
     return {"message": "Banner deleted successfully"}
-
-# -- UPLOAD CODES --
-@admin_router.post("/products/{product_id}/upload-codes")
-async def upload_product_codes(
-    product_id: int,
-    file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
-    admin: Admin = Depends(get_current_admin)
-):
-    if not file.filename.endswith(('.txt', '.csv')):
-        raise HTTPException(status_code=400, detail="Only .txt or .csv files allowed")
-
-    temp_filename = f"{uuid.uuid4()}_{file.filename}"
-    file_path = UPLOAD_DIR / temp_filename
-    
-    try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        count = await add_product_codes_from_file(str(file_path), product_id, db)
-        return {"status": "success", "codes_added": count}
-        
-    except Exception as e:
-        logger.error(f"Upload failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to process file")
-    finally:
-        if file:
-            try:
-                if file_path.exists():
-                    os.remove(file_path)
-            except Exception:
-                pass
 
 
 # --- F. WEBHOOK ROUTER ---
@@ -757,25 +792,18 @@ async def get_post_details(slug: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Blog post not found")
     return post
 
-# --- NEW: REACT (LIKE) ENDPOINT FOR FRONTEND ---
 @blog_router.post("/{post_id}/react")
 async def react_to_post(
     post_id: int, 
-    payload: dict = Body(...), # Expects {"reaction_type": "like"}
+    payload: dict = Body(...),
     user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Toggles a reaction (Like) for the post. 
-    Matches frontend call: POST /api/blog/{id}/react
-    """
-    # Check if post exists
     post_res = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
     post = post_res.scalar_one_or_none()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    # Check for existing reaction
     stmt = select(BlogReaction).where(
         BlogReaction.post_id == post_id,
         BlogReaction.user_id == user.id
@@ -784,11 +812,9 @@ async def react_to_post(
     existing_reaction = result.scalar_one_or_none()
 
     if existing_reaction:
-        # Toggle OFF (Unlike)
         await db.delete(existing_reaction)
         message = "Reaction removed"
     else:
-        # Toggle ON (Like)
         new_reaction = BlogReaction(
             post_id=post_id,
             user_id=user.id,
@@ -800,19 +826,13 @@ async def react_to_post(
     await db.commit()
     return {"status": "success", "detail": message}
 
-# --- NEW: COMMENT ENDPOINT MATCHING FRONTEND PATH ---
 @blog_router.post("/{post_id}/comment")
 async def add_comment_frontend(
     post_id: int,
-    content: str = Body(..., embed=True), # Expects {"content": "..."}
+    content: str = Body(..., embed=True),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Adds a comment. 
-    Matches frontend call: POST /api/blog/{id}/comment
-    """
-    # Check Post
     stmt = select(BlogPost).where(BlogPost.id == post_id)
     result = await db.execute(stmt)
     if not result.scalar_one_or_none():
@@ -823,7 +843,6 @@ async def add_comment_frontend(
     await db.commit()
     return {"status": "success"}
 
-# --- ORIGINAL COMMENT ENDPOINT (KEPT FOR COMPATIBILITY) ---
 @blog_router.post("/posts/{post_id}/comments")
 async def add_comment(
     post_id: int,
@@ -852,7 +871,6 @@ async def delete_comment(
     return {"detail": "Comment removed"}
 
 # --- H. ADMIN BLOG ROUTER (Protected) ---
-# New router to handle Admin Blog Management
 admin_blog_router = APIRouter(prefix="/api/admin/blog", tags=["Admin Blog"])
 
 @admin_blog_router.get("/posts", response_model=List[BlogResponse])
@@ -860,7 +878,6 @@ async def get_admin_blog_posts(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    """List ALL blog posts (Published & Drafts) for Admin Table"""
     stmt = (
         select(BlogPost)
         .where(BlogPost.is_deleted == False)
@@ -879,9 +896,6 @@ async def create_blog_post(
     current_admin: Admin = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a new Blog Post (Admin) with Robust Defaults"""
-    
-    # Apply defaults if fields are missing or empty
     final_title = title.strip() if title and title.strip() else f"Untitled Post {datetime.utcnow().strftime('%Y-%m-%d')}"
     final_content = content.strip() if content and content.strip() else "No content provided."
 
@@ -894,7 +908,6 @@ async def create_blog_post(
             logger.error(f"Cloudinary upload failed: {e}")
             raise HTTPException(status_code=400, detail="Image upload failed")
 
-    # Generate a secure slug, appending unique ID if it's a generic title
     base_slug = final_title.lower().replace(" ", "-")[:50]
     unique_suffix = f"-{int(time.time())}"
     slug = f"{base_slug}{unique_suffix}"
@@ -919,11 +932,10 @@ async def update_blog_post(
     title: str = Body(None),
     content: str = Body(None),
     is_published: bool = Body(None),
-    image_url: str = Body(None), # For frontend sending existing or new URL
+    image_url: str = Body(None), 
     current_admin: Admin = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update Blog Post (Admin)"""
     stmt = select(BlogPost).where(BlogPost.id == post_id)
     result = await db.execute(stmt)
     post = result.scalar_one_or_none()
@@ -945,7 +957,6 @@ async def delete_blog_post(
     admin: Admin = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Soft Delete Blog Post (Admin)"""
     stmt = update(BlogPost).where(BlogPost.id == post_id).values(
         is_deleted=True,
         deleted_at=datetime.utcnow()
@@ -962,8 +973,6 @@ async def get_all_comments(
     db: AsyncSession = Depends(get_db),
     admin: Admin = Depends(get_current_admin)
 ):
-    """List ALL comments for moderation"""
-    # Fetch comments with related User and Post info
     stmt = (
         select(BlogComment)
         .options(
@@ -975,7 +984,6 @@ async def get_all_comments(
     result = await db.execute(stmt)
     comments = result.scalars().all()
     
-    # Manually construct response to include needed fields for table
     return [
         {
             "id": c.id,
@@ -994,7 +1002,6 @@ async def admin_delete_comment(
     admin: Admin = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete specific comment (Admin Moderation)"""
     await db.execute(delete(BlogComment).where(BlogComment.id == comment_id))
     await db.commit()
     return {"detail": "Comment removed"}
@@ -1012,7 +1019,7 @@ app.include_router(order_router)
 app.include_router(admin_router)
 app.include_router(webhook_router)
 app.include_router(blog_router)
-app.include_router(admin_blog_router) # Registered new admin blog router
+app.include_router(admin_blog_router)
 
 # =========================================================
 # 7. FRONTEND PAGE ROUTES
