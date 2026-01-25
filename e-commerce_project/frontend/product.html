@@ -482,11 +482,16 @@
   <i class="fas fa-home"></i>
   Home
   </a>
-  <a href="/cart" class="mobile-menu-item">
+  <a href="/inbox.html" class="mobile-menu-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <a href="/cart.html" class="mobile-menu-item">
   <i class="fas fa-shopping-cart"></i>
   Cart
   </a>
-  <a href="/profile" class="mobile-menu-item">
+  <a href="/profile.html" class="mobile-menu-item">
   <i class="fas fa-user"></i>
   Profile
   </a>
@@ -537,6 +542,29 @@
                 <div class="skeleton h-14 w-full"></div>
             </div>
         </div>
+
+        <!-- Denominations Section -->
+        <section id="denominationsSection" style="display: none;" class="mb-16">
+            <div class="max-w-4xl">
+                <h2 class="text-2xl font-bold text-secondary mb-8">Select Denominations</h2>
+                <div id="denominationsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Denominations rendered via JS -->
+                </div>
+                
+                <!-- Total Price Display -->
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-lg font-semibold text-secondary">Total Price</span>
+                        <span id="totalPrice" class="text-3xl font-bold text-primary">$0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="btn-primary w-full" onclick="proceedToCheckout()" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-credit-card"></i>
+                        Pay Now
+                    </button>
+                    <p class="text-sm text-gray-500 text-center mt-4">Select at least one denomination to proceed</p>
+                </div>
+            </div>
+        </section>
 
         <!-- Description -->
         <div class="description-box mb-16" id="descriptionBox" style="display: none;">
@@ -628,7 +656,7 @@
         // =========================================================
         const API_BASE = '';
         let currentProduct = null;
-        let quantity = 1;
+        let selectedDenominations = new Map(); // denomination_id -> price
 
         const api = {
             getToken: () => localStorage.getItem('token'),
@@ -642,6 +670,18 @@
                 showLoader();
                 try {
                     const res = await fetch(`${API_BASE}${endpoint}`, { headers: api.getHeaders() });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally { hideLoader(); }
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { 
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
                     if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
                     return await res.json();
                 } finally { hideLoader(); }
@@ -660,18 +700,24 @@
             KEY: 'cart',
             getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
             saveItems: (items) => { localStorage.setItem(cart.KEY, JSON.stringify(items)); window.dispatchEvent(new Event('cartUpdated')); },
-            addItem: (product, qty = 1) => {
+            addDenominations: (product, denominationIds) => {
                 const items = cart.getItems();
-                const existing = items.find(i => i.id === product.id);
-                if (existing) {
-                    existing.quantity += qty;
-                } else {
-                    items.push({ ...product, quantity: qty });
-                }
+                // Add denominations as separate cart items
+                denominationIds.forEach(denomId => {
+                    items.push({ 
+                        product_id: product.id,
+                        product_name: product.name,
+                        product_image: product.image_url,
+                        denomination_id: denomId.id,
+                        denomination_label: denomId.label,
+                        price_usd: denomId.price,
+                        quantity: 1
+                    });
+                });
                 cart.saveItems(items);
-                Swal.fire({ icon: 'success', title: 'Added to Cart!', text: `${product.name} x${qty} added to your cart.`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
+                Swal.fire({ icon: 'success', title: 'Added to Cart!', text: `${denominationIds.length} denomination(s) added to your cart.`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
             },
-            getCount: () => cart.getItems().reduce((sum, item) => sum + item.quantity, 0)
+            getCount: () => cart.getItems().length
         };
 
         const checkAuthState = () => {
@@ -712,19 +758,70 @@
                 const response = await api.get(`/api/products/${productId}`);
                 currentProduct = response.data || response || getMockProduct(productId);
                 renderProduct(currentProduct);
-                loadRelatedProducts(currentProduct.platform);
+                await loadDenominations(productId);
             } catch (e) {
+                console.error('Error loading product:', e);
                 currentProduct = getMockProduct(productId);
                 renderProduct(currentProduct);
-                loadRelatedProducts(currentProduct.platform);
+                loadMockDenominations(productId);
             }
         };
 
-        const renderProduct = (product) => {
-            const finalPrice = product.discount_percent > 0 
-                ? product.price_usd * (1 - product.discount_percent / 100) 
-                : product.price_usd;
+        const loadDenominations = async (productId) => {
+            try {
+                const response = await api.get(`/api/products/${productId}/denominations`);
+                const denominations = response.data || response || [];
+                renderDenominations(denominations);
+            } catch (e) {
+                console.error('Error loading denominations:', e);
+                const denominations = getMockDenominations(productId);
+                renderDenominations(denominations);
+            }
+        };
 
+        const renderDenominations = (denominations) => {
+            if (!denominations || denominations.length === 0) {
+                document.getElementById('denominationsSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('denominationsSection').style.display = 'block';
+            
+            // If only one denomination, auto-select it
+            if (denominations.length === 1) {
+                selectedDenominations.set(denominations[0].id, {
+                    id: denominations[0].id,
+                    label: denominations[0].label,
+                    price: denominations[0].price
+                });
+            }
+
+            const container = document.getElementById('denominationsContainer');
+            container.innerHTML = denominations.map(denom => {
+                const isSelected = selectedDenominations.has(denom.id);
+                const isOutOfStock = !denom.in_stock;
+                return `
+                    <div class="denomination-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" 
+                         style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};">
+                        <div class="p-6 border-2 rounded-lg transition ${isSelected ? 'border-primary bg-blue-50' : 'border-gray-200'} ${isOutOfStock ? 'opacity-50 bg-gray-50' : ''}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-lg font-bold text-secondary">${denom.label}</span>
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
+                            <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">
+                                ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock || 'Available'})`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateTotalPrice();
+        };
+
+        const renderProduct = (product) => {
             document.getElementById('breadcrumbTitle').textContent = product.name;
             document.title = `${product.name} - KeyVault`;
 
@@ -741,55 +838,14 @@
                     <div class="flex flex-wrap items-center gap-3 mb-4">
                         <span class="platform-badge">
                             <i class="fas fa-gamepad text-primary"></i>
-                            ${product.platform}
+                            ${product.platform || 'Digital'}
                         </span>
                         <span class="text-2xl">${getRegionFlag(product.platform)}</span>
                     </div>
 
                     <h1 class="text-3xl font-bold text-secondary mb-4">${product.name}</h1>
 
-                    <div class="stock-indicator mb-6">
-                        <span class="stock-dot ${product.in_stock ? 'in-stock' : 'out-of-stock'}"></span>
-                        <span class="${product.in_stock ? 'text-success' : 'text-danger'}">
-                            ${product.in_stock ? `In Stock (${product.stock_quantity || 'Available'})` : 'Out of Stock'}
-                        </span>
-                    </div>
-
-                    <div class="mb-8">
-                        <div class="flex items-baseline gap-4">
-                            <span class="text-4xl font-bold text-primary">${formatCurrency(finalPrice)}</span>
-                            ${product.discount_percent > 0 ? `
-                                <span class="text-xl text-gray-400 line-through">${formatCurrency(product.price_usd)}</span>
-                                <span class="px-3 py-1 bg-danger text-white text-sm font-semibold rounded-full">-${product.discount_percent}%</span>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <!-- Quantity -->
-                    <div class="mb-8">
-                        <label class="block text-sm font-medium text-gray-600 mb-3">Quantity</label>
-                        <div class="quantity-selector">
-                            <button class="quantity-btn" onclick="updateQuantity(-1)" ${!product.in_stock ? 'disabled' : ''}>
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" class="quantity-input" id="quantityInput" value="1" min="1" max="${product.stock_quantity || 99}" ${!product.in_stock ? 'disabled' : ''}>
-                            <button class="quantity-btn" onclick="updateQuantity(1)" ${!product.in_stock ? 'disabled' : ''}>
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button class="btn-primary flex-1" onclick="addToCart()" ${!product.in_stock ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                            <i class="fas fa-cart-plus"></i>
-                            Add to Cart
-                        </button>
-                        <button class="btn-secondary flex-1" onclick="buyNow()" ${!product.in_stock ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                            <i class="fas fa-bolt"></i>
-                            Buy Now
-                        </button>
-                    </div>
+                    <p class="text-gray-600 leading-relaxed mb-8">${product.short_description || 'Select denominations below to customize your purchase.'}</p>
 
                     <!-- Trust Badges -->
                     <div class="mt-8 pt-8 border-t border-gray-100">
@@ -818,68 +874,54 @@
             }
         };
 
-        const updateQuantity = (delta) => {
-            const input = document.getElementById('quantityInput');
-            const newValue = Math.max(1, Math.min(currentProduct?.stock_quantity || 99, parseInt(input.value) + delta));
-            input.value = newValue;
-            quantity = newValue;
+        const toggleDenomination = (denomId, label, price) => {
+            const denom = { id: denomId, label: label, price: price };
+            if (selectedDenominations.has(denomId)) {
+                selectedDenominations.delete(denomId);
+            } else {
+                selectedDenominations.set(denomId, denom);
+            }
+            updateTotalPrice();
         };
 
-        const addToCart = () => {
-            if (!currentProduct) return;
-            const qty = parseInt(document.getElementById('quantityInput').value);
-            const finalPrice = currentProduct.discount_percent > 0 
-                ? currentProduct.price_usd * (1 - currentProduct.discount_percent / 100) 
-                : currentProduct.price_usd;
-            cart.addItem({
-                id: currentProduct.id,
-                name: currentProduct.name,
-                image_url: currentProduct.image_url,
-                price_usd: currentProduct.price_usd,
-                final_price: finalPrice,
-                platform: currentProduct.platform
-            }, qty);
+        const updateTotalPrice = () => {
+            let total = 0;
+            selectedDenominations.forEach(denom => {
+                total += denom.price;
+            });
+            document.getElementById('totalPrice').textContent = formatCurrency(total);
+            
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (selectedDenominations.size > 0) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.style.opacity = '1';
+                checkoutBtn.style.cursor = 'pointer';
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.style.opacity = '0.5';
+                checkoutBtn.style.cursor = 'not-allowed';
+            }
         };
 
-        const buyNow = () => {
-            addToCart();
-            window.location.href = '/cart.html';
+        const proceedToCheckout = async () => {
+            if (selectedDenominations.size === 0) return;
+            
+            const denominationIds = Array.from(selectedDenominations.values());
+            try {
+                cart.addDenominations(currentProduct, denominationIds);
+                window.location.href = '/checkout.html';
+            } catch (e) {
+                console.error('Error adding to cart:', e);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to add items to cart.' });
+            }
         };
 
         // =========================================================
         // RELATED PRODUCTS
         // =========================================================
-        const loadRelatedProducts = async (platform) => {
-            try {
-                const response = await api.get(`/api/products?platform=${platform}&limit=4`);
-                const products = (response.data || response || getMockProducts()).filter(p => p.id !== currentProduct?.id).slice(0, 4);
-                renderRelatedProducts(products);
-            } catch (e) {
-                const products = getMockProducts().filter(p => p.platform === platform && p.id !== currentProduct?.id).slice(0, 4);
-                renderRelatedProducts(products);
-            }
-        };
-
-        const renderRelatedProducts = (products) => {
-            if (products.length === 0) return;
-            
-            document.getElementById('relatedSection').style.display = 'block';
-            document.getElementById('relatedProducts').innerHTML = products.map(product => {
-                const finalPrice = product.discount_percent > 0 ? product.price_usd * (1 - product.discount_percent / 100) : product.price_usd;
-                return `
-                    <a href="/product.html?id=${product.id}" class="related-card">
-                        <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
-                             alt="${product.name}" 
-                             class="w-full aspect-video object-cover"
-                             onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'">
-                        <div class="p-4">
-                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform}</span>
-                            <h3 class="font-semibold text-secondary mt-2 line-clamp-1">${product.name}</h3>
-                            <p class="text-lg font-bold text-primary mt-2">${formatCurrency(finalPrice)}</p>
-                        </div>
-                    </a>
-                `;
-            }).join('');
+        const loadRelatedProducts = async () => {
+            // Related products are optional in the new model
+            document.getElementById('relatedSection').style.display = 'none';
         };
 
         const getRegionFlag = (platform) => {
@@ -896,11 +938,21 @@
         };
 
         const getMockProducts = () => [
-            { id: 1, name: 'Xbox Game Pass Ultimate - 3 Months', platform: 'Xbox', price_usd: 44.99, discount_percent: 10, image_url: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=800', in_stock: true, stock_quantity: 50, description: '<p>Get unlimited access to over 100 high-quality games for console, PC, and Android mobile devices. Includes Xbox Live Gold membership for online multiplayer gaming.</p><ul><li>100+ Games on Console, PC, and Mobile</li><li>Xbox Live Gold included</li><li>EA Play membership included</li><li>New games added regularly</li></ul>' },
-            { id: 2, name: 'PlayStation Plus Premium - 12 Months', platform: 'PlayStation', price_usd: 59.99, discount_percent: 15, image_url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800', in_stock: true, stock_quantity: 30, description: '<p>The ultimate PlayStation membership with access to hundreds of games, online multiplayer, and exclusive benefits.</p>' },
-            { id: 3, name: 'Steam Wallet Card - $50', platform: 'Steam', price_usd: 50.00, discount_percent: 0, image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', in_stock: true, stock_quantity: 100, description: '<p>Add funds to your Steam Wallet instantly. Use it to purchase games, software, hardware, and any other item on Steam.</p>' },
-            { id: 4, name: 'Spotify Premium - 6 Months', platform: 'Spotify', price_usd: 59.99, discount_percent: 20, image_url: 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=800', in_stock: true, stock_quantity: 75, description: '<p>Listen to millions of songs ad-free with offline playback.</p>' },
+            { id: 1, name: 'Xbox Game Pass Ultimate', platform: 'Xbox', image_url: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=800', short_description: 'Get unlimited access to over 100 high-quality games for console, PC, and Android mobile devices.', description: '<p>Get unlimited access to over 100 high-quality games for console, PC, and Android mobile devices. Includes Xbox Live Gold membership for online multiplayer gaming.</p><ul><li>100+ Games on Console, PC, and Mobile</li><li>Xbox Live Gold included</li><li>EA Play membership included</li><li>New games added regularly</li></ul>' },
+            { id: 2, name: 'PlayStation Plus Premium', platform: 'PlayStation', image_url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800', short_description: 'The ultimate PlayStation membership with access to hundreds of games and online multiplayer.', description: '<p>The ultimate PlayStation membership with access to hundreds of games, online multiplayer, and exclusive benefits.</p>' },
+            { id: 3, name: 'Steam Wallet Card', platform: 'Steam', image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', short_description: 'Add funds to your Steam Wallet instantly for purchasing games and software.', description: '<p>Add funds to your Steam Wallet instantly. Use it to purchase games, software, hardware, and any other item on Steam.</p>' },
         ];
+
+        const getMockDenominations = (productId) => [
+            { id: `${productId}-1`, label: '50 UC', price: 9.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-2`, label: '100 UC', price: 19.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-3`, label: '250 UC', price: 49.99, in_stock: true, stock: 'Available' },
+        ];
+
+        const loadMockDenominations = (productId) => {
+            const denominations = getMockDenominations(productId);
+            renderDenominations(denominations);
+        };
 
   // =========================================================
   // MOBILE MENU FUNCTIONALITY
@@ -943,6 +995,21 @@
   updateCartBadge();
   loadProduct();
   });
+
+  // Add CSS for denomination cards
+  const style = document.createElement('style');
+  style.textContent = `
+    .denomination-card {
+      transition: all 0.3s ease;
+    }
+    .denomination-card.selected {
+      transform: scale(1.02);
+    }
+    .denomination-card.disabled {
+      pointer-events: none;
+    }
+  `;
+  document.head.appendChild(style);
   </script>
 </body>
 </html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox - KeyVault</title>
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6); z-index: 9999;
+        }
+        .progress-bar.loading { animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .cart-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: #EF4444; color: white; font-size: 11px; font-weight: 600;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #2563EB;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active { display: flex; flex-direction: column; }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active { display: block; }
+
+        .mobile-menu-header { padding: 20px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; }
+        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
+        .mobile-menu-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #1E293B; padding: 0; }
+        .mobile-menu-content { padding: 20px; flex: 1; overflow-y: auto; }
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover { color: #2563EB; }
+        .mobile-menu-item i { font-size: 18px; width: 24px; }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        @media (min-width: 768px) {
+            .hamburger-btn { display: none !important; }
+            .mobile-menu { display: none !important; }
+            .mobile-menu-overlay { display: none !important; }
+        }
+
+        @media (max-width: 767px) {
+            .hamburger-btn { display: flex; }
+            .navbar-desktop-items { display: none; }
+        }
+
+        .inbox-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #E2E8F0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .inbox-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left-color: #2563EB;
+        }
+
+        .inbox-card.unread {
+            background: #EFF6FF;
+            border-left-color: #2563EB;
+            font-weight: 500;
+        }
+
+        .inbox-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .inbox-card-title {
+            font-weight: 600;
+            color: #1E293B;
+            font-size: 15px;
+        }
+
+        .inbox-card-date {
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        .inbox-card-body {
+            color: #64748B;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .unread-badge {
+            width: 8px;
+            height: 8px;
+            background: #2563EB;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            background: #F1F5F9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 48px;
+            color: #94A3B8;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .footer { background: #1E293B; color: #94A3B8; padding: 60px 0 30px; }
+        .footer a { color: #94A3B8; text-decoration: none; transition: color 0.2s; }
+        .footer a:hover { color: #FFFFFF; }
+
+        .social-icon {
+            width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .social-icon:hover { background: #2563EB; color: white; }
+        
+        /* Dark Mode Styles */
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; }
+        html.dark .footer { background: #0F172A; }
+        html.dark .inbox-card { background: #1E293B; }
+        html.dark .inbox-card.unread { background: #1E3A5F; }
+        html.dark .inbox-card-title { color: #F1F5F9; }
+        html.dark .inbox-card-body { color: #CBD5E1; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                <a href="/" class="flex items-center gap-3 flex-shrink-0">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+                </a>
+                
+                <!-- Desktop Items (Hidden on Mobile) -->
+                <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div id="googleTranslate" class="flex items-center"></div>
+                    
+                    <div id="guestActions" class="flex items-center gap-3">
+                        <a href="/login.html" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+                        <a href="/register.html" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
+                    </div>
+                    <div id="userActions" class="hidden items-center gap-4">
+                        <a href="/inbox.html" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+                            <i class="fas fa-envelope"></i>
+                            <span id="desktopInboxCount" style="display: none; margin-left: 4px; background: #EF4444; color: white; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: bold;">0</span>
+                        </a>
+                        <a href="/profile.html" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+                            <i class="fas fa-wallet"></i>
+                            <span id="walletBalance">$0.00</span>
+                        </a>
+                        <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+                            <i class="fas fa-user text-gray-600"></i>
+                        </button>
+                    </div>
+                    <a href="/cart.html" class="relative p-2">
+                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </a>
+                </div>
+                
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+            <a href="/inbox.html" class="mobile-menu-item active">
+                <i class="fas fa-envelope"></i>
+                Inbox
+                <span id="mobileInboxBadge" class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+            </a>
+            <a href="/cart.html" class="mobile-menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+            </a>
+            <a href="/profile.html" class="mobile-menu-item">
+                <i class="fas fa-user"></i>
+                Profile
+            </a>
+
+            <div class="mobile-menu-divider"></div>
+
+            <div class="mobile-menu-item">
+                <i class="fas fa-moon"></i>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+            </div>
+
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+                <i class="fas fa-globe"></i>
+                <div id="mobileGoogleTranslate" class="flex-1"></div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Buttons -->
+        <div class="mobile-menu-button-group" id="mobileAuthButtons">
+            <a href="/login.html" class="btn-outline">Login</a>
+            <a href="/register.html" class="btn-primary">Register</a>
+        </div>
+
+        <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-secondary mb-2">Inbox</h1>
+            <p class="text-gray-600">Messages from KeyVault Admin & System</p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState">
+            <div class="loading-skeleton h-20 mb-3"></div>
+            <div class="loading-skeleton h-20 mb-3"></div>
+            <div class="loading-skeleton h-20 mb-3"></div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messagesContainer" style="display: none;">
+            <!-- Messages rendered via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" style="display: none;" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-secondary mb-2">No Messages</h3>
+            <p class="text-gray-600">You don't have any messages yet. Check back later for updates from KeyVault.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Your trusted source for premium digital keys.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/profile.html">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/contact.html">Contact Us</a></li>
+                        <li><a href="/terms.html">Terms</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/terms.html">Terms of Service</a></li>
+                        <li><a href="/privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================
+        // DARK MODE & GOOGLE TRANSLATE
+        // =========================================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggle').querySelector('i');
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateThemeIcon();
+            initMobileMenu();
+            checkAuthState();
+            loadInboxMessages();
+        });
+
+        // =========================================================
+        // UTILITIES & API
+        // =========================================================
+        const API_BASE = '';
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { headers: api.getHeaders() });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally { hideLoader(); }
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { 
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally { hideLoader(); }
+            }
+        };
+
+        const showLoader = () => document.getElementById('progressBar').classList.add('loading');
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        const checkAuthState = () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+                document.getElementById('mobileAuthButtons').classList.add('hidden');
+                document.getElementById('mobileUserButtons').classList.remove('hidden');
+            }
+        };
+
+        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
+
+        // =========================================================
+        // INBOX LOADING
+        // =========================================================
+        const loadInboxMessages = async () => {
+            try {
+                const response = await api.get('/api/inbox');
+                const messages = response.data || response || [];
+                renderInboxMessages(messages);
+                updateInboxBadges(messages);
+            } catch (e) {
+                console.error('Error loading inbox:', e);
+                const messages = getMockMessages();
+                renderInboxMessages(messages);
+                updateInboxBadges(messages);
+            }
+        };
+
+        const renderInboxMessages = (messages) => {
+            document.getElementById('loadingState').style.display = 'none';
+            
+            if (!messages || messages.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('messagesContainer').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('messagesContainer').style.display = 'block';
+            document.getElementById('messagesContainer').innerHTML = messages
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map(msg => {
+                    const isUnread = !msg.is_read;
+                    const date = new Date(msg.created_at);
+                    const dateStr = formatDate(date);
+                    return `
+                        <div class="inbox-card ${isUnread ? 'unread' : ''}" onclick="markAsRead('${msg.id}')">
+                            <div class="inbox-card-header">
+                                <div class="flex items-center gap-2">
+                                    ${isUnread ? '<div class="unread-badge"></div>' : ''}
+                                    <div class="inbox-card-title">${msg.subject || 'No Subject'}</div>
+                                </div>
+                                <div class="inbox-card-date">${dateStr}</div>
+                            </div>
+                            <div class="inbox-card-body">${msg.body || 'No message content'}</div>
+                        </div>
+                    `;
+                }).join('');
+        };
+
+        const formatDate = (date) => {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+        };
+
+        const markAsRead = async (messageId) => {
+            try {
+                await api.post(`/api/inbox/${messageId}/read`, {});
+                loadInboxMessages();
+            } catch (e) {
+                console.error('Error marking message as read:', e);
+            }
+        };
+
+        const updateInboxBadges = (messages) => {
+            const unreadCount = messages.filter(m => !m.is_read).length;
+            if (unreadCount > 0) {
+                const mobileBadge = document.getElementById('mobileInboxBadge');
+                const desktopBadge = document.getElementById('desktopInboxCount');
+                if (mobileBadge) {
+                    mobileBadge.textContent = unreadCount;
+                    mobileBadge.style.display = 'inline-block';
+                }
+                if (desktopBadge) {
+                    desktopBadge.textContent = unreadCount;
+                    desktopBadge.style.display = 'inline-block';
+                }
+            }
+        };
+
+        const getMockMessages = () => [
+            { id: '1', subject: 'Welcome to KeyVault', body: 'Thank you for joining KeyVault! Enjoy instant delivery and secure payments on premium digital keys.', created_at: new Date(Date.now() - 3600000).toISOString(), is_read: false },
+            { id: '2', subject: 'Order #1234 Confirmed', body: 'Your order has been confirmed and will be delivered instantly to your email. Thank you for your purchase!', created_at: new Date(Date.now() - 7200000).toISOString(), is_read: true },
+            { id: '3', subject: 'New Products Available', body: 'Check out our new collection of gaming keys and subscription codes. Limited stock available!', created_at: new Date(Date.now() - 86400000).toISOString(), is_read: false },
+        ];
+
+        // =========================================================
+        // MOBILE MENU FUNCTIONALITY
+        // =========================================================
+        function initMobileMenu() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+            hamburgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+                mobileMenuOverlay.classList.add('active');
+                hamburgerBtn.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            const closeMenu = () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                hamburgerBtn.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            mobileMenuClose.addEventListener('click', closeMenu);
+            mobileMenuOverlay.addEventListener('click', closeMenu);
+
+            mobileMenuItems.forEach(item => {
+                item.addEventListener('click', closeMenu);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1065,6 +1065,12 @@
   <i class="fas fa-user text-gray-600"></i>
   </button>
   <div class="profile-dropdown" id="profileDropdown">
+  <a href="/inbox.html" class="profile-dropdown-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="desktopInboxBadge" class="ml-2 px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <hr class="my-1">
   <a href="/profile" class="profile-dropdown-item">
   <i class="fas fa-user"></i>
   My Profile
@@ -1156,6 +1162,11 @@
 
   <!-- User Links (Hidden by default) -->
   <div id="mobileUserLinks" class="hidden">
+  <a href="/inbox.html" class="mobile-menu-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
   <a href="/profile" class="mobile-menu-item">
   <i class="fas fa-user"></i>
   My Profile
@@ -1172,7 +1183,7 @@
   <i class="fas fa-cog"></i>
   Settings
   </a>
-  <a href="/cart" class="mobile-menu-item">
+  <a href="/cart.html" class="mobile-menu-item">
   <i class="fas fa-shopping-cart"></i>
   Cart
   </a>
@@ -1671,14 +1682,9 @@
         };
 
         const renderProductCard = (product) => {
-            const finalPrice = product.discount_percent > 0 
-                ? product.price_usd * (1 - product.discount_percent / 100) 
-                : product.price_usd;
-
             return `
                 <div class="product-card">
-                    ${product.discount_percent > 0 ? `<span class="discount-badge">-${product.discount_percent}%</span>` : ''}
-                    <a href="/products?id=${product.id}">
+                    <a href="/product.html?id=${product.id}">
                         <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
                              alt="${product.name}" 
                              class="product-image"
@@ -1686,27 +1692,17 @@
                     </a>
                     <div class="p-4">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform}</span>
+                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform || 'Digital'}</span>
                             <span class="region-flag">${getRegionFlag(product.platform)}</span>
                         </div>
-                        <a href="/product?id=${product.id}">
+                        <a href="/product.html?id=${product.id}">
                             <h3 class="font-semibold text-secondary hover:text-primary transition line-clamp-2">${product.name}</h3>
                         </a>
-                        <div class="mt-3 flex items-baseline gap-2">
-                            <span class="text-xl font-bold text-primary">${formatCurrency(finalPrice)}</span>
-                            ${product.discount_percent > 0 ? `<span class="text-sm text-gray-400 line-through">${formatCurrency(product.price_usd)}</span>` : ''}
-                        </div>
+                        <p class="text-sm text-gray-500 mt-2 line-clamp-1">${product.short_description || 'Multiple denomination options available'}</p>
                     </div>
-                    <div class="add-to-cart-btn" onclick="event.preventDefault(); cart.addItem({
-                        id: ${product.id},
-                        name: '${product.name.replace(/'/g, "\\'")}',
-                        image_url: '${product.image_url}',
-                        price_usd: ${product.price_usd},
-                        final_price: ${finalPrice},
-                        platform: '${product.platform}'
-                    })">
-                        <i class="fas fa-cart-plus mr-2"></i> Add to Cart
-                    </div>
+                    <a href="/product.html?id=${product.id}" class="add-to-cart-btn">
+                        <i class="fas fa-eye mr-2"></i> View Denominations
+                    </a>
                 </div>
             `;
         };
@@ -1775,20 +1771,20 @@
             const container = document.getElementById('trendingProducts');
             container.innerHTML = products.map(product => `
                 <div class="trending-card product-card">
-                    ${product.discount_percent > 0 ? `<span class="discount-badge">-${product.discount_percent}%</span>` : ''}
-                    <a href="/products?id=${product.id}">
+                    <a href="/product.html?id=${product.id}">
                         <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
                              alt="${product.name}" 
                              class="product-image"
                              onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'">
                     </a>
                     <div class="p-4">
-                        <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform}</span>
+                        <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform || 'Digital'}</span>
                         <h3 class="font-semibold text-secondary mt-2 line-clamp-1">${product.name}</h3>
-                        <div class="mt-2 flex items-baseline gap-2">
-                            <span class="text-lg font-bold text-primary">${formatCurrency(product.discount_percent > 0 ? product.price_usd * (1 - product.discount_percent / 100) : product.price_usd)}</span>
-                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Select denominations to view pricing</p>
                     </div>
+                    <a href="/product.html?id=${product.id}" class="add-to-cart-btn" style="font-size: 14px;">
+                        <i class="fas fa-eye mr-1"></i> View
+                    </a>
                 </div>
             `).join('');
         };
