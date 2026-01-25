@@ -155,7 +155,7 @@ def _parse_codes_sync(file_path: str) -> List[str]:
         logger.error(f"File parsing error for {file_path}: {e}")
         return []
 
-async def add_product_codes_from_file(file_path: str, product_id: int, db: AsyncSession) -> int:
+async def add_denomination_codes_from_file(file_path: str, denomination_id: int, db: AsyncSession) -> int:
     """
     Reads a file (TXT/CSV), parses codes, and bulk inserts them into the DB.
     Updates the Product's stock_quantity counter upon success.
@@ -181,7 +181,7 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
         # 2. Validate Product Existence & Category
         # We fetch the product to ensure we aren't adding codes to a soft-deleted item
         # or misconfigured category.
-        stmt = select(Product).where(Product.id == product_id)
+        stmt = select(Product).where(product.id == product_id)
         result = await db.execute(stmt)
         product = result.scalar_one_or_none()
 
@@ -259,7 +259,7 @@ async def get_unused_code(product_id: int, db: AsyncSession) -> Optional[str]:
         # This skips rows currently locked by other transactions, finding the next available one.
         stmt = (
             select(ProductCode.code_value)
-            .where(ProductCode.product_id == product_id)
+            .where(ProductCode.denomination_id == denomination_id)
             .where(ProductCode.is_used == False)
             .limit(1)
             .with_for_update(skip_locked=True)
