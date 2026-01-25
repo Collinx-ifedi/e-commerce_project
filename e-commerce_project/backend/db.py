@@ -201,7 +201,7 @@ async def add_product_codes_from_file(file_path: str, product_id: int, db: Async
 
         # 3. Prepare Code Objects
         new_code_objects = [
-            ProductCode(product_id=product_id, code_value=code, is_used=False) 
+            ProductCode(denomination_id=denomination_id, code_value=code, is_used=False) 
             for code in codes
         ]
         

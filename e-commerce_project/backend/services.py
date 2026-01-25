@@ -313,7 +313,7 @@ async def create_denomination_service(
 
     # 2. Create Denomination
     new_denom = Denomination(
-        product_id=product_id,
+        denomination_id=denomination_id,
         label=label,
         price_usd=price_usd,
         discount_percent=discount_percent,
