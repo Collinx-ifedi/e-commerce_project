@@ -9,7 +9,7 @@
 # - Wallet System Integration (Profile & Deposit)
 # - Manual Delivery & Top-up Workflow Support
 # - Flexible Blog Creation (Server-side Defaults)
-# - UPDATED: Multi-Denomination Support for Admin Panel
+# - UPDATED: Multi-Denomination Support for Admin Panel & Order Fixes
 
 import os
 import shutil
@@ -66,7 +66,6 @@ from .services import (
     bootstrap_admins,
     create_order_service,
     create_deposit_service,
-    # create_product_service, # Replaced by inline logic to support new fields
     create_banner_service,
     handle_nowpayments_webhook,
     handle_binance_webhook,
@@ -87,6 +86,7 @@ from .models_schemas import (
     User,
     UserResponse,
     Product, 
+    Denomination,
     OrderItem,
     ProductSchema,
     Banner,
@@ -180,7 +180,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.7.0", # Updated for Denomination Support
+    version="2.7.1", # Updated version for Order fix
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -384,6 +384,7 @@ async def checkout_route(
 
 @order_router.get("")
 async def get_user_orders(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # User orders should also load item details properly if needed, but Order table has basics
     stmt = select(Order).where(Order.user_id == user.id).order_by(desc(Order.created_at))
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -466,14 +467,18 @@ async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = D
     result = await db.execute(query)
     return result.scalars().all()
 
-# -- ADMIN ORDERS LIST --
+# -- ADMIN ORDERS LIST (FIXED) --
 @admin_router.get("/orders", response_model=List[OrderResponse])
 async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
     try:
+        # CRITICAL FIX: OrderItem -> Denomination -> Product
         query = (
             select(Order)
             .options(
-                selectinload(Order.items).selectinload(OrderItem.product) 
+                selectinload(Order.user),
+                selectinload(Order.items)
+                .selectinload(OrderItem.denomination)
+                .selectinload(Denomination.product)
             )
             .order_by(desc(Order.created_at))
             .limit(limit)
