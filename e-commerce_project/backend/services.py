@@ -68,7 +68,7 @@ from .core import (
 from .db import (
     get_unused_code, 
     mark_code_as_used, 
-    add_product_codes_from_file,
+    add_denomination_codes_from_file,
     # New Helpers for Messaging & Moderation
     insert_message,
     fetch_user_messages,
@@ -348,7 +348,7 @@ async def upload_denomination_codes_service(
     Bulk uploads codes to a specific denomination.
     Uses db.py helper to handle parsing and integrity checks.
     """
-    count = await add_product_codes_from_file(file_path, denomination_id, db)
+    count = await add_denomination_codes_from_file(file_path, denomination_id, db)
     return count
 
 async def get_all_orders_service(db: AsyncSession, limit: int = 100):
