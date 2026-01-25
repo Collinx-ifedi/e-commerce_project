@@ -23,7 +23,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import update, delete, and_, case, func
+from sqlalchemy import update, delete, and_, or_, case, func
 
 # IMPORT MODELS
 from .models_schemas import (
