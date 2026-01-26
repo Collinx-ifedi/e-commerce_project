@@ -734,7 +734,13 @@
                 const item = items.find(i => i.id === id);
                 if (item) { item.quantity = Math.max(1, qty); cart.saveItems(items); renderCart(); }
             },
-            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.final_price * item.quantity), 0),
+            getTotal: () =>
+  cart.getItems().reduce((sum, item) => {
+    const price = Number(item.price_usd);
+    const qty = Number(item.quantity);
+    if (isNaN(price) || isNaN(qty)) return sum;
+    return sum + price_usd * qty;
+  }, 0),
             getCount: () => cart.getItems().reduce((sum, item) => sum + item.quantity, 0),
             clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
         };
@@ -898,7 +904,7 @@
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                         </div>
-                                        <span class="text-xl font-bold text-primary">${formatCurrency(item.final_price * item.quantity)}</span>
+                                        <span class="text-xl font-bold text-primary">${formatCurrency(item.price_usd * item.quantity)}</span>
                                     </div>
                                 </div>
                             </div>

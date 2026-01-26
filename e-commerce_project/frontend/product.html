@@ -807,7 +807,7 @@
                         <div class="p-6 border-2 rounded-lg transition ${isSelected ? 'border-primary bg-blue-50' : 'border-gray-200'} ${isOutOfStock ? 'opacity-50 bg-gray-50' : ''}">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-lg font-bold text-secondary">${denom.label}</span>
-                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();" style="width: 20px; height: 20px; cursor: pointer;">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
                             <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
                             <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">

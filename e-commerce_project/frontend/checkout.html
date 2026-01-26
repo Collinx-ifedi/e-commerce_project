@@ -477,7 +477,7 @@
                         </label>
 
                         <label class="payment-option selected">
-                            <input type="radio" name="payment" value="nowpayment" checked>
+                            <input type="radio" name="payment" value="nowpayments" checked>
                             <div class="flex-1">
                                 <div class="flex items-center justify-between">
                                     <span class="font-semibold text-secondary">NowPayment</span>
@@ -663,7 +663,7 @@
         const cart = {
             KEY: 'cart',
             getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
-            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.final_price * item.quantity), 0),
+            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.price_usd * item.quantity), 0),
             clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
         };
 
@@ -701,7 +701,7 @@
                         <p class="font-medium text-secondary line-clamp-1">${item.name}</p>
                         <p class="text-sm text-gray-500">Qty: ${item.quantity}</p>
                     </div>
-                    <span class="font-semibold text-secondary">${formatCurrency(item.final_price * item.quantity)}</span>
+                    <span class="font-semibold text-secondary">${formatCurrency(item.price_usd * item.quantity)}</span>
                 </div>
             `).join('');
 
@@ -784,7 +784,7 @@
                 // Prepare order data matching MultiProductOrderCreate schema
                 const orderData = {
                     items: items.map(item => ({
-                        product_id: item.id,
+                        denomination_id: item.id,
                         quantity: item.quantity
                     })),
                     payment_method: paymentMethod
@@ -792,7 +792,7 @@
 
                 // Special handling for wallet payment
                 if (paymentMethod === 'wallet') {
-                    const cartTotal = items.reduce((sum, item) => sum + (item.final_price * item.quantity), 0);
+                    const cartTotal = items.reduce((sum, item) => sum + (item.price_usd * item.quantity), 0);
                     const user = JSON.parse(localStorage.getItem('user') || 'null');
                     
                     if (!user || (user.balance_usd || 0) < cartTotal) {
