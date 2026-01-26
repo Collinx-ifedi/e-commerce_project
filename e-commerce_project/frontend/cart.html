@@ -278,6 +278,67 @@
             }
         }
 
+        /* Dark Mode Mobile Menu Styles */
+        html.dark .mobile-menu { background: #1E293B; }
+        html.dark .mobile-menu-header { border-color: #334155; }
+        html.dark .mobile-menu-header h3 { color: #E2E8F0; }
+        html.dark .mobile-menu-close { color: #E2E8F0; }
+        html.dark .mobile-menu-item { color: #E2E8F0; border-color: #334155; }
+        html.dark .mobile-menu-item:hover { color: #60A5FA; }
+        html.dark .mobile-menu-divider { background: #334155; }
+        html.dark .hamburger-btn span { background: #2563EB; }
+        html.dark .hamburger-btn.active span { background: #60A5FA; }
+        html.dark .mobile-menu-overlay { background: rgba(0, 0, 0, 0.7); }
+        html.dark .mobile-menu-button-group { border-color: #334155; }
+        html.dark .mobile-menu-button-group .btn-outline { background: #334155; color: #E2E8F0; border-color: #475569; }
+        html.dark .mobile-menu-button-group .btn-outline:hover { border-color: #60A5FA; color: #60A5FA; }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-top: 8px;
+            min-width: 200px;
+            max-width: calc(100vw - 20px);
+            display: none;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #1E293B;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .profile-dropdown-item:hover {
+            background: #F8FAFC;
+        }
+
+        .profile-dropdown-item.danger {
+            color: #EF4444;
+        }
+
+        html.dark .navbar a { color: #E2E8F0; }
+        html.dark .navbar a:hover { color: #60A5FA; }
+        html.dark #themeToggle { color: #E2E8F0 !important; }
+        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .profile-dropdown { background: #1E293B; }
+        html.dark .profile-dropdown-item { color: #E2E8F0; }
+        html.dark .profile-dropdown-item:hover { background: #334155; }
+
         .cart-item {
             background: #FFFFFF;
             border-radius: 16px;
@@ -408,8 +469,17 @@
         
         /* Dark Mode Styles */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
-        html.dark .navbar { background: #1E293B; }
-        html.dark .footer { background: #0F172A; }
+        html.dark .navbar { background: #1E293B; border-bottom: 1px solid #334155; }
+        html.dark .navbar .text-secondary { color: #F1F5F9 !important; }
+        html.dark .navbar a span { color: #F1F5F9 !important; }
+        html.dark .navbar a { color: #E2E8F0; }
+        html.dark .navbar a:hover { color: #60A5FA; }
+        html.dark #themeToggle { color: #E2E8F0 !important; }
+        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .footer { background: #0F172A; border-top: 1px solid #334155; }
+        html.dark .profile-dropdown { background: #1E293B; }
+        html.dark .profile-dropdown-item { color: #E2E8F0; }
+        html.dark .profile-dropdown-item:hover { background: #334155; }
     </style>
 </head>
 <body>
@@ -427,27 +497,40 @@
   </a>
   
   <!-- Desktop Items (Hidden on Mobile) -->
-  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+  <div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
+  <a href="/" class="text-sm font-medium text-gray-600 hover:text-primary transition">Store</a>
+  <a href="/blog.html" class="text-sm font-medium text-gray-600 hover:text-primary transition">Blog</a>
   <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
   <i class="fas fa-moon"></i>
   </button>
   <div id="googleTranslate" class="flex items-center"></div>
   
   <div id="guestActions" class="flex items-center gap-3">
-  <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
-  <a href="/register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
+  <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+  <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
   </div>
   <div id="userActions" class="hidden items-center gap-4">
   <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
   <i class="fas fa-wallet"></i>
   <span id="walletBalance">$0.00</span>
   </a>
+  <div class="relative">
   <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
   <i class="fas fa-user text-gray-600"></i>
   </button>
+  <div class="profile-dropdown" id="profileDropdown">
+  <a href="/profile" class="profile-dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+  <a href="/orders" class="profile-dropdown-item"><i class="fas fa-receipt"></i> My Orders</a>
+  <a href="/settings" class="profile-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+  <div style="height: 1px; background: #E2E8F0; margin: 8px 0;"></div>
+  <button onclick="logout()" class="profile-dropdown-item danger" style="width: 100%; text-align: left; border: none; background: none; cursor: pointer;">
+  <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
+  </div>
+  </div>
   </div>
   <a href="/cart" class="relative p-2">
-  <i class="fas fa-shopping-cart text-xl text-primary"></i>
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
   <span class="cart-badge" id="cartBadge">0</span>
   </a>
   </div>
@@ -479,11 +562,19 @@
                 <i class="fas fa-home"></i>
                 Home
             </a>
+            <a href="/" class="mobile-menu-item">
+                <i class="fas fa-store"></i>
+                Store
+            </a>
+            <a href="/blog.html" class="mobile-menu-item">
+                <i class="fas fa-newspaper"></i>
+                Blog
+            </a>
             <a href="/cart" class="mobile-menu-item">
                 <i class="fas fa-shopping-cart"></i>
                 Cart
             </a>
-            <a href="/profile" class="mobile-menu-item">
+            <a href="/profile" class="mobile-menu-item" id="mobileProfileLink">
                 <i class="fas fa-user"></i>
                 Profile
             </a>
@@ -492,19 +583,29 @@
 
             <div class="mobile-menu-item">
                 <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
             </div>
 
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-globe"></i>
-                <div id="mobileGoogleTranslate" class="flex-1"></div>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <i class="fas fa-globe"></i>
+                    <span style="font-weight: 500; font-size: 14px;">Language</span>
+                </div>
+                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+                    <option value="en">English 🇺🇸</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="ar">العربية 🇸🇦</option>
+                    <option value="zh-CN">中文 🇨🇳</option>
+                    <option value="ru">Русский 🇷🇺</option>
+                </select>
             </div>
         </div>
 
         <!-- Mobile Menu Buttons -->
         <div class="mobile-menu-button-group" id="mobileAuthButtons">
-            <a href="/login" class="btn-outline">Login</a>
-            <a href="/register" class="btn-primary">Register</a>
+            <a href="/auth.html" class="btn-outline">Login</a>
+            <a href="/auth.html" class="btn-primary">Register</a>
         </div>
 
         <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
@@ -588,9 +689,25 @@
         
         // Note: googleTranslateElementInit is now defined in translate-config.js
         
+        // Mobile Language Selection
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const value = select.value;
+            if (window.google && window.google.translate && window.google.translate.TranslateElement) {
+                const element = document.querySelector('.goog-te-combo');
+                if (element) {
+                    element.value = value;
+                    element.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             updateThemeIcon();
             initMobileMenu();
+            checkAuthState();
+            updateMobileAuthButtons();
+            attachProfileDropdownListener();
         });
         
         // =========================================================
@@ -670,14 +787,89 @@
             const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             if (token && user) {
+                // Desktop menu
                 document.getElementById('guestActions').classList.add('hidden');
                 document.getElementById('userActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('flex');
                 document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+                
+                // Mobile menu
+                updateMobileAuthButtons();
+            } else {
+                // Show guest actions, hide user actions
+                document.getElementById('guestActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('flex');
             }
         };
 
-        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
+        const updateMobileAuthButtons = () => {
+            const token = localStorage.getItem('token');
+            const mobileAuthButtons = document.getElementById('mobileAuthButtons');
+            const mobileUserButtons = document.getElementById('mobileUserButtons');
+            
+            if (token) {
+                mobileAuthButtons?.classList.add('hidden');
+                mobileUserButtons?.classList.remove('hidden');
+            } else {
+                mobileAuthButtons?.classList.remove('hidden');
+                mobileUserButtons?.classList.add('hidden');
+            }
+        };
+
+        const logout = () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        };
+
+        const attachProfileDropdownListener = () => {
+            const profileBtn = document.getElementById('profileBtn');
+            const profileDropdown = document.getElementById('profileDropdown');
+            
+            if (!profileBtn) return;
+            
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', () => {
+                profileDropdown.classList.remove('active');
+            });
+        };
+
+        // =========================================================
+        // LANGUAGE SELECTION
+        // =========================================================
+        const selectMobileLanguageFromSelect = () => {
+            const select = document.getElementById('mobileLanguageSelect');
+            if (!select) return;
+            
+            const selectedLanguage = select.value;
+            changeLanguage(selectedLanguage);
+        };
+
+        const changeLanguage = (languageCode) => {
+            // Store the selected language
+            localStorage.setItem('selectedLanguage', languageCode);
+            
+            // Update Google Translate
+            const googleTranslateCombo = document.querySelector('.goog-te-combo');
+            if (googleTranslateCombo) {
+                googleTranslateCombo.value = languageCode;
+                googleTranslateCombo.dispatchEvent(new Event('change'));
+            }
+        };
+
+        // Initialize language selection on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            const mobileSelect = document.getElementById('mobileLanguageSelect');
+            if (mobileSelect) {
+                mobileSelect.value = savedLanguage;
+            }
+        }, { once: true });
 
         // =========================================================
         // RENDER CART

@@ -975,12 +975,42 @@
         };
 
         // =========================================================
+        // LANGUAGE SELECTION
+        // =========================================================
+        const selectMobileLanguageFromSelect = () => {
+            const select = document.getElementById('mobileLanguageSelect');
+            if (!select) return;
+            
+            const selectedLanguage = select.value;
+            changeLanguage(selectedLanguage);
+        };
+
+        const changeLanguage = (languageCode) => {
+            // Store the selected language
+            localStorage.setItem('selectedLanguage', languageCode);
+            
+            // Update Google Translate
+            const googleTranslateCombo = document.querySelector('.goog-te-combo');
+            if (googleTranslateCombo) {
+                googleTranslateCombo.value = languageCode;
+                googleTranslateCombo.dispatchEvent(new Event('change'));
+            }
+        };
+
+        // =========================================================
         // CHECK IF ALREADY LOGGED IN
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             if (token) {
                 window.location.href = '/';
+            }
+            
+            // Initialize language selection
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            const mobileSelect = document.getElementById('mobileLanguageSelect');
+            if (mobileSelect) {
+                mobileSelect.value = savedLanguage;
             }
         });
     </script>
