@@ -364,10 +364,7 @@
                 <i class="fas fa-home"></i>
                 Home
             </a>
-            <a href="/inbox.html" class="mobile-menu-item active">
-                <i class="fas fa-envelope"></i>
-                Inbox
-                <span id="mobileInboxBadge" class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+            <a href="/blog.html" class="mobile-menu-item"><i class="fas fa-newspaper"></i> Blog</a>
             </a>
             <a href="/cart.html" class="mobile-menu-item">
                 <i class="fas fa-shopping-cart"></i>
@@ -385,9 +382,19 @@
                 <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
             </div>
 
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-globe"></i>
-                <div id="mobileGoogleTranslate" class="flex-1"></div>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <i class="fas fa-globe"></i>
+                    <span style="font-weight: 500; font-size: 14px;">Language</span>
+                </div>
+                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+                    <option value="en">English 🇺🇸</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="ar">العربية 🇸🇦</option>
+                    <option value="zh-CN">中文 🇨🇳</option>
+                    <option value="ru">Русский 🇷🇺</option>
+                </select>
             </div>
         </div>
 

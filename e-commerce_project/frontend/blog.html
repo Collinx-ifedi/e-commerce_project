@@ -208,7 +208,10 @@
         </div>
         <div class="mobile-menu-content">
             <a href="/" class="mobile-menu-item"><i class="fas fa-home"></i> Home</a>
-            <a href="/blog.html" class="mobile-menu-item"><i class="fas fa-newspaper"></i> Blog</a>
+            <a href="/inbox.html" class="mobile-menu-item active">
+                <i class="fas fa-envelope"></i>
+                Inbox
+                <span id="mobileInboxBadge" class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
             <a href="/cart" class="mobile-menu-item"><i class="fas fa-shopping-cart"></i> Cart</a>
             <a href="/profile" class="mobile-menu-item"><i class="fas fa-user"></i> Profile</a>
             <div class="mobile-menu-divider"></div>
@@ -231,6 +234,7 @@
                 </select>
             </div>
         </div>
+        
         <div class="mobile-menu-button-group" id="mobileAuthButtons">
             <a href="/login" class="btn-outline">Login</a>
             <a href="/register" class="btn-primary">Register</a>
