@@ -480,6 +480,89 @@
         html.dark .profile-dropdown { background: #1E293B; }
         html.dark .profile-dropdown-item { color: #E2E8F0; }
         html.dark .profile-dropdown-item:hover { background: #334155; }
+        
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #1E293B;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F1F5F9;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        html.dark .mobile-lang-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown {
+            background: #1E293B;
+            border-color: #475569;
+        }
+        html.dark .mobile-lang-dropdown button {
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown button:hover {
+            background: #334155;
+        }
+        html.dark .mobile-lang-dropdown button.active {
+            background: #1E40AF;
+            color: #93C5FD;
+        }
     </style>
 </head>
 <body>
@@ -510,7 +593,7 @@
   <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
   </div>
   <div id="userActions" class="hidden items-center gap-4">
-  <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+  <a href="/profile.html" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
   <i class="fas fa-wallet"></i>
   <span id="walletBalance">$0.00</span>
   </a>
@@ -519,9 +602,9 @@
   <i class="fas fa-user text-gray-600"></i>
   </button>
   <div class="profile-dropdown" id="profileDropdown">
-  <a href="/profile" class="profile-dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
-  <a href="/orders" class="profile-dropdown-item"><i class="fas fa-receipt"></i> My Orders</a>
-  <a href="/settings" class="profile-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+  <a href="/profile.html" class="profile-dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+  <a href="/profile.html?tab=orders" class="profile-dropdown-item"><i class="fas fa-receipt"></i> My Orders</a>
+  <a href="/profile.html?tab=settings" class="profile-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
   <div style="height: 1px; background: #E2E8F0; margin: 8px 0;"></div>
   <button onclick="logout()" class="profile-dropdown-item danger" style="width: 100%; text-align: left; border: none; background: none; cursor: pointer;">
   <i class="fas fa-sign-out-alt"></i> Logout
@@ -574,7 +657,7 @@
                 <i class="fas fa-shopping-cart"></i>
                 Cart
             </a>
-            <a href="/profile" class="mobile-menu-item" id="mobileProfileLink">
+            <a href="/profile.html" class="mobile-menu-item" id="mobileProfileLink">
                 <i class="fas fa-user"></i>
                 Profile
             </a>
@@ -708,6 +791,7 @@
             checkAuthState();
             updateMobileAuthButtons();
             attachProfileDropdownListener();
+            setupLanguageSelector();
         });
         
         // =========================================================

@@ -600,12 +600,7 @@
             localStorage.theme = isDark ? "dark" : "light";
         }
         
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
-                'googleTranslate'
-            );
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
         
         // =========================================================
         // API WRAPPER
