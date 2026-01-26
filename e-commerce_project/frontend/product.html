@@ -413,99 +413,16 @@
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .navbar { background: #1E293B; }
         html.dark .footer { background: #0F172A; }
-        
-        /* Mobile Language Dropdown Styles */
-        .mobile-language-selector {
-            position: relative;
-        }
-        .mobile-lang-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 10px 14px;
-            background: #F1F5F9;
-            border: 1px solid #E2E8F0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #1E293B;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .mobile-lang-btn:hover {
-            border-color: #2563EB;
-        }
-        .mobile-lang-btn i {
-            font-size: 12px;
-            transition: transform 0.2s;
-        }
-        .mobile-lang-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 10px;
-            margin-top: 6px;
-            z-index: 100;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .mobile-lang-dropdown.active {
-            display: block;
-        }
-        .mobile-lang-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            text-align: left;
-            background: none;
-            border: none;
-            font-size: 14px;
-            color: #1E293B;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .mobile-lang-dropdown button:hover {
-            background: #F1F5F9;
-        }
-        .mobile-lang-dropdown button.active {
-            background: #EFF6FF;
-            color: #2563EB;
-            font-weight: 600;
-        }
-        html.dark .mobile-lang-btn {
-            background: #334155;
-            border-color: #475569;
-            color: #E2E8F0;
-        }
-        html.dark .mobile-lang-dropdown {
-            background: #1E293B;
-            border-color: #475569;
-        }
-        html.dark .mobile-lang-dropdown button {
-            color: #E2E8F0;
-        }
-        html.dark .mobile-lang-dropdown button:hover {
-            background: #334155;
-        }
-        html.dark .mobile-lang-dropdown button.active {
-            background: #1E40AF;
-            color: #93C5FD;
-        }
     </style>
 </head>
 <body>
+<div id="google_translate_element" style="display:none;"></div>
     <div class="progress-bar" id="progressBar"></div>
 
   <!-- Navbar -->
   <nav class="navbar">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
   <div class="flex items-center justify-between h-16 gap-4">
-  <!-- Logo -->
   <a href="/" class="flex items-center gap-3 flex-shrink-0">
   <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
   <i class="fas fa-key text-white text-lg"></i>
@@ -513,85 +430,27 @@
   <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
   </a>
   
-  <!-- Search Bar (Always Visible, Responsive) -->
-  <div class="flex-1 min-w-0 max-w-xl mx-2 md:mx-4 relative">
-  <div class="relative">
-  <input
-  type="text"
-  id="searchInput"
-  class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
-  placeholder="Search..."
-  >
-  <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition flex-shrink-0">
-  <i class="fas fa-search"></i>
-  </button>
-  </div>
-  <div class="search-dropdown" id="searchDropdown">
-  <!-- Search results populated via JS -->
-  </div>
-  </div>
-  
   <!-- Desktop Items (Hidden on Mobile) -->
   <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
-  <!-- Theme & Language Toggle -->
   <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
   <i class="fas fa-moon"></i>
   </button>
   <div id="googleTranslate" class="flex items-center"></div>
   
-  <!-- Guest State -->
   <div id="guestActions" class="flex items-center gap-3">
-  <a href="/auth.html" class="btn-outline text-sm">Login</a>
-  <a href="/auth.html" class="btn-primary text-sm">Register</a>
+  <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+  <a href="/register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
   </div>
-  
-  <!-- Logged In State (Hidden by default) -->
   <div id="userActions" class="hidden items-center gap-4">
-  <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-  <i class="fas fa-wallet text-primary"></i>
-  <div class="text-right">
-  <p class="text-xs text-gray-600">Wallet Balance</p>
-  <p class="text-sm font-bold text-primary" id="walletBalance">$0.00</p>
-  </div>
-  <button onclick="openFundingModal()" class="ml-3 px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition" title="Fund your wallet">
-  <i class="fas fa-plus"></i>
-  </button>
-  </div>
-  
-  <div class="relative">
+  <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+  <i class="fas fa-wallet"></i>
+  <span id="walletBalance">$0.00</span>
+  </a>
   <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
   <i class="fas fa-user text-gray-600"></i>
   </button>
-  <div class="profile-dropdown" id="profileDropdown">
-  <a href="/inbox.html" class="profile-dropdown-item">
-  <i class="fas fa-envelope"></i>
-  <span class="flex-1">Inbox</span>
-  <span id="desktopInboxBadge" class="ml-2 px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
-  </a>
-  <hr class="my-1">
-  <a href="/profile.html" class="profile-dropdown-item">
-  <i class="fas fa-user"></i>
-  My Profile
-  </a>
-  <a href="/profile.html?tab=orders" class="profile-dropdown-item">
-  <i class="fas fa-shopping-bag"></i>
-  Order History
-  </a>
-  <a href="/profile.html?tab=settings" class="profile-dropdown-item">
-  <i class="fas fa-cog"></i>
-  Settings
-  </a>
-  <hr class="my-1">
-  <button onclick="logout()" class="profile-dropdown-item danger w-full text-left">
-  <i class="fas fa-sign-out-alt"></i>
-  Logout
-  </button>
   </div>
-  </div>
-  </div>
-  
-  <!-- Cart Icon -->
-  <a href="/cart.html" class="relative p-2">
+  <a href="/cart" class="relative p-2">
   <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
   <span class="cart-badge" id="cartBadge">0</span>
   </a>
@@ -647,18 +506,14 @@
 
   <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
   <i class="fas fa-globe"></i>
-  <button class="mobile-lang-btn" style="background: none; border: none; cursor: pointer; width: auto; padding: 0; font-size: 14px; flex: 1; text-align: left; display: flex; align-items: center; gap: 8px;">
-    <span>Language</span>
-    <i class="fas fa-chevron-down"></i>
-  </button>
-  <div class="mobile-lang-dropdown"></div>
+  <div id="mobileGoogleTranslate" class="flex-1"></div>
   </div>
   </div>
 
   <!-- Mobile Menu Buttons -->
   <div class="mobile-menu-button-group" id="mobileAuthButtons">
-  <a href="/auth.html" class="btn-outline">Login</a>
-  <a href="/auth.html" class="btn-primary">Register</a>
+  <a href="/login" class="btn-outline">Login</a>
+  <a href="/register" class="btn-primary">Register</a>
   </div>
 
   <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
@@ -870,25 +725,10 @@
             const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             if (token && user) {
-                // Desktop auth
                 document.getElementById('guestActions').classList.add('hidden');
                 document.getElementById('userActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('flex');
                 document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
-                // Mobile auth
-                const mobileAuthButtons = document.getElementById('mobileAuthButtons');
-                const mobileUserButtons = document.getElementById('mobileUserButtons');
-                if (mobileAuthButtons) mobileAuthButtons.classList.add('hidden');
-                if (mobileUserButtons) mobileUserButtons.classList.remove('hidden');
-            } else {
-                // Desktop auth
-                document.getElementById('guestActions').classList.remove('hidden');
-                document.getElementById('userActions').classList.add('hidden');
-                // Mobile auth
-                const mobileAuthButtons = document.getElementById('mobileAuthButtons');
-                const mobileUserButtons = document.getElementById('mobileUserButtons');
-                if (mobileAuthButtons) mobileAuthButtons.classList.remove('hidden');
-                if (mobileUserButtons) mobileUserButtons.classList.add('hidden');
             }
         };
 
@@ -1155,21 +995,6 @@
   checkAuthState();
   updateCartBadge();
   loadProduct();
-  setupLanguageSelector();
-  
-  // Profile dropdown handler
-  const profileBtn = document.getElementById('profileBtn');
-  const profileDropdown = document.getElementById('profileDropdown');
-  if (profileBtn && profileDropdown) {
-    profileBtn.addEventListener('click', () => {
-      profileDropdown.classList.toggle('active');
-    });
-    document.addEventListener('click', (e) => {
-      if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-      }
-    });
-  }
   });
 
   // Add CSS for denomination cards

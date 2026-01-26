@@ -3,19 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Post - KeyVault</title>
+    <title>Product Details - KeyVault</title>
     
+    <!-- Dark Mode Prevention Script -->
     <script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Shared Translation Config -->
     <script src="/translate-config.js"></script>
+    
+    <!-- Google Translate API -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -25,6 +39,10 @@
                     colors: {
                         primary: '#2563EB',
                         secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -35,350 +53,531 @@
     </script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
-        html, body { max-width: 100%; overflow-x: hidden; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
         body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
 
-        .navbar { background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
-        .cart-badge { position: absolute; top: -8px; right: -8px; background: #EF4444; color: white; font-size: 11px; font-weight: 600; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6); z-index: 9999;
+        }
+        .progress-bar.loading { animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
 
-        .article-content { max-width: 800px; margin: 0 auto; }
-        .article-content h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.2; }
-        .article-content h2 { font-size: 2rem; font-weight: 600; margin: 2rem 0 1rem; }
-        .article-content h3 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
-        .article-content p { margin-bottom: 1rem; line-height: 1.7; color: #475569; }
-        .article-content img { max-width: 100%; border-radius: 12px; margin: 2rem 0; }
-        .article-content ul, .article-content ol { margin: 1rem 0 1rem 2rem; }
-        .article-content li { margin-bottom: 0.5rem; line-height: 1.7; color: #475569; }
-        .article-content a { color: #2563EB; text-decoration: underline; }
-        .article-content blockquote { border-left: 4px solid #2563EB; padding-left: 1.5rem; margin: 1.5rem 0; font-style: italic; color: #64748B; }
-
-        .featured-image {
-            width: 100%;
-            max-height: 500px;
-            object-fit: cover;
-            border-radius: 16px;
-            margin-bottom: 2rem;
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .meta-badge {
-            display: inline-flex;
-            align-items: center;
+        .cart-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: #EF4444; color: white; font-size: 11px; font-weight: 600;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
             gap: 6px;
-            padding: 6px 14px;
-            background: #F1F5F9;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #64748B;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
         }
 
-        .like-btn {
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #2563EB;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1E293B;
+            padding: 0;
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover {
+            color: #2563EB;
+        }
+
+        .mobile-menu-item i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .mobile-menu-divider {
+            height: 1px;
+            background: #E2E8F0;
+            margin: 16px 0;
+        }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-button-group .btn-outline {
+            background: #F1F5F9;
+            color: #1E293B;
+            border: 2px solid #E2E8F0;
+        }
+
+        .mobile-menu-button-group .btn-outline:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+
+        .mobile-menu-button-group .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .mobile-menu-button-group .btn-primary:hover {
+            background: #1D4ED8;
+        }
+
+        /* Hide mobile elements on desktop */
+        @media (min-width: 768px) {
+            .hamburger-btn {
+                display: none !important;
+            }
+
+            .mobile-menu {
+                display: none !important;
+            }
+
+            .mobile-menu-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Show mobile elements on mobile */
+        @media (max-width: 767px) {
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .navbar-desktop-items {
+                display: none;
+            }
+        }
+
+        .product-image-main {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image-main img {
+            width: 100%;
+            aspect-ratio: 16/10;
+            object-fit: cover;
+        }
+
+        .platform-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 24px;
+            padding: 8px 16px;
             background: #F1F5F9;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-weight: 600;
-            color: #1E293B;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .like-btn:hover:not(:disabled) { background: #FEE2E2; border-color: #EF4444; color: #EF4444; }
-        .like-btn.liked { background: #FEE2E2; border-color: #EF4444; color: #EF4444; }
-        .like-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .comment-card {
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .comment-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .comment-input:focus { outline: none; border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        .comment-input:disabled { background: #F8FAFC; color: #64748B; cursor: not-allowed; }
-
-        .btn-submit {
-            padding: 12px 28px;
-            background: #2563EB;
-            color: white;
-            border: none;
             border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .btn-submit:hover:not(:disabled) { background: #1D4ED8; }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .stock-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
 
-        .login-prompt {
-            background: #EFF6FF;
-            border: 2px solid #DBEAFE;
+        .stock-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .stock-dot.in-stock { background: #10B981; }
+        .stock-dot.out-of-stock { background: #EF4444; }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            background: #F1F5F9;
             border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            color: #1E40AF;
+            overflow: hidden;
         }
 
-        .skeleton { background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .quantity-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: transparent;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quantity-btn:hover { background: #E2E8F0; }
+        .quantity-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .quantity-input {
+            width: 60px;
+            height: 48px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .quantity-input:focus { outline: none; }
+
+        .btn-primary {
+            background: #2563EB; color: white; padding: 16px 32px; border-radius: 12px;
+            font-weight: 600; border: none; cursor: pointer; transition: all 0.3s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-primary:hover { background: #1D4ED8; transform: translateY(-2px); }
+
+        .btn-secondary {
+            background: #F1F5F9; color: #1E293B; padding: 16px 32px; border-radius: 12px;
+            font-weight: 600; border: 2px solid #E2E8F0; cursor: pointer; transition: all 0.3s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-secondary:hover { border-color: #2563EB; color: #2563EB; }
+
+        .description-box {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .related-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .related-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
 
         .footer { background: #1E293B; color: #94A3B8; padding: 60px 0 30px; }
         .footer a { color: #94A3B8; text-decoration: none; transition: color 0.2s; }
         .footer a:hover { color: #FFFFFF; }
-        .social-icon { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: #FFFFFF; }
+
+        .social-icon {
+            width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
         .social-icon:hover { background: #2563EB; color: white; }
 
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .breadcrumb a { color: #64748B; }
+        .breadcrumb a:hover { color: #2563EB; }
+        .breadcrumb span { color: #94A3B8; }
+
+        .skeleton {
+            background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
         /* Dark Mode Styles */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
-        html.dark .navbar { background: #1E293B !important; border-bottom: 1px solid #334155; }
-        html.dark .navbar a { color: #E2E8F0; }
-        html.dark .navbar a:hover { color: #60A5FA; }
-        html.dark .navbar span { color: #E2E8F0; }
-        html.dark #themeToggle { color: #E2E8F0 !important; }
-        html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
-        html.dark .article-content { color: #E2E8F0; }
-        html.dark .article-content p { color: #CBD5E1; }
-        html.dark .article-content li { color: #CBD5E1; }
-        html.dark .article-content h1,
-        html.dark .article-content h2,
-        html.dark .article-content h3 { color: #F1F5F9; }
-        html.dark .article-content a { color: #60A5FA; }
-        html.dark .article-content blockquote { color: #94A3B8; border-left-color: #60A5FA; }
-        html.dark .comment-card { background: #1E293B; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
-        html.dark .comment-input { background: #334155; color: #E2E8F0; border-color: #475569; }
-        html.dark .comment-input:focus { border-color: #60A5FA; box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.1); }
-        html.dark .like-btn { background: #334155; border-color: #475569; color: #E2E8F0; }
-        html.dark .like-btn:hover:not(:disabled) { background: #7F1D1D; border-color: #DC2626; color: #FCA5A5; }
-        html.dark .like-btn.liked { background: #7F1D1D; border-color: #DC2626; color: #FCA5A5; }
-        html.dark .login-prompt { background: #1E40AF; border-color: #1E3A8A; color: #DBEAFE; }
-        html.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); }
-        html.dark .footer { background: #0F172A; border-top: 1px solid #334155; }
-        html.dark .mobile-menu { background: #1E293B; }
-        html.dark .mobile-menu-header { border-color: #334155; }
-        html.dark .mobile-menu-header h3 { color: #E2E8F0; }
-        html.dark .mobile-menu-close { color: #E2E8F0; }
-        html.dark .mobile-menu-item { color: #E2E8F0; border-color: #334155; }
-        html.dark .mobile-menu-item:hover { color: #60A5FA; }
-        html.dark .hamburger-btn span { background: #E2E8F0; }
-        html.dark .meta-badge { background: #334155; color: #CBD5E1; }
-        html.dark .btn-submit { background: #2563EB; }
-        html.dark .btn-submit:hover:not(:disabled) { background: #1D4ED8; }
-        html.dark #mobileLanguageSelect { background: #334155 !important; color: #E2E8F0 !important; border-color: #475569 !important; }
-        html.dark #mobileLanguageSelect option { background: #1E293B; color: #E2E8F0; }
-
-        /* Mobile Menu Styles */
-        .hamburger-btn { display: none; flex-direction: column; gap: 6px; background: none; border: none; cursor: pointer; padding: 8px; }
-        .hamburger-btn span { width: 24px; height: 3px; background: #2563EB; border-radius: 2px; transition: all 0.3s ease; }
-        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
-        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
-        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
-        .mobile-menu { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 80vw; max-width: 320px; background: #FFFFFF; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1); z-index: 200; overflow-y: auto; animation: slideIn 0.3s ease; }
-        .mobile-menu.active { display: flex; flex-direction: column; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 150; }
-        .mobile-menu-overlay.active { display: block; }
-        .mobile-menu-header { padding: 20px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; }
-        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
-        .mobile-menu-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #1E293B; padding: 0; }
-        .mobile-menu-content { padding: 20px; flex: 1; overflow-y: auto; }
-        .mobile-menu-item { padding: 12px 0; display: flex; align-items: center; gap: 12px; color: #1E293B; text-decoration: none; font-weight: 500; transition: color 0.2s; border-bottom: 1px solid #F1F5F9; }
-        .mobile-menu-item:hover { color: #2563EB; }
-        .mobile-menu-item i { font-size: 18px; width: 24px; }
-        .mobile-menu-divider { height: 1px; background: #E2E8F0; margin: 16px 0; }
-        .mobile-menu-button-group { padding: 20px; border-top: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 12px; }
-        .mobile-menu-button-group a, .mobile-menu-button-group button { padding: 12px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; }
-        .mobile-menu-button-group .btn-outline { background: #F1F5F9; color: #1E293B; border: 2px solid #E2E8F0; }
-        .mobile-menu-button-group .btn-outline:hover { border-color: #2563EB; color: #2563EB; }
-        .mobile-menu-button-group .btn-primary { background: #2563EB; color: white; }
-        .mobile-menu-button-group .btn-primary:hover { background: #1D4ED8; }
-        @media (min-width: 768px) { .hamburger-btn, .mobile-menu, .mobile-menu-overlay { display: none !important; } }
-        @media (max-width: 767px) { .hamburger-btn { display: flex; } .navbar-desktop-items { display: none; } }
+        html.dark .navbar { background: #1E293B; }
+        html.dark .footer { background: #0F172A; }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 gap-4">
-                <a href="/" class="flex items-center gap-3 flex-shrink-0">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <i class="fas fa-key text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
-                </a>
-                <div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
-                    <a href="/" class="text-sm font-medium text-gray-600 hover:text-primary transition">Store</a>
-                    <a href="/blog.html" class="text-sm font-medium text-primary">Blog</a>
-                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg" onclick="toggleTheme()" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div id="googleTranslate"></div>
-                    <div id="guestActions" class="flex items-center gap-3">
-                        <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
-                    </div>
-                    <div id="userActions" class="hidden items-center gap-4">
-                        <a href="/profile" class="text-sm font-medium text-secondary hover:text-primary transition">Profile</a>
-                    </div>
-                    <a href="/cart" class="relative p-2">
-                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-                        <span class="cart-badge" id="cartBadge">0</span>
-                    </a>
-                </div>
-                <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </div>
-    </nav>
+<div id="google_translate_element" style="display:none;"></div>
+    <div class="progress-bar" id="progressBar"></div>
 
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16 gap-4">
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Desktop Items (Hidden on Mobile) -->
+  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+  <i class="fas fa-moon"></i>
+  </button>
+  <div id="googleTranslate" class="flex items-center"></div>
+  
+  <div id="guestActions" class="flex items-center gap-3">
+  <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+  <a href="/register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
+  </div>
+  <div id="userActions" class="hidden items-center gap-4">
+  <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+  <i class="fas fa-wallet"></i>
+  <span id="walletBalance">$0.00</span>
+  </a>
+  <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+  <i class="fas fa-user text-gray-600"></i>
+  </button>
+  </div>
+  <a href="/cart" class="relative p-2">
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+  <span class="cart-badge" id="cartBadge">0</span>
+  </a>
+  </div>
+  
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-header">
-            <h3>Menu</h3>
-            <button class="mobile-menu-close" id="mobileMenuClose"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="mobile-menu-content">
-            <a href="/" class="mobile-menu-item"><i class="fas fa-home"></i> Home</a>
-            <a href="/blog.html" class="mobile-menu-item"><i class="fas fa-newspaper"></i> Blog</a>
-            <a href="/inbox.html" class="mobile-menu-item">
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+  <h3>Menu</h3>
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+  <i class="fas fa-times"></i>
+  </button>
+  </div>
+  
+  <div class="mobile-menu-content">
+  <a href="/" class="mobile-menu-item">
+  <i class="fas fa-home"></i>
+  Home
+  </a>
+  <a href="/inbox.html" class="mobile-menu-item">
   <i class="fas fa-envelope"></i>
   <span class="flex-1">Inbox</span>
-  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span
-            <a href="/cart" class="mobile-menu-item"><i class="fas fa-shopping-cart"></i> Cart</a>
-            <a href="/profile" class="mobile-menu-item"><i class="fas fa-user"></i> Profile</a>
-            <div class="mobile-menu-divider"></div>
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
-            </div>
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <i class="fas fa-globe"></i>
-                    <span style="font-weight: 500; font-size: 14px;">Language</span>
-                </div>
-                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
-                    <option value="en">English 🇺🇸</option>
-                    <option value="es">Español 🇪🇸</option>
-                    <option value="fr">Français 🇫🇷</option>
-                    <option value="ar">العربية 🇸🇦</option>
-                    <option value="zh-CN">中文 🇨🇳</option>
-                    <option value="ru">Русский 🇷🇺</option>
-                </select>
-            </div>
-        </div>
-        <div class="mobile-menu-button-group" id="mobileAuthButtons">
-            <a href="/login" class="btn-outline">Login</a>
-        </div>
-        <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
-            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
-        </div>
-    </div>
+  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <a href="/cart.html" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  <a href="/profile.html" class="mobile-menu-item">
+  <i class="fas fa-user"></i>
+  Profile
+  </a>
+
+  <div class="mobile-menu-divider"></div>
+
+  <div class="mobile-menu-item">
+  <i class="fas fa-moon"></i>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+  </div>
+
+  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <i class="fas fa-globe"></i>
+  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  </div>
+  </div>
+
+  <!-- Mobile Menu Buttons -->
+  <div class="mobile-menu-button-group" id="mobileAuthButtons">
+  <a href="/login" class="btn-outline">Login</a>
+  <a href="/register" class="btn-primary">Register</a>
+  </div>
+
+  <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+  <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+  </div>
+  </div>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Breadcrumb -->
-        <nav class="flex items-center gap-2 text-sm mb-8">
-            <a href="/" class="text-gray-500 hover:text-primary">Home</a>
-            <span class="text-gray-400">/</span>
-            <a href="/blog.html" class="text-gray-500 hover:text-primary">Blog</a>
-            <span class="text-gray-400">/</span>
+        <nav class="breadcrumb mb-8">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/?category=gaming">Products</a>
+            <span>/</span>
             <span class="text-secondary font-medium" id="breadcrumbTitle">Loading...</span>
         </nav>
 
-        <!-- Loading State -->
-        <div id="loadingState">
-            <div class="skeleton h-96 w-full mb-8"></div>
-            <div class="skeleton h-8 w-3/4 mb-4"></div>
-            <div class="skeleton h-4 w-1/2 mb-8"></div>
-            <div class="skeleton h-4 w-full mb-2"></div>
-            <div class="skeleton h-4 w-full mb-2"></div>
-            <div class="skeleton h-4 w-2/3"></div>
+        <!-- Product Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16" id="productContent">
+            <!-- Loading State -->
+            <div class="skeleton h-80"></div>
+            <div>
+                <div class="skeleton h-8 w-3/4 mb-4"></div>
+                <div class="skeleton h-6 w-1/2 mb-8"></div>
+                <div class="skeleton h-12 w-1/3 mb-6"></div>
+                <div class="skeleton h-14 w-full"></div>
+            </div>
         </div>
 
-        <!-- Article Content -->
-        <article id="articleContent" style="display: none;">
-            <img id="featuredImage" class="featured-image" alt="">
-            
-            <div class="flex items-center gap-4 mb-6 flex-wrap">
-                <span class="meta-badge">
-                    <i class="fas fa-user"></i>
-                    <span id="authorName">Author</span>
-                </span>
-                <span class="meta-badge">
-                    <i class="far fa-calendar"></i>
-                    <span id="publishDate">Date</span>
-                </span>
-                <span class="meta-badge">
-                    <i class="far fa-clock"></i>
-                    <span id="readTime">5 min read</span>
-                </span>
-            </div>
-
-            <div class="article-content">
-                <h1 id="articleTitle"></h1>
-                <div id="articleBody" class="mb-12"></div>
-            </div>
-
-            <!-- Engagement Section -->
-            <div class="border-t border-gray-200 pt-8 mb-8">
-                <button id="likeBtn" class="like-btn" onclick="toggleLike()">
-                    <i class="far fa-heart"></i>
-                    <span id="likeCount">0</span>
-                    <span>Likes</span>
-                </button>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="border-t border-gray-200 pt-8">
-                <h2 class="text-2xl font-bold text-secondary mb-6">Comments (<span id="commentCount">0</span>)</h2>
-
-                <!-- Comment Form (Logged In) -->
-                <div id="commentForm" style="display: none;" class="mb-8">
-                    <textarea id="commentInput" class="comment-input" placeholder="Share your thoughts..."></textarea>
-                    <button onclick="submitComment()" class="btn-submit mt-3">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Post Comment
+        <!-- Denominations Section -->
+        <section id="denominationsSection" style="display: none;" class="mb-16">
+            <div class="max-w-4xl">
+                <h2 class="text-2xl font-bold text-secondary mb-8">Select Denominations</h2>
+                <div id="denominationsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Denominations rendered via JS -->
+                </div>
+                
+                <!-- Total Price Display -->
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-lg font-semibold text-secondary">Total Price</span>
+                        <span id="totalPrice" class="text-3xl font-bold text-primary">$0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="btn-primary w-full" onclick="proceedToCheckout()" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-credit-card"></i>
+                        Pay Now
                     </button>
-                </div>
-
-                <!-- Login Prompt (Not Logged In) -->
-                <div id="loginPrompt" class="login-prompt mb-8" style="display: none;">
-                    <p class="font-semibold mb-2">Want to join the conversation?</p>
-                    <p class="text-sm mb-3">Log in to like and comment on this post</p>
-                    <a href="/login" class="inline-block px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-blue-700 transition">Login</a>
-                </div>
-
-                <!-- Comments List -->
-                <div id="commentsList" class="space-y-4"></div>
-
-                <!-- Empty Comments State -->
-                <div id="emptyComments" style="display: none;" class="text-center py-12 text-gray-500">
-                    <i class="far fa-comment-dots text-4xl mb-3"></i>
-                    <p>No comments yet. Be the first to share your thoughts!</p>
+                    <p class="text-sm text-gray-500 text-center mt-4">Select at least one denomination to proceed</p>
                 </div>
             </div>
-        </article>
+        </section>
+
+        <!-- Description -->
+        <div class="description-box mb-16" id="descriptionBox" style="display: none;">
+            <h2 class="text-2xl font-bold text-secondary mb-6">Product Description</h2>
+            <div class="prose text-gray-600 leading-relaxed" id="productDescription"></div>
+        </div>
+
+        <!-- Related Products -->
+        <section id="relatedSection" style="display: none;">
+            <h2 class="text-2xl font-bold text-secondary mb-8">You May Also Like</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="relatedProducts"></div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -397,15 +596,22 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-3 text-sm">
-                        <li><a href="/">Store</a></li>
-                        <li><a href="/blog.html">Blog</a></li>
-                        <li><a href="/profile">My Account</a></li>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/?filter=featured">Featured</a></li>
+                        <li><a href="/profile.html">My Account</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white font-semibold mb-4">Support</h4>
                     <ul class="space-y-3 text-sm">
+                        <li><a href="/faq">FAQ</a></li>
                         <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-3 text-sm">
                         <li><a href="/terms">Terms of Service</a></li>
                         <li><a href="/privacy">Privacy Policy</a></li>
                     </ul>
@@ -413,9 +619,9 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Connect</h4>
                     <div class="flex gap-3">
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Join our Discord"><i class="fab fa-discord"></i></a>
-                        <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" class="social-icon" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
                     </div>
                 </div>
             </div>
@@ -426,277 +632,417 @@
     </footer>
 
     <script>
-        const API_BASE = window.location.origin;
-        let currentPostId = null;
-        let currentPostSlug = null;
-        let isLiked = false;
-
-        // Theme Toggle
+        // =========================================================
+        // DARK MODE & GOOGLE TRANSLATE
+        // =========================================================
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.classList.toggle("dark");
             localStorage.theme = isDark ? "dark" : "light";
+            updateThemeIcon();
         }
+        
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggle').querySelector('i');
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        // Note: googleTranslateElementInit is now defined in translate-config.js
+        
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+        
+        // =========================================================
+        // UTILITIES & API
+        // =========================================================
+        const API_BASE = '';
+        let currentProduct = null;
+        let selectedDenominations = new Map(); // denomination_id -> price
 
-        // Mobile Menu
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { headers: api.getHeaders() });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally { hideLoader(); }
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, { 
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    return await res.json();
+                } finally { hideLoader(); }
+            }
+        };
 
-        hamburgerBtn?.addEventListener('click', () => {
-            hamburgerBtn.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-            mobileMenuOverlay.classList.toggle('active');
-        });
+        const showLoader = () => document.getElementById('progressBar').classList.add('loading');
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
 
-        [mobileMenuClose, mobileMenuOverlay].forEach(el => {
-            el?.addEventListener('click', () => {
-                hamburgerBtn.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                mobileMenuOverlay.classList.remove('active');
-            });
-        });
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
-        // Check Authentication
-        function checkAuth() {
+        const cart = {
+            KEY: 'cart',
+            getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
+            saveItems: (items) => { localStorage.setItem(cart.KEY, JSON.stringify(items)); window.dispatchEvent(new Event('cartUpdated')); },
+            addDenominations: (product, denominationIds) => {
+                const items = cart.getItems();
+                // Add denominations as separate cart items
+                denominationIds.forEach(denomId => {
+                    items.push({ 
+                        product_id: product.id,
+                        product_name: product.name,
+                        product_image: product.image_url,
+                        denomination_id: denomId.id,
+                        denomination_label: denomId.label,
+                        price_usd: denomId.price,
+                        quantity: 1
+                    });
+                });
+                cart.saveItems(items);
+                Swal.fire({ icon: 'success', title: 'Added to Cart!', text: `${denominationIds.length} denomination(s) added to your cart.`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
+            },
+            getCount: () => cart.getItems().length
+        };
+
+        const checkAuthState = () => {
             const token = localStorage.getItem('token');
-            if (token) {
-                document.getElementById('guestActions')?.classList.add('hidden');
-                document.getElementById('userActions')?.classList.remove('hidden');
-                document.getElementById('mobileAuthButtons')?.classList.add('hidden');
-                document.getElementById('mobileUserButtons')?.classList.remove('hidden');
-                document.getElementById('commentForm').style.display = 'block';
-                document.getElementById('loginPrompt').style.display = 'none';
-                document.getElementById('likeBtn').disabled = false;
-            } else {
-                document.getElementById('guestActions')?.classList.remove('hidden');
-                document.getElementById('userActions')?.classList.add('hidden');
-                document.getElementById('mobileAuthButtons')?.classList.remove('hidden');
-                document.getElementById('mobileUserButtons')?.classList.add('hidden');
-                document.getElementById('commentForm').style.display = 'none';
-                document.getElementById('loginPrompt').style.display = 'block';
-                document.getElementById('likeBtn').disabled = true;
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
             }
-        }
+        };
 
-        // Update Cart Badge
-        function updateCartBadge() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cartBadge').textContent = totalItems;
-        }
+        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
 
-        // Fetch Blog Post
-        async function loadBlogPost() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const slug = urlParams.get('slug');
-            
-            if (!slug) {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Post not found' }).then(() => location.href = '/blog.html');
-                return;
-            }
+        const updateCartBadge = () => {
+            const count = cart.getCount();
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        };
 
-            currentPostSlug = slug;
+        window.addEventListener('cartUpdated', updateCartBadge);
+
+        // =========================================================
+        // PRODUCT LOADING
+        // =========================================================
+        const getProductId = () => {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        };
+
+        const loadProduct = async () => {
+            const productId = getProductId();
+            if (!productId) { window.location.href = '/'; return; }
 
             try {
-                const response = await fetch(`${API_BASE}/api/blog/posts/${slug}`);
-                if (!response.ok) throw new Error('Post not found');
-                
-                const post = await response.json();
-                currentPostId = post.id;
-
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('articleContent').style.display = 'block';
-
-                document.getElementById('featuredImage').src = post.featured_image || '/placeholder-blog.jpg';
-                document.getElementById('featuredImage').alt = post.title;
-                document.getElementById('articleTitle').textContent = post.title;
-                document.getElementById('articleBody').innerHTML = post.content;
-                document.getElementById('authorName').textContent = post.author || 'KeyVault Team';
-                document.getElementById('publishDate').textContent = new Date(post.published_at || post.created_at).toLocaleDateString();
-                document.getElementById('readTime').textContent = `${estimateReadTime(post.content)} min read`;
-                document.getElementById('breadcrumbTitle').textContent = post.title;
-                document.getElementById('likeCount').textContent = post.likes_count || 0;
-
-                document.title = `${post.title} - KeyVault Blog`;
-
-                // Render comments directly from post.comments (included in BlogDetailResponse)
-                renderComments(post.comments || []);
-
-            } catch (error) {
-                console.error('[v0] Blog post fetch error:', error);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load blog post' }).then(() => location.href = '/blog.html');
+                const response = await api.get(`/api/products/${productId}`);
+                currentProduct = response.data || response || getMockProduct(productId);
+                renderProduct(currentProduct);
+                await loadDenominations(productId);
+            } catch (e) {
+                console.error('Error loading product:', e);
+                currentProduct = getMockProduct(productId);
+                renderProduct(currentProduct);
+                loadMockDenominations(productId);
             }
-        }
+        };
 
-        // Render Comments from Post Data
-        function renderComments(comments) {
-            document.getElementById('commentCount').textContent = comments.length;
+        const loadDenominations = async (productId) => {
+            try {
+                const response = await api.get(`/api/products/${productId}/denominations`);
+                const denominations = response.data || response || [];
+                renderDenominations(denominations);
+            } catch (e) {
+                console.error('Error loading denominations:', e);
+                const denominations = getMockDenominations(productId);
+                renderDenominations(denominations);
+            }
+        };
 
-            if (comments.length === 0) {
-                document.getElementById('emptyComments').style.display = 'block';
-                document.getElementById('commentsList').innerHTML = '';
+        const renderDenominations = (denominations) => {
+            if (!denominations || denominations.length === 0) {
+                document.getElementById('denominationsSection').style.display = 'none';
                 return;
             }
 
-            document.getElementById('emptyComments').style.display = 'none';
-            document.getElementById('commentsList').innerHTML = comments.map(comment => `
-                <div class="comment-card">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                            ${(comment.user?.email || 'U').charAt(0).toUpperCase()}
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="font-semibold text-secondary">${comment.user?.email || 'User'}</span>
-                                <span class="text-xs text-gray-400">${new Date(comment.created_at).toLocaleDateString()}</span>
+            document.getElementById('denominationsSection').style.display = 'block';
+            
+            // If only one denomination, auto-select it
+            if (denominations.length === 1) {
+                selectedDenominations.set(denominations[0].id, {
+                    id: denominations[0].id,
+                    label: denominations[0].label,
+                    price: denominations[0].price
+                });
+            }
+
+            const container = document.getElementById('denominationsContainer');
+            container.innerHTML = denominations.map(denom => {
+                const isSelected = selectedDenominations.has(denom.id);
+                const isOutOfStock = denom.stock_quantity <= 0;
+                return `
+                    <div class="denomination-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" 
+                         style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};">
+                        <div class="p-6 border-2 rounded-lg transition ${isSelected ? 'border-primary bg-blue-50' : 'border-gray-200'} ${isOutOfStock ? 'opacity-50 bg-gray-50' : ''}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-lg font-bold text-secondary">${denom.label}</span>
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
-                            <p class="text-gray-600">${comment.content}</p>
+                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
+                            <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">
+                                ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock_quantity})`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateTotalPrice();
+        };
+
+        const renderProduct = (product) => {
+            document.getElementById('breadcrumbTitle').textContent = product.name;
+            document.title = `${product.name} - KeyVault`;
+
+            document.getElementById('productContent').innerHTML = `
+                <!-- Image -->
+                <div class="product-image-main">
+                    <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=800'}" 
+                         alt="${product.name}"
+                         onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=800'">
+                </div>
+
+                <!-- Details -->
+                <div>
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="platform-badge">
+                            <i class="fas fa-gamepad text-primary"></i>
+                            ${product.platform || 'Digital'}
+                        </span>
+                        <span class="text-2xl">${getRegionFlag(product.platform)}</span>
+                    </div>
+
+                    <h1 class="text-3xl font-bold text-secondary mb-4">${product.name}</h1>
+
+                    <p class="text-gray-600 leading-relaxed mb-8">${product.short_description || 'Select denominations below to customize your purchase.'}</p>
+
+                    <!-- Trust Badges -->
+                    <div class="mt-8 pt-8 border-t border-gray-100">
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <i class="fas fa-bolt text-2xl text-primary mb-2"></i>
+                                <p class="text-xs text-gray-500">Instant Delivery</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-shield-alt text-2xl text-success mb-2"></i>
+                                <p class="text-xs text-gray-500">Secure Payment</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-headset text-2xl text-yellow-500 mb-2"></i>
+                                <p class="text-xs text-gray-500">24/7 Support</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            `).join('');
-        }
+            `;
 
-        // Submit Comment
-        async function submitComment() {
-            const content = document.getElementById('commentInput').value.trim();
-            if (!content) {
-                Swal.fire({ icon: 'warning', title: 'Empty Comment', text: 'Please write something before posting' });
-                return;
+            // Show description
+            if (product.description) {
+                document.getElementById('productDescription').innerHTML = product.description;
+                document.getElementById('descriptionBox').style.display = 'block';
             }
+        };
 
-            const token = localStorage.getItem('token');
-            if (!token) {
-                Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to comment' });
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/blog/${currentPostId}/comment`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ content })
-                });
-
-                if (!response.ok) throw new Error('Failed to post comment');
-
-                document.getElementById('commentInput').value = '';
-                Swal.fire({ icon: 'success', title: 'Comment Posted!', timer: 1500, showConfirmButton: false });
-                
-                // Reload the full post to get updated comments
-                const slug = new URLSearchParams(window.location.search).get('slug');
-                const postResponse = await fetch(`${API_BASE}/api/blog/posts/${slug}`);
-                if (postResponse.ok) {
-                    const post = await postResponse.json();
-                    renderComments(post.comments || []);
-                }
-
-            } catch (error) {
-                console.error('[v0] Comment post error:', error);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to post comment' });
-            }
-        }
-
-        // Toggle Like
-        async function toggleLike() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to like posts' });
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/blog/${currentPostId}/react`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ reaction_type: 'like' })
-                });
-
-                if (!response.ok) throw new Error('Failed to react');
-
-                const data = await response.json();
-                const likeBtn = document.getElementById('likeBtn');
-                const likeCount = document.getElementById('likeCount');
-
-                // Toggle visual state
-                isLiked = !isLiked;
-                likeBtn.classList.toggle('liked', isLiked);
-                likeBtn.querySelector('i').classList.toggle('far', !isLiked);
-                likeBtn.querySelector('i').classList.toggle('fas', isLiked);
-
-                // Update count (simplified, could be from response)
-                const currentCount = parseInt(likeCount.textContent);
-                likeCount.textContent = isLiked ? currentCount + 1 : currentCount - 1;
-
-            } catch (error) {
-                console.error('[v0] Like error:', error);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update reaction' });
-            }
-        }
-
-        function estimateReadTime(content) {
-            const wordsPerMinute = 200;
-            const wordCount = (content || '').split(/\s+/).length;
-            return Math.ceil(wordCount / wordsPerMinute) || 1;
-        }
-
-        // =========================================================
-        // MOBILE LANGUAGE SELECTOR
-        // =========================================================
-        function selectMobileLanguageFromSelect() {
-            const select = document.getElementById('mobileLanguageSelect');
-            const langCode = select.value;
-            
-            // Save preference
-            localStorage.setItem('keyvault_language', langCode);
-            
-            // Trigger Google Translate
-            const element = document.querySelector('.goog-te-combo');
-            if (element) {
-                element.value = langCode;
-                element.dispatchEvent(new Event('change'));
-            }
-            
-            // Handle RTL for Arabic
-            if (langCode === 'ar') {
-                document.documentElement.dir = 'rtl';
-                document.documentElement.lang = 'ar';
+        const toggleDenomination = (denomId, label, price) => {
+            const denom = { id: denomId, label: label, price: price };
+            if (selectedDenominations.has(denomId)) {
+                selectedDenominations.delete(denomId);
             } else {
-                document.documentElement.dir = 'ltr';
-                document.documentElement.lang = langCode;
+                selectedDenominations.set(denomId, denom);
             }
-        }
-        
-        // Load saved language on init
-        function loadSavedMobileLanguage() {
-            const savedLang = localStorage.getItem('keyvault_language') || 'en';
-            const select = document.getElementById('mobileLanguageSelect');
-            if (select) {
-                select.value = savedLang;
-            }
-        }
+            updateTotalPrice();
+        };
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            checkAuth();
-            updateCartBadge();
-            await loadBlogPost();
-            loadSavedMobileLanguage();
+        const updateTotalPrice = () => {
+            let total = 0;
+            selectedDenominations.forEach(denom => {
+                total += denom.price;
+            });
+            document.getElementById('totalPrice').textContent = formatCurrency(total);
             
-            // Trigger translation after content is loaded
-            const savedLang = localStorage.getItem('keyvault_language') || 'en';
-            if (savedLang !== 'en') {
-                triggerGoogleTranslate(savedLang);
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (selectedDenominations.size > 0) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.style.opacity = '1';
+                checkoutBtn.style.cursor = 'pointer';
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.style.opacity = '0.5';
+                checkoutBtn.style.cursor = 'not-allowed';
             }
-        });
-    </script>
+        };
+
+        const proceedToCheckout = async () => {
+            if (selectedDenominations.size === 0) return;
+            
+            const denominationIds = Array.from(selectedDenominations.values());
+            try {
+                cart.addDenominations(currentProduct, denominationIds);
+                window.location.href = '/checkout.html';
+            } catch (e) {
+                console.error('Error adding to cart:', e);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to add items to cart.' });
+            }
+        };
+
+        // =========================================================
+        // RELATED PRODUCTS
+        // =========================================================
+        const loadRelatedProducts = async () => {
+            // Related products are optional in the new model
+            document.getElementById('relatedSection').style.display = 'none';
+        };
+
+        const getRegionFlag = (platform) => {
+            const flags = { 'Steam': '🌍', 'Xbox': '🇺🇸', 'PlayStation': '🇺🇸', 'Nintendo': '🇯🇵' };
+            return flags[platform] || '🌍';
+        };
+
+        // =========================================================
+        // MOCK DATA
+        // =========================================================
+        const getMockProduct = (id) => {
+            const products = getMockProducts();
+            return products.find(p => p.id === parseInt(id)) || products[0];
+        };
+
+        const getMockProducts = () => [
+            { id: 1, name: 'Xbox Game Pass Ultimate', platform: 'Xbox', image_url: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=800', short_description: 'Get unlimited access to over 100 high-quality games for console, PC, and Android mobile devices.', description: '<p>Get unlimited access to over 100 high-quality games for console, PC, and Android mobile devices. Includes Xbox Live Gold membership for online multiplayer gaming.</p><ul><li>100+ Games on Console, PC, and Mobile</li><li>Xbox Live Gold included</li><li>EA Play membership included</li><li>New games added regularly</li></ul>' },
+            { id: 2, name: 'PlayStation Plus Premium', platform: 'PlayStation', image_url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800', short_description: 'The ultimate PlayStation membership with access to hundreds of games and online multiplayer.', description: '<p>The ultimate PlayStation membership with access to hundreds of games, online multiplayer, and exclusive benefits.</p>' },
+            { id: 3, name: 'Steam Wallet Card', platform: 'Steam', image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', short_description: 'Add funds to your Steam Wallet instantly for purchasing games and software.', description: '<p>Add funds to your Steam Wallet instantly. Use it to purchase games, software, hardware, and any other item on Steam.</p>' },
+        ];
+
+        const getMockDenominations = (productId) => [
+            { id: `${productId}-1`, label: '50 UC', price: 9.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-2`, label: '100 UC', price: 19.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-3`, label: '250 UC', price: 49.99, in_stock: true, stock: 'Available' },
+        ];
+
+        const loadMockDenominations = (productId) => {
+            const denominations = getMockDenominations(productId);
+            renderDenominations(denominations);
+        };
+
+  // =========================================================
+  // MOBILE MENU FUNCTIONALITY
+  // =========================================================
+  function initMobileMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+  hamburgerBtn.addEventListener('click', () => {
+  mobileMenu.classList.add('active');
+  mobileMenuOverlay.classList.add('active');
+  hamburgerBtn.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  });
+
+  const closeMenu = () => {
+  mobileMenu.classList.remove('active');
+  mobileMenuOverlay.classList.remove('active');
+  hamburgerBtn.classList.remove('active');
+  document.body.style.overflow = '';
+  };
+
+  mobileMenuClose.addEventListener('click', closeMenu);
+  mobileMenuOverlay.addEventListener('click', closeMenu);
+
+  mobileMenuItems.forEach(item => {
+  item.addEventListener('click', closeMenu);
+  });
+  }
+
+  // =========================================================
+  // INIT
+  // =========================================================
+  document.addEventListener('DOMContentLoaded', () => {
+  initMobileMenu();
+  checkAuthState();
+  updateCartBadge();
+  loadProduct();
+  });
+
+  // Add CSS for denomination cards
+  const style = document.createElement('style');
+  style.textContent = `
+    .denomination-card {
+      transition: all 0.3s ease;
+    }
+    .denomination-card.selected {
+      transform: scale(1.02);
+    }
+    .denomination-card.disabled {
+      pointer-events: none;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // =========================================================
+  // LANGUAGE SELECTION
+  // =========================================================
+  const selectMobileLanguageFromSelect = () => {
+    const select = document.getElementById('mobileLanguageSelect');
+    if (!select) return;
+    
+    const selectedLanguage = select.value;
+    changeLanguage(selectedLanguage);
+  };
+
+  const changeLanguage = (languageCode) => {
+    // Store the selected language
+    localStorage.setItem('selectedLanguage', languageCode);
+    
+    // Update Google Translate
+    const googleTranslateCombo = document.querySelector('.goog-te-combo');
+    if (googleTranslateCombo) {
+      googleTranslateCombo.value = languageCode;
+      googleTranslateCombo.dispatchEvent(new Event('change'));
+    }
+  };
+
+  // Initialize language on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+    const mobileSelect = document.getElementById('mobileLanguageSelect');
+    if (mobileSelect) {
+      mobileSelect.value = savedLanguage;
+    }
+  });
+  </script>
 </body>
 </html>
