@@ -840,38 +840,6 @@
         };
 
         // =========================================================
-        // LANGUAGE SELECTION
-        // =========================================================
-        const selectMobileLanguageFromSelect = () => {
-            const select = document.getElementById('mobileLanguageSelect');
-            if (!select) return;
-            
-            const selectedLanguage = select.value;
-            changeLanguage(selectedLanguage);
-        };
-
-        const changeLanguage = (languageCode) => {
-            // Store the selected language
-            localStorage.setItem('selectedLanguage', languageCode);
-            
-            // Update Google Translate
-            const googleTranslateCombo = document.querySelector('.goog-te-combo');
-            if (googleTranslateCombo) {
-                googleTranslateCombo.value = languageCode;
-                googleTranslateCombo.dispatchEvent(new Event('change'));
-            }
-        };
-
-        // Initialize language selection on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
-            const mobileSelect = document.getElementById('mobileLanguageSelect');
-            if (mobileSelect) {
-                mobileSelect.value = savedLanguage;
-            }
-        }, { once: true });
-
-        // =========================================================
         // RENDER CART
         // =========================================================
         const renderCart = () => {
