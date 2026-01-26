@@ -466,54 +466,40 @@
     <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 
     <!-- Mobile Menu -->
-    <div id="mobileUserLinks" class="hidden">
-  <a href="/inbox.html" class="mobile-menu-item">
-  <i class="fas fa-envelope"></i>
-  <span class="flex-1">Inbox</span>
-  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
-  </a>
-  <a href="/profile" class="mobile-menu-item">
-  <i class="fas fa-user"></i>
-  My Profile
-  </a>
-  <a href="/blog.html" class="mobile-menu-item">
-  <i class="fas fa-newspaper"></i>
-  Blog
-  </a>
-  <a href="/profile?tab=orders" class="mobile-menu-item">
-  <i class="fas fa-shopping-bag"></i>
-  Order History
-  </a>
-  <a href="/profile?tab=settings" class="mobile-menu-item">
-  <i class="fas fa-cog"></i>
-  Settings
-  </a>
-  </div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+            <a href="/cart" class="mobile-menu-item">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+            </a>
+            <a href="/profile" class="mobile-menu-item">
+                <i class="fas fa-user"></i>
+                Profile
+            </a>
 
-  <div class="mobile-menu-divider border-t border-gray-200 my-4"></div>
+            <div class="mobile-menu-divider"></div>
 
-  <!-- Theme & Language in Mobile Menu -->
-  <div class="mobile-menu-item border-b-0">
-  <i class="fas fa-moon"></i>
-  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
-  </div>
+            <div class="mobile-menu-item">
+                <i class="fas fa-moon"></i>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+            </div>
 
-  <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <i class="fas fa-globe"></i>
-                    <span style="font-weight: 500; font-size: 14px;">Language</span>
-                </div>
-                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
-                    <option value="en">English 🇺🇸</option>
-                    <option value="es">Español 🇪🇸</option>
-                    <option value="fr">Français 🇫🇷</option>
-                    <option value="ar">العربية 🇸🇦</option>
-                    <option value="zh-CN">中文 🇨🇳</option>
-                    <option value="ru">Русский 🇷🇺</option>
-                </select>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+                <i class="fas fa-globe"></i>
+                <div id="mobileGoogleTranslate" class="flex-1"></div>
             </div>
         </div>
-  </div>
 
         <!-- Mobile Menu Buttons -->
         <div class="mobile-menu-button-group" id="mobileAuthButtons">
