@@ -666,38 +666,18 @@
         // =========================================================
         // AUTH STATE
         // =========================================================
-        const checkAuthState = async () => {
-            try {
-                const response = await fetch('/api/auth/me', {
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('guestActions').classList.add('hidden');
-                    document.getElementById('userActions').classList.remove('hidden');
-                    document.getElementById('userActions').classList.add('flex');
-                    document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
-                    return user;
-                } else {
-                    document.getElementById('guestActions').classList.remove('hidden');
-                    document.getElementById('userActions').classList.add('hidden');
-                }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                document.getElementById('guestActions').classList.remove('hidden');
-                document.getElementById('userActions').classList.add('hidden');
+        const checkAuthState = () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (token && user) {
+                document.getElementById('guestActions').classList.add('hidden');
+                document.getElementById('userActions').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('flex');
+                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
             }
         };
 
-        const logout = async () => { 
-            try {
-                await fetch('/api/auth/logout', { credentials: 'include', method: 'POST' });
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-            window.location.href = '/'; 
-        };
+        const logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; };
 
         // =========================================================
         // RENDER CART
@@ -815,44 +795,32 @@
         // =========================================================
         // CHECKOUT
         // =========================================================
-        const proceedToCheckout = async () => {
-            try {
-                const response = await fetch('/api/auth/me', {
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Login Required',
-                        text: 'Please login or create an account to complete your purchase.',
-                        confirmButtonText: 'Login',
-                        confirmButtonColor: '#2563EB',
-                        showCancelButton: true,
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/auth.html?redirect=/checkout.html';
-                        }
-                    });
-                    return;
-                }
-                window.location.href = '/checkout.html';
-            } catch (error) {
-                console.error('Auth check failed:', error);
+        const proceedToCheckout = () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to verify authentication. Please try again.'
+                    icon: 'info',
+                    title: 'Login Required',
+                    text: 'Please login or create an account to complete your purchase.',
+                    confirmButtonText: 'Login',
+                    confirmButtonColor: '#2563EB',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/auth.html?redirect=/checkout.html';
+                    }
                 });
+                return;
             }
+            window.location.href = '/checkout.html';
         };
 
         // =========================================================
         // INIT
         // =========================================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await checkAuthState();
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthState();
             updateCartBadge();
             renderCart();
         });

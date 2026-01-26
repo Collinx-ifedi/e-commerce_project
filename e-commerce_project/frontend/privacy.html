@@ -87,132 +87,289 @@
 </head>
 <body class="bg-background text-secondary min-h-screen flex flex-col font-sans">
 
-    <nav class="bg-white border-b border-slate-100 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:rotate-12 transition-transform">
-                    <i class="fas fa-vault text-xl"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight">KeyVault</span>
-            </a>
-            <div class="flex items-center gap-4">
-                <button id="themeToggle" class="p-2 text-slate-600 hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <div id="googleTranslate" class="flex items-center"></div>
-                <a href="/" class="text-sm font-medium text-slate-500 hover:text-primary transition flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i> Back to Store
-                </a>
-            </div>
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16 gap-4">
+  <!-- Logo -->
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Search Bar (Always Visible, Responsive) -->
+  <div class="flex-1 min-w-0 max-w-xl mx-2 md:mx-4 relative">
+  <div class="relative">
+  <input
+  type="text"
+  id="searchInput"
+  class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm"
+  placeholder="Search..."
+  >
+  <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition flex-shrink-0">
+  <i class="fas fa-search"></i>
+  </button>
+  </div>
+  <div class="search-dropdown" id="searchDropdown">
+  <!-- Search results populated via JS -->
+  </div>
+  </div>
+  
+  <!-- Desktop Items (Hidden on Mobile) -->
+  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+  <!-- Theme & Language Toggle -->
+  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+  <i class="fas fa-moon"></i>
+  </button>
+  <div id="googleTranslate" class="flex items-center"></div>
+  
+  <!-- Navigation Links -->
+  <a href="/blog.html" class="text-sm text-gray-500 hover:text-primary transition">
+  <i class="fas fa-newspaper mr-2"></i>Blog
+  </a>
+  
+  <!-- Guest State -->
+  <div id="guestActions" class="flex items-center gap-3">
+  <a href="/login" class="btn-outline text-sm">Login</a>
+  <a href="/register" class="btn-primary text-sm">Register</a>
+  </div>
+  
+  <!-- Logged In State (Hidden by default) -->
+  <div id="userActions" class="hidden items-center gap-4">
+  <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+  <i class="fas fa-wallet text-primary"></i>
+  <div class="text-right">
+  <p class="text-xs text-gray-600">Wallet Balance</p>
+  <p class="text-sm font-bold text-primary" id="walletBalance">$0.00</p>
+  </div>
+  <button onclick="openFundingModal()" class="ml-3 px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition" title="Fund your wallet">
+  <i class="fas fa-plus"></i>
+  </button>
+  </div>
+  
+  <div class="relative">
+  <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+  <i class="fas fa-user text-gray-600"></i>
+  </button>
+  <div class="profile-dropdown" id="profileDropdown">
+  <a href="/inbox.html" class="profile-dropdown-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="desktopInboxBadge" class="ml-2 px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <hr class="my-1">
+  <a href="/profile" class="profile-dropdown-item">
+  <i class="fas fa-user"></i>
+  My Profile
+  </a>
+  <a href="/profile?tab=orders" class="profile-dropdown-item">
+  <i class="fas fa-shopping-bag"></i>
+  Order History
+  </a>
+  <a href="/profile?tab=settings" class="profile-dropdown-item">
+  <i class="fas fa-cog"></i>
+  Settings
+  </a>
+  <hr class="my-1">
+  <button onclick="logout()" class="profile-dropdown-item danger w-full text-left">
+  <i class="fas fa-sign-out-alt"></i>
+  Logout
+  </button>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Cart Icon -->
+  <a href="/cart" class="relative p-2">
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+  <span class="cart-badge" id="cartBadge">0</span>
+  </a>
+  </div>
+  
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+  <h3>Menu</h3>
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+  <i class="fas fa-times"></i>
+  </button>
+  </div>
+  
+  <div class="mobile-menu-content">
+  <!-- Wallet Balance (Hidden by default, shown when logged in) -->
+  <div id="mobileWalletSection" class="hidden mb-4 pb-4 border-b border-gray-200">
+  <div class="flex items-center justify-between">
+  <div class="flex items-center gap-2">
+  <i class="fas fa-wallet text-primary text-lg"></i>
+  <span class="font-semibold text-secondary">Wallet Balance</span>
+  </div>
+  <span class="text-sm font-bold text-primary" id="mobileWalletBalance">$0.00</span>
+  </div>
+  <button onclick="openFundingModal()" class="mt-2 w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">
+  <i class="fas fa-plus mr-1"></i>Fund Wallet
+  </button>
+  </div>
+
+  <!-- Guest Links -->
+  <div id="mobileGuestLinks">
+  <a href="/" class="mobile-menu-item">
+  <i class="fas fa-home"></i>
+  Home
+  </a>
+  <a href="/blog.html" class="mobile-menu-item">
+  <i class="fas fa-newspaper"></i>
+  Blog
+  </a>
+  <a href="/?filter=trending" class="mobile-menu-item">
+  <i class="fas fa-fire"></i>
+  Trending
+  </a>
+  <a href="/?filter=all" class="mobile-menu-item">
+  <i class="fas fa-shopping-bag"></i>
+  Shop All
+  </a>
+  <a href="/cart" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  </div>
+
+  <!-- User Links (Hidden by default) -->
+  <div id="mobileUserLinks" class="hidden">
+  <a href="/inbox.html" class="mobile-menu-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <a href="/profile" class="mobile-menu-item">
+  <i class="fas fa-user"></i>
+  My Profile
+  </a>
+  <a href="/blog.html" class="mobile-menu-item">
+  <i class="fas fa-newspaper"></i>
+  Blog
+  </a>
+  <a href="/profile?tab=orders" class="mobile-menu-item">
+  <i class="fas fa-shopping-bag"></i>
+  Order History
+  </a>
+  <a href="/profile?tab=settings" class="mobile-menu-item">
+  <i class="fas fa-cog"></i>
+  Settings
+  </a>
+  <a href="/cart.html" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+  </div>
+
+  <div class="mobile-menu-divider border-t border-gray-200 my-4"></div>
+
+  <!-- Theme & Language in Mobile Menu -->
+  <div class="mobile-menu-item border-b-0">
+  <i class="fas fa-moon"></i>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
+  </div>
+
+  <div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
+  <i class="fas fa-globe"></i>
+  <div class="mobile-language-selector flex-1">
+      <button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+          <span id="mobileLangLabel">English</span>
+          <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="mobile-lang-dropdown" id="mobileLangDropdown">
+          <button onclick="selectMobileLanguage('en', 'English')" data-lang="en">English</button>
+          <button onclick="selectMobileLanguage('es', 'Espanol')" data-lang="es">Espanol</button>
+          <button onclick="selectMobileLanguage('fr', 'Francais')" data-lang="fr">Francais</button>
+          <button onclick="selectMobileLanguage('ar', 'العربية')" data-lang="ar">العربية</button>
+          <button onclick="selectMobileLanguage('zh-CN', '中文')" data-lang="zh-CN">中文</button>
+          <button onclick="selectMobileLanguage('ru', 'Русский')" data-lang="ru">Русский</button>
+      </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- Mobile Menu Buttons -->
+  <div class="mobile-menu-button-group" id="mobileAuthButtons">
+  <a href="/login" class="btn-outline">Login</a>
+  <a href="/register" class="btn-primary">Register</a>
+  </div>
+
+  <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+  <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
         </div>
-    </nav>
+    </section>
 
-    <header class="bg-white border-b border-slate-100 py-12">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h1 class="text-4xl font-extrabold text-slate-900 mb-4">Privacy Policy</h1>
-            <p class="text-slate-500 font-medium">Last Updated: January 20, 2026</p>
-        </div>
-    </header>
-
-    <main class="flex-grow py-16 px-6">
-        <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 md:p-16">
-            <div class="prose max-w-none">
-                
-                <section>
-                    <h2><i class="fas fa-info-circle text-primary"></i> 1. Introduction</h2>
-                    <p>Welcome to KeyVault. We are committed to protecting your personal information and your right to privacy. This policy explains what information we collect, how we use it, and what rights you have in relation to it. This applies to all information collected through our website and related services.</p>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-database text-primary"></i> 2. Information We Collect</h2>
-                    <p>We collect personal information that you voluntarily provide to us when you register on the website, express an interest in obtaining information about us or our products, or when you participate in activities on the website. This includes:</p>
-                    <ul>
-                        <li><strong>Account Data:</strong> Name, email address, and encrypted passwords.</li>
-                        <li><strong>Transaction Data:</strong> Details about payments you make and digital keys you purchase (e.g., product name, timestamp).</li>
-                        <li><strong>Device Data:</strong> IP addresses, browser type, and operating system for security and fraud prevention.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-shield-alt text-primary"></i> 3. How We Use Your Information</h2>
-                    <p>We use the information we collect to provide, improve, and secure our services. Specific uses include:</p>
-                    <ul>
-                        <li>To facilitate account creation and the logon process.</li>
-                        <li>To fulfill and manage your orders and payments.</li>
-                        <li>To send verification codes (OTP) and order delivery emails.</li>
-                        <li>To protect our services against bot attacks and fraudulent transactions.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-lock text-primary"></i> 4. Data Security</h2>
-                    <p>We implement a variety of security measures to maintain the safety of your personal information. We use industry-standard encryption for data at rest and in transit. Your digital keys are stored in a secured database and are only accessible after successful authentication.</p>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-cookie-bite text-primary"></i> 5. Cookies and Tracking</h2>
-                    <p>We use cookies to enhance your experience. These are small files that a site or its service provider transfers to your computer's hard drive through your web browser that enables the site's systems to recognize your browser and capture/remember certain information (like items in your cart).</p>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-external-link-alt text-primary"></i> 6. Third-Party Services</h2>
-                    <p>We may share information with third-party service providers to perform functions on our behalf, such as:</p>
-                    <ul>
-                        <li>Payment processing (via encrypted cryptocurrency gateways).</li>
-                        <li>Cloud hosting and image storage (e.g., Cloudinary).</li>
-                        <li>Customer support tools.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2><i class="fas fa-user-check text-primary"></i> 7. Your Rights</h2>
-                    <p>Depending on your location, you may have the right to access, correct, or delete your personal data. You can manage most of your data directly through your profile page. To request a full account deletion, please contact our support team.</p>
-                </section>
-
-                <div class="mt-16 p-8 bg-blue-50 rounded-3xl border border-blue-100 flex flex-col md:flex-row items-center gap-6">
-                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
-                        <i class="fas fa-envelope-open-text text-2xl"></i>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-blue-900 mb-1">Privacy Questions?</h3>
-                        <p class="text-blue-800 m-0 leading-relaxed">If you have any questions about this policy, please reach out to our privacy officer at <strong>privacy@keyvault.com</strong> or visit our <a href="/contact" class="underline font-bold hover:text-primary">Contact Page</a>.</p>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Your trusted source for premium digital keys and gift cards. Instant delivery, secure payments.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/?filter=featured">Featured</a></li>
+                        <li><a href="/?filter=trending">Trending</a></li>
+                        <li><a href="/profile">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/contact.html" onclick="scrollToContactForm(event)">Contact Us</a></li>
+                        <li><a href="/terms.html">Terms of Service</a></li>
+                        <li><a href="/privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
+                    <div class="flex gap-3">
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Join our Discord"><i class="fab fa-discord"></i></a>
+                        <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" class="social-icon" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="text-white text-sm font-medium mb-2">We Accept</h5>
+                        <div class="flex gap-2 text-2xl">
+                            <i class="fab fa-bitcoin text-yellow-500"></i>
+                            <i class="fab fa-ethereum text-blue-400"></i>
+                            <span class="text-green-400 text-sm font-bold">USDT</span>
+                        </div>
                     </div>
                 </div>
-    
-    <script>
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.toggle("dark");
-            localStorage.theme = isDark ? "dark" : "light";
-            updateThemeIcon();
-        }
-        
-        function updateThemeIcon() {
-            const icon = document.getElementById('themeToggle').querySelector('i');
-            const isDark = document.documentElement.classList.contains('dark');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-        
-        // Note: googleTranslateElementInit is now defined in translate-config.js
-        
-        document.addEventListener('DOMContentLoaded', updateThemeIcon);
-    </script>
             </div>
-        </div>
-    </main>
-
-    <footer class="py-12 bg-white border-t border-slate-100 mt-auto">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-2 text-slate-400">
-                <i class="fas fa-vault"></i>
-                <span class="text-sm font-semibold">&copy; 2026 KeyVault. All rights reserved.</span>
-            </div>
-            <div class="flex gap-8">
-                <a href="/terms" class="text-sm text-slate-500 hover:text-primary transition font-medium">Terms of Service</a>
-                <a href="/contact" class="text-sm text-slate-500 hover:text-primary transition font-medium">Support</a>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
             </div>
         </div>
     </footer>
-
 </body>
 </html>

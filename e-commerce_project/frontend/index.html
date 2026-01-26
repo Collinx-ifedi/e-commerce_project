@@ -1683,13 +1683,14 @@
 
         const renderProductCard = (product) => {
             return `
-                <div class="product-card">
+                <div class="product-card" style="position: relative;">
                     <a href="/product.html?id=${product.id}">
                         <img src="${product.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'}" 
                              alt="${product.name}" 
                              class="product-image"
                              onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400'">
                     </a>
+                    ${getProductTotalStock(product) === 0 ? '<div style="position: absolute; top: 8px; right: 8px; background: #EF4444; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">Sold Out</div>' : ''}
                     <div class="p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">${product.platform || 'Digital'}</span>
@@ -1707,20 +1708,30 @@
             `;
         };
 
+        const getProductTotalStock = (product) => {
+            // If product has denominations array, sum their stock_quantity
+            if (product.denominations && Array.isArray(product.denominations)) {
+                return product.denominations.reduce((sum, denom) => sum + (denom.stock_quantity || 0), 0);
+            }
+            // Fallback for mock products with direct stock_quantity
+            return product.stock_quantity || 0;
+        };
+
         const loadProducts = async () => {
             try {
                 // Fetch real products from API
                 const response = await api.get('/api/products');
                 let products = Array.isArray(response) ? response : response.data || response;
-                // Filter out products with no stock
-                allProducts = products.filter(p => p.stock_quantity > 0 && !p.is_deleted);
+                // ALWAYS render products - never hide them
+                // Products should show "Sold Out" badge if stock is 0
+                allProducts = products.filter(p => !p.is_deleted);
                 renderProducts(allProducts.slice(0, 8));
                 if (allProducts.length === 0) {
                     document.getElementById('loadMoreContainer').style.display = 'none';
                 }
             } catch (e) {
                 console.log('[v0] API fetch failed, using mock data:', e.message);
-                allProducts = getMockProducts().filter(p => p.stock_quantity > 0);
+                allProducts = getMockProducts();
                 renderProducts(allProducts.slice(0, 8));
             }
         };
@@ -1753,8 +1764,8 @@
             try {
                 const response = await api.get('/api/products');
                 let products = Array.isArray(response) ? response : response.data || response;
-                // Filter products marked as trending by admin
-                const trendingProducts = products.filter(p => p.is_trending && p.stock_quantity > 0 && !p.is_deleted).slice(0, 4);
+                // Filter products marked as trending by admin - NEVER hide based on stock
+                const trendingProducts = products.filter(p => p.is_trending && !p.is_deleted).slice(0, 4);
                 if (trendingProducts.length > 0) {
                     renderTrendingProducts(trendingProducts);
                 } else {
@@ -1762,7 +1773,7 @@
                 }
             } catch (e) {
                 console.log('[v0] Trending products fetch failed:', e.message);
-                const products = getMockProducts().filter(p => p.is_trending && p.stock_quantity > 0);
+                const products = getMockProducts().filter(p => p.is_trending);
                 renderTrendingProducts(products.slice(0, 4));
             }
         };

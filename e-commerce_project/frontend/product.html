@@ -799,7 +799,7 @@
             const container = document.getElementById('denominationsContainer');
             container.innerHTML = denominations.map(denom => {
                 const isSelected = selectedDenominations.has(denom.id);
-                const isOutOfStock = !denom.in_stock;
+                const isOutOfStock = denom.stock_quantity <= 0;
                 return `
                     <div class="denomination-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'disabled' : ''}" 
                          onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" 
@@ -811,7 +811,7 @@
                             </div>
                             <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
                             <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">
-                                ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock || 'Available'})`}
+                                ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock_quantity})`}
                             </div>
                         </div>
                     </div>
