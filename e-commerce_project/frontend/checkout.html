@@ -368,6 +368,41 @@
         /* Dark Mode Styles */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .navbar { background: #1E293B; }
+        /* ================================
+   HIDE GOOGLE TRANSLATE UI
+   ================================ */
+
+/* Top banner iframe */
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}
+
+/* Prevent page push-down */
+body {
+    top: 0px !important;
+}
+
+/* Google tooltip */
+.goog-tooltip {
+    display: none !important;
+}
+
+/* Google hover highlights */
+.goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+/* Hide Google branding widgets */
+.goog-logo-link,
+.goog-te-gadget {
+    display: none !important;
+}
+
+/* Mobile Safari fix */
+iframe.goog-te-banner-frame {
+    visibility: hidden !important;
+}
     </style>
 </head>
 <body>
