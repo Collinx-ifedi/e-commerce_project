@@ -1018,6 +1018,23 @@ iframe.goog-te-banner-frame {
     visibility: hidden !important;
 } 
     </style>
+    <style>
+    .goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}
+
+body {
+    top: 0 !important;
+}
+
+.goog-tooltip,
+.goog-text-highlight,
+.goog-logo-link,
+.goog-te-gadget {
+    display: none !important;
+}
+</style>
 </head>
 <!-- Start of LiveChat (www.livechat.com) code -->
 <script>
@@ -2480,5 +2497,29 @@ iframe.goog-te-banner-frame {
             setTimeout(initAnimations, 500);
         });
     </script>
+    <script>
+/* =================================================
+   FORCE REMOVE GOOGLE TRANSLATE UI (MOBILE SAFE)
+   ================================================= */
+(function removeGoogleTranslateUI() {
+    const killGoogleUI = () => {
+        // Remove banner iframe
+        const banner = document.querySelector('.goog-te-banner-frame');
+        if (banner) banner.remove();
+
+        // Remove injected body styles
+        document.body.style.top = '0px';
+
+        // Remove leftover elements
+        document.querySelectorAll('.goog-tooltip, .goog-text-highlight').forEach(el => el.remove());
+    };
+
+    // Run immediately
+    killGoogleUI();
+
+    // Run repeatedly (Google reinjects it)
+    setInterval(killGoogleUI, 500);
+})();
+</script>
 </body>
 </html>
