@@ -1018,21 +1018,38 @@ iframe.goog-te-banner-frame {
     visibility: hidden !important;
 } 
     </style>
-    <style>
-    .goog-te-banner-frame,
+<style>
+/* ============================================
+   GOOGLE TRANSLATE – UI SUPPRESSION (PROD)
+   ============================================ */
+
+/* Hide top banner iframe */
+.goog-te-banner-frame,
 .goog-te-banner-frame.skiptranslate {
     display: none !important;
 }
 
-body {
+/* Prevent layout shift */
+html, body {
     top: 0 !important;
+    position: static !important;
 }
 
+/* Hide Google tooltip & text highlight */
 .goog-tooltip,
-.goog-text-highlight,
+.goog-text-highlight {
+    display: none !important;
+}
+
+/* Hide Google branding */
 .goog-logo-link,
 .goog-te-gadget {
     display: none !important;
+}
+
+/* Mobile iframe safety */
+iframe.goog-te-banner-frame {
+    visibility: hidden !important;
 }
 </style>
 </head>
@@ -2497,28 +2514,31 @@ body {
             setTimeout(initAnimations, 500);
         });
     </script>
-    <script>
-/* =================================================
-   FORCE REMOVE GOOGLE TRANSLATE UI (MOBILE SAFE)
-   ================================================= */
-(function removeGoogleTranslateUI() {
-    const killGoogleUI = () => {
-        // Remove banner iframe
+<script>
+(function cleanGoogleTranslateUI() {
+    const removeUI = () => {
+        // Remove the banner iframe if present
         const banner = document.querySelector('.goog-te-banner-frame');
         if (banner) banner.remove();
 
-        // Remove injected body styles
+        // Remove the menu iframe (sometimes appears)
+        const menu = document.querySelector('.goog-te-menu-frame');
+        if (menu) menu.remove();
+
+        // Reset any body push-down
         document.body.style.top = '0px';
 
-        // Remove leftover elements
-        document.querySelectorAll('.goog-tooltip, .goog-text-highlight').forEach(el => el.remove());
+        // Remove Google UI artifacts
+        document.querySelectorAll(
+            '.goog-tooltip, .goog-text-highlight, .goog-logo-link, .goog-te-gadget'
+        ).forEach(el => el.remove());
     };
 
     // Run immediately
-    killGoogleUI();
+    removeUI();
 
-    // Run repeatedly (Google reinjects it)
-    setInterval(killGoogleUI, 500);
+    // Run repeatedly — Google may re-inject UI dynamically
+    setInterval(removeUI, 500);
 })();
 </script>
 </body>
