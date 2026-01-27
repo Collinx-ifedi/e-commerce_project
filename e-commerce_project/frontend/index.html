@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KeyVault - Premium Digital Keys & Gift Cards</title>
-    
     <!-- Dark Mode Prevention Script (Blocking) -->
     <script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
@@ -982,75 +981,7 @@
             background: #1E40AF;
             color: #93C5FD;
         }
-       /* ================================
-   HIDE GOOGLE TRANSLATE UI
-   ================================ */
 
-/* Top banner iframe */
-.goog-te-banner-frame.skiptranslate {
-    display: none !important;
-}
-
-/* Prevent page push-down */
-body {
-    top: 0px !important;
-}
-
-/* Google tooltip */
-.goog-tooltip {
-    display: none !important;
-}
-
-/* Google hover highlights */
-.goog-text-highlight {
-    background: none !important;
-    box-shadow: none !important;
-}
-
-/* Hide Google branding widgets */
-.goog-logo-link,
-.goog-te-gadget {
-    display: none !important;
-}
-
-/* Mobile Safari fix */
-iframe.goog-te-banner-frame {
-    visibility: hidden !important;
-} 
-    </style>
-<style>
-/* ============================================
-   GOOGLE TRANSLATE – UI SUPPRESSION (PROD)
-   ============================================ */
-
-/* Hide top banner iframe */
-.goog-te-banner-frame,
-.goog-te-banner-frame.skiptranslate {
-    display: none !important;
-}
-
-/* Prevent layout shift */
-html, body {
-    top: 0 !important;
-    position: static !important;
-}
-
-/* Hide Google tooltip & text highlight */
-.goog-tooltip,
-.goog-text-highlight {
-    display: none !important;
-}
-
-/* Hide Google branding */
-.goog-logo-link,
-.goog-te-gadget {
-    display: none !important;
-}
-
-/* Mobile iframe safety */
-iframe.goog-te-banner-frame {
-    visibility: hidden !important;
-}
 </style>
 </head>
 <!-- Start of LiveChat (www.livechat.com) code -->
@@ -1065,7 +996,8 @@ iframe.goog-te-banner-frame {
 <!-- End of LiveChat code -->
 
 <body>
-    <div id="google_translate_element" style="display:hidden;"></div>
+    <div id="google_translate_element" style="display:none;"></div>
+    <div id="app">
     <!-- Progress Bar -->
     <div class="progress-bar" id="progressBar"></div>
 
@@ -1552,6 +1484,7 @@ iframe.goog-te-banner-frame {
             </div>
         </div>
     </footer>
+    </div>
 
     
 
@@ -2542,6 +2475,16 @@ iframe.goog-te-banner-frame {
     setInterval(removeUI, 500);
 })();
 </script>
+<script>
+(function coverGoogleTranslateBar() {
+    const fixLayout = () => {
+        document.body.style.top = '0px';
+        document.documentElement.style.top = '0px';
+    };
 
+    fixLayout();
+    setInterval(fixLayout, 300);
+})();
+</script>
 </body>
 </html>
