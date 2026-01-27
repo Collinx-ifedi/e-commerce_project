@@ -33,14 +33,11 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Weglot Translation -->
-    <script src="https://cdn.weglot.com/weglot.min.js"></script>
-    <script>
-        Weglot.initialize({
-            api_key: 'wg_XXXXXXXXXXXX',
-            originalLanguage: 'en'
-        });
-    </script>
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <script>
         tailwind.config = {
@@ -902,7 +899,89 @@
             color: #F1F5F9 !important;
         }
         
-        
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #1E293B;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F1F5F9;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        html.dark .mobile-lang-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown {
+            background: #1E293B;
+            border-color: #475569;
+        }
+        html.dark .mobile-lang-dropdown button {
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown button:hover {
+            background: #334155;
+        }
+        html.dark .mobile-lang-dropdown button.active {
+            background: #1E40AF;
+            color: #93C5FD;
+        }
+
 </style>
 </head>
 <!-- Start of LiveChat (www.livechat.com) code -->
@@ -1119,17 +1198,21 @@
   <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
   </div>
 
-  <div class="mobile-menu-item border-b-0" style="padding: 12px 0;">
+  <div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
   <i class="fas fa-globe"></i>
-  <div style="flex-1;">
-      <select id="weglotLanguageSelector" onchange="switchWeglotLanguage(this.value)" style="background: #F1F5F9; border: none; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; flex: 1;">
-          <option value="en">English 🇺🇸</option>
-          <option value="es">Español 🇪🇸</option>
-          <option value="fr">Français 🇫🇷</option>
-          <option value="ar">العربية 🇸🇦</option>
-          <option value="zh">中文 🇨🇳</option>
-          <option value="ru">Русский 🇷🇺</option>
-      </select>
+  <div class="mobile-language-selector flex-1">
+      <button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+          <span id="mobileLangLabel">English</span>
+          <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="mobile-lang-dropdown" id="mobileLangDropdown">
+          <button onclick="selectMobileLanguage('en', 'English')" data-lang="en">English</button>
+          <button onclick="selectMobileLanguage('es', 'Espanol')" data-lang="es">Espanol</button>
+          <button onclick="selectMobileLanguage('fr', 'Francais')" data-lang="fr">Francais</button>
+          <button onclick="selectMobileLanguage('ar', 'العربية')" data-lang="ar">العربية</button>
+          <button onclick="selectMobileLanguage('zh-CN', '中文')" data-lang="zh-CN">中文</button>
+          <button onclick="selectMobileLanguage('ru', 'Русский')" data-lang="ru">Русский</button>
+      </div>
   </div>
   </div>
   </div>
@@ -1430,18 +1513,7 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        // Weglot Language Switching
-        function switchWeglotLanguage(langCode) {
-            if (window.Weglot) {
-                Weglot.switchTo(langCode);
-                // Handle RTL for Arabic
-                if (langCode === 'ar') {
-                    document.documentElement.dir = 'rtl';
-                } else {
-                    document.documentElement.dir = 'ltr';
-                }
-            }
-        }
+        // Note: googleTranslateElementInit is now defined in translate-config.js
         
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
         

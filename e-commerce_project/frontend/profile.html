@@ -15,14 +15,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Weglot Translation -->
-    <script src="https://cdn.weglot.com/weglot.min.js"></script>
-    <script>
-        Weglot.initialize({
-            api_key: 'wg_XXXXXXXXXXXX',
-            originalLanguage: 'en'
-        });
-    </script>
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -466,8 +463,93 @@
         html.dark .mobile-menu-item { color: #E2E8F0; border-bottom-color: #334155; }
         html.dark .mobile-menu-item:hover { color: #60A5FA; }
         html.dark .mobile-menu-button-group { border-top-color: #334155; }
-  html.dark .mobile-menu-button-group .btn-outline { background: #334155; color: #E2E8F0; border-color: #475569; }
-  html.dark .hamburger-btn span { background: #60A5FA; }
+        html.dark .mobile-menu-button-group .btn-outline { background: #334155; color: #E2E8F0; border-color: #475569; }
+        html.dark #mobileLanguageSelect { background: #334155 !important; color: #E2E8F0 !important; border-color: #475569 !important; }
+        html.dark #mobileLanguageSelect option { background: #1E293B; color: #E2E8F0; }
+        html.dark .hamburger-btn span { background: #60A5FA; }
+        
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #1E293B;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F1F5F9;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        html.dark .mobile-lang-btn {
+            background: #334155;
+            border-color: #475569;
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown {
+            background: #1E293B;
+            border-color: #475569;
+        }
+        html.dark .mobile-lang-dropdown button {
+            color: #E2E8F0;
+        }
+        html.dark .mobile-lang-dropdown button:hover {
+            background: #334155;
+        }
+        html.dark .mobile-lang-dropdown button.active {
+            background: #1E40AF;
+            color: #93C5FD;
+        }
     </style>
 </head>
 <body>
@@ -489,14 +571,7 @@
   <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
   <i class="fas fa-moon"></i>
   </button>
-  <select id="desktopWeglotLanguageSelector" onchange="switchWeglotLanguage(this.value)" style="padding: 8px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer; margin: 0 8px;">
-  <option value="en">English 🇺🇸</option>
-  <option value="es">Español 🇪🇸</option>
-  <option value="fr">Français 🇫🇷</option>
-  <option value="ar">العربية 🇸🇦</option>
-  <option value="zh">中文 🇨🇳</option>
-  <option value="ru">Русский 🇷🇺</option>
-  </select>
+  <div id="googleTranslate" class="flex items-center" style="margin: 0 8px;"></div>
   
   <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
   <i class="fas fa-store mr-2"></i>Store
@@ -571,17 +646,24 @@
 
             <div class="mobile-menu-divider"></div>
 
-  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-  <i class="fas fa-globe"></i>
-  <select id="weglotLanguageSelector" onchange="switchWeglotLanguage(this.value)" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer; flex: 1; margin-left: 8px;">
-  <option value="en">English 🇺🇸</option>
-  <option value="es">Español 🇪🇸</option>
-  <option value="fr">Français 🇫🇷</option>
-  <option value="ar">العربية 🇸🇦</option>
-  <option value="zh">中文 🇨🇳</option>
-  <option value="ru">Русский 🇷🇺</option>
-  </select>
-  </div>
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+                <i class="fas fa-moon"></i>
+                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
+            </div>
+
+            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <i class="fas fa-globe"></i>
+                    <span style="font-weight: 500; font-size: 14px;">Language</span>
+                </div>
+                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+                    <option value="en">English 🇺🇸</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="ar">العربية 🇸🇦</option>
+                    <option value="zh-CN">中文 🇨🇳</option>
+                    <option value="ru">Русский 🇷🇺</option>
+                </select>
             </div>
         </div>
 
@@ -861,6 +943,13 @@
             const isDark = document.documentElement.classList.contains('dark');
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
+        
+  function googleTranslateElementInit() {
+  new google.translate.TranslateElement(
+  { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+  'googleTranslate'
+  );
+  }
   
   // =========================================================
   // MOBILE MENU FUNCTIONALITY
@@ -1382,17 +1471,38 @@
         ];
 
   // =========================================================
-  // WEGLOT LANGUAGE SWITCHING
+  // MOBILE LANGUAGE SELECTOR
   // =========================================================
-  function switchWeglotLanguage(langCode) {
-      if (window.Weglot) {
-          Weglot.switchTo(langCode);
-          // Handle RTL for Arabic
-          if (langCode === 'ar') {
-              document.documentElement.dir = 'rtl';
-          } else {
-              document.documentElement.dir = 'ltr';
-          }
+  function selectMobileLanguageFromSelect() {
+      const select = document.getElementById('mobileLanguageSelect');
+      const langCode = select.value;
+      
+      // Save preference
+      localStorage.setItem('keyvault_language', langCode);
+      
+      // Trigger Google Translate
+      const element = document.querySelector('.goog-te-combo');
+      if (element) {
+          element.value = langCode;
+          element.dispatchEvent(new Event('change'));
+      }
+      
+      // Handle RTL for Arabic
+      if (langCode === 'ar') {
+          document.documentElement.dir = 'rtl';
+          document.documentElement.lang = 'ar';
+      } else {
+          document.documentElement.dir = 'ltr';
+          document.documentElement.lang = langCode;
+      }
+  }
+  
+  // Load saved language on init
+  function loadSavedMobileLanguage() {
+      const savedLang = localStorage.getItem('keyvault_language') || 'en';
+      const select = document.getElementById('mobileLanguageSelect');
+      if (select) {
+          select.value = savedLang;
       }
   }
 
@@ -1401,11 +1511,23 @@
   // =========================================================
   document.addEventListener('DOMContentLoaded', async () => {
   initMobileMenu();
+  loadSavedMobileLanguage();
   if (checkAuth()) {
   updateCartBadge();
   await loadUserData();
   }
+  
+  // Trigger translation after content is loaded
+  const savedLang = localStorage.getItem('keyvault_language') || 'en';
+  if (savedLang !== 'en') {
+    triggerGoogleTranslate(savedLang);
+  }
   });
   </script>
+  
+  <!-- Google Translate API -->
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <!-- Custom Translation Config -->
+  <script src="/translate-config.js"></script>
 </body>
 </html>
