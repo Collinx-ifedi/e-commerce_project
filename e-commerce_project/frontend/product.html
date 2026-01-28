@@ -1,27 +1,38 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title data-i18n="text_2">Product Details - KeyVault</title>
-<!-- Dark Mode Prevention Script -->
-<script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - KeyVault</title>
+    
+    <!-- Dark Mode Prevention Script -->
+    <script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- FontAwesome -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Shared Translation Config -->
+    <script src="/translate-config.js"></script>
+    
+    <!-- Google Translate API -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -40,7 +51,8 @@
             }
         }
     </script>
-<style>
+
+    <style>
         * { 
             margin: 0; 
             padding: 0; 
@@ -403,202 +415,223 @@
         html.dark .footer { background: #0F172A; }
     </style>
 </head>
-<body data-i18n-page="product">
-<div class="progress-bar" id="progressBar"></div>
-<!-- Navbar -->
-<nav class="navbar">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16 gap-4">
-<a class="flex items-center gap-3 flex-shrink-0" href="/">
-<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-<i class="fas fa-key text-white text-lg"></i>
-</div>
-<span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_49">KeyVault</span>
-</a>
-<!-- Desktop Items (Hidden on Mobile) -->
-<div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
-<button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
-<i class="fas fa-moon"></i>
-</button>
-<div class="flex items-center" id="googleTranslate"></div>
-<div class="flex items-center gap-3" id="guestActions">
-<a class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition" data-i18n="text_26" href="/login">Login</a>
-<a class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition" data-i18n="text_27" href="/register">Register</a>
-</div>
-<div class="hidden items-center gap-4" id="userActions">
-<a class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition" href="/profile">
-<i class="fas fa-wallet"></i>
-<span data-i18n="text_41" id="walletBalance">$0.00</span>
-</a>
-<button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" id="profileBtn">
-<i class="fas fa-user text-gray-600"></i>
-</button>
-</div>
-<a class="relative p-2" href="/cart">
-<i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-<span class="cart-badge" id="cartBadge">0</span>
-</a>
-</div>
-<!-- Hamburger Menu Button (Mobile Only) -->
-<button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
-<span></span>
-<span></span>
-<span></span>
-</button>
-</div>
-</div>
-</nav>
-<!-- Mobile Menu Overlay -->
-<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-<!-- Mobile Menu -->
-<div class="mobile-menu" id="mobileMenu">
-<div class="mobile-menu-header">
-<h3 data-i18n="text_19">Menu</h3>
-<button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
-<i class="fas fa-times"></i>
-</button>
-</div>
-<div class="mobile-menu-content">
-<a class="mobile-menu-item" data-i18n="text_52" href="/">
-<i class="fas fa-home"></i>
+<body>
+<div id="google_translate_element" style="display:none;"></div>
+    <div class="progress-bar" id="progressBar"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between h-16 gap-4">
+  <a href="/" class="flex items-center gap-3 flex-shrink-0">
+  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+  <i class="fas fa-key text-white text-lg"></i>
+  </div>
+  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+  </a>
+  
+  <!-- Desktop Items (Hidden on Mobile) -->
+  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
+  <i class="fas fa-moon"></i>
+  </button>
+  <div id="googleTranslate" class="flex items-center"></div>
+  
+  <div id="guestActions" class="flex items-center gap-3">
+  <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
+  <a href="/register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
+  </div>
+  <div id="userActions" class="hidden items-center gap-4">
+  <a href="/profile" class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition">
+  <i class="fas fa-wallet"></i>
+  <span id="walletBalance">$0.00</span>
+  </a>
+  <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+  <i class="fas fa-user text-gray-600"></i>
+  </button>
+  </div>
+  <a href="/cart" class="relative p-2">
+  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+  <span class="cart-badge" id="cartBadge">0</span>
+  </a>
+  </div>
+  
+  <!-- Hamburger Menu Button (Mobile Only) -->
+  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
+  <span></span>
+  <span></span>
+  <span></span>
+  </button>
+  </div>
+  </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+  <h3>Menu</h3>
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+  <i class="fas fa-times"></i>
+  </button>
+  </div>
+  
+  <div class="mobile-menu-content">
+  <a href="/" class="mobile-menu-item">
+  <i class="fas fa-home"></i>
   Home
   </a>
-<a class="mobile-menu-item" href="/inbox.html">
-<i class="fas fa-envelope"></i>
-<span class="flex-1" data-i18n="text_21">Inbox</span>
-<span class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" id="mobileInboxBadge" style="display: none;"></span>
-</a>
-<a class="mobile-menu-item" data-i18n="text_22" href="/cart.html">
-<i class="fas fa-shopping-cart"></i>
+  <a href="/inbox.html" class="mobile-menu-item">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  <span id="mobileInboxBadge" class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
+  </a>
+  <a href="/cart.html" class="mobile-menu-item">
+  <i class="fas fa-shopping-cart"></i>
   Cart
   </a>
-<a class="mobile-menu-item" data-i18n="text_23" href="/profile.html">
-<i class="fas fa-user"></i>
+  <a href="/profile.html" class="mobile-menu-item">
+  <i class="fas fa-user"></i>
   Profile
   </a>
-<div class="mobile-menu-divider"></div>
-<div class="mobile-menu-item">
-<i class="fas fa-moon"></i>
-<button data-i18n="text_24" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
-</div>
-<div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-<i class="fas fa-globe"></i>
-<div class="flex-1" id="mobileGoogleTranslate"></div>
-</div>
-</div>
-<!-- Mobile Menu Buttons -->
-<div class="mobile-menu-button-group" id="mobileAuthButtons">
-<a class="btn-outline" data-i18n="text_26" href="/login">Login</a>
-<a class="btn-primary" data-i18n="text_27" href="/register">Register</a>
-</div>
-<div class="mobile-menu-button-group hidden" id="mobileUserButtons">
-<button class="btn-outline" data-i18n="text_28" onclick="logout()" style="width: 100%; cursor: pointer;">Logout</button>
-</div>
-</div>
-<!-- Main Content -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-i18n="text_46">
-<!-- Breadcrumb -->
-<nav class="breadcrumb mb-8">
-<a data-i18n="text_52" href="/">Home</a>
-<span>/</span>
-<a data-i18n="text_32" href="/?category=gaming">Products</a>
-<span>/</span>
-<span class="text-secondary font-medium" data-i18n="text_33" id="breadcrumbTitle">Loading...</span>
-</nav>
-<!-- Product Details -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16" id="productContent">
-<!-- Loading State -->
-<div class="skeleton h-80"></div>
-<div>
-<div class="skeleton h-8 w-3/4 mb-4"></div>
-<div class="skeleton h-6 w-1/2 mb-8"></div>
-<div class="skeleton h-12 w-1/3 mb-6"></div>
-<div class="skeleton h-14 w-full"></div>
-</div>
-</div>
-<!-- Denominations Section -->
-<section class="mb-16" id="denominationsSection" style="display: none;">
-<div class="max-w-4xl">
-<h2 class="text-2xl font-bold text-secondary mb-8" data-i18n="text_37">Select Denominations</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="denominationsContainer">
-<!-- Denominations rendered via JS -->
-</div>
-<!-- Total Price Display -->
-<div class="mt-8 pt-8 border-t border-gray-100">
-<div class="flex items-center justify-between mb-6">
-<span class="text-lg font-semibold text-secondary" data-i18n="text_40">Total Price</span>
-<span class="text-3xl font-bold text-primary" data-i18n="text_41" id="totalPrice">$0.00</span>
-</div>
-<button class="btn-primary w-full" data-i18n="text_42" disabled="" id="checkoutBtn" onclick="proceedToCheckout()" style="opacity: 0.5; cursor: not-allowed;">
-<i class="fas fa-credit-card"></i>
+
+  <div class="mobile-menu-divider"></div>
+
+  <div class="mobile-menu-item">
+  <i class="fas fa-moon"></i>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+  </div>
+
+  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <i class="fas fa-globe"></i>
+  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  </div>
+  </div>
+
+  <!-- Mobile Menu Buttons -->
+  <div class="mobile-menu-button-group" id="mobileAuthButtons">
+  <a href="/login" class="btn-outline">Login</a>
+  <a href="/register" class="btn-primary">Register</a>
+  </div>
+
+  <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+  <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
+  </div>
+  </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb mb-8">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/?category=gaming">Products</a>
+            <span>/</span>
+            <span class="text-secondary font-medium" id="breadcrumbTitle">Loading...</span>
+        </nav>
+
+        <!-- Product Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16" id="productContent">
+            <!-- Loading State -->
+            <div class="skeleton h-80"></div>
+            <div>
+                <div class="skeleton h-8 w-3/4 mb-4"></div>
+                <div class="skeleton h-6 w-1/2 mb-8"></div>
+                <div class="skeleton h-12 w-1/3 mb-6"></div>
+                <div class="skeleton h-14 w-full"></div>
+            </div>
+        </div>
+
+        <!-- Denominations Section -->
+        <section id="denominationsSection" style="display: none;" class="mb-16">
+            <div class="max-w-4xl">
+                <h2 class="text-2xl font-bold text-secondary mb-8">Select Denominations</h2>
+                <div id="denominationsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Denominations rendered via JS -->
+                </div>
+                
+                <!-- Total Price Display -->
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-lg font-semibold text-secondary">Total Price</span>
+                        <span id="totalPrice" class="text-3xl font-bold text-primary">$0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="btn-primary w-full" onclick="proceedToCheckout()" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-credit-card"></i>
                         Pay Now
                     </button>
-<p class="text-sm text-gray-500 text-center mt-4" data-i18n="text_43">Select at least one denomination to proceed</p>
-</div>
-</div>
-</section>
-<!-- Description -->
-<div class="description-box mb-16" id="descriptionBox" style="display: none;">
-<h2 class="text-2xl font-bold text-secondary mb-6" data-i18n="text_45">Product Description</h2>
-<div class="prose text-gray-600 leading-relaxed" id="productDescription"></div>
-</div>
-<!-- Related Products -->
-<section id="relatedSection" style="display: none;">
-<h2 class="text-2xl font-bold text-secondary mb-8" data-i18n="text_47">You May Also Like</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="relatedProducts"></div>
-</section>
-</main>
-<!-- Footer -->
-<footer class="footer">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-<div>
-<div class="flex items-center gap-3 mb-4">
-<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-<i class="fas fa-key text-white text-lg"></i>
-</div>
-<span class="text-xl font-bold text-white" data-i18n="text_49">KeyVault</span>
-</div>
-<p class="text-gray-400 text-sm" data-i18n="text_50">Your trusted source for premium digital keys and gift cards.</p>
-</div>
-<div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_51">Quick Links</h4>
-<ul class="space-y-3 text-sm">
-<li><a data-i18n="text_52" href="/">Home</a></li>
-<li><a data-i18n="text_53" href="/?filter=featured">Featured</a></li>
-<li><a data-i18n="text_54" href="/profile.html">My Account</a></li>
-</ul>
-</div>
-<div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_55">Support</h4>
-<ul class="space-y-3 text-sm">
-<li><a data-i18n="text_56" href="/faq">FAQ</a></li>
-<li><a data-i18n="text_57" href="/contact">Contact Us</a></li>
-<li><a data-i18n="text_60" href="/terms">Terms of Service</a></li>
-</ul>
-</div>
-<div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_59">Legal</h4>
-<ul class="space-y-3 text-sm">
-<li><a data-i18n="text_60" href="/terms">Terms of Service</a></li>
-<li><a data-i18n="text_61" href="/privacy">Privacy Policy</a></li>
-</ul>
-</div>
-<div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_62">Connect</h4>
-<div class="flex gap-3">
-<a class="social-icon" href="#"><i class="fab fa-twitter"></i></a>
-<a class="social-icon" href="#"><i class="fab fa-discord"></i></a>
-<a class="social-icon" href="#"><i class="fab fa-telegram"></i></a>
-</div>
-</div>
-</div>
-<div class="border-t border-gray-700 pt-8 text-center text-sm">
-<p data-i18n="text_63">© 2026 KeyVault. All rights reserved.</p>
-</div>
-</div>
-</footer>
-<script>
+                    <p class="text-sm text-gray-500 text-center mt-4">Select at least one denomination to proceed</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Description -->
+        <div class="description-box mb-16" id="descriptionBox" style="display: none;">
+            <h2 class="text-2xl font-bold text-secondary mb-6">Product Description</h2>
+            <div class="prose text-gray-600 leading-relaxed" id="productDescription"></div>
+        </div>
+
+        <!-- Related Products -->
+        <section id="relatedSection" style="display: none;">
+            <h2 class="text-2xl font-bold text-secondary mb-8">You May Also Like</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="relatedProducts"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">KeyVault</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Your trusted source for premium digital keys and gift cards.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/?filter=featured">Featured</a></li>
+                        <li><a href="/profile.html">My Account</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2026 KeyVault. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
         // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
@@ -737,7 +770,7 @@
 
         const loadDenominations = async (productId) => {
             try {
-                const response = await api.get(`/api/products/${productId}`);
+                const response = await api.get(`/api/products/${productId}/denominations`);
                 const denominations = response.data || response || [];
                 renderDenominations(denominations);
             } catch (e) {
@@ -979,13 +1012,5 @@
   `;
   document.head.appendChild(style);
   </script>
-<div class="lang-mini">
-<script>
-    function toggleLangMini() {
-      var menu = document.getElementById('lang-mini-menu');
-      if (menu) menu.classList.toggle('hidden');
-    }
-  </script>
-</div>
-<script src="i18n.js"></script></body>
+</body>
 </html>
