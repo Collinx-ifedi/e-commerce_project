@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
-<html lang="en">
-<head data-i18n="text_9">
+<html>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Product Details - KeyVault</title>
@@ -13,9 +13,6 @@
     </script>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Shared Translation Config -->
-<script src="/translate-config.js"></script>
-<!-- Google Translate API -->
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -406,12 +403,12 @@
         html.dark .footer { background: #0F172A; }
     </style>
 </head>
-<body data-i18n="text_48" data-i18n-page="product">
+<body data-i18n-page="product">
 <div class="progress-bar" id="progressBar"></div>
 <!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_16">
+<div class="flex items-center justify-between h-16 gap-4">
 <a class="flex items-center gap-3 flex-shrink-0" href="/">
 <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
 <i class="fas fa-key text-white text-lg"></i>
@@ -454,7 +451,7 @@
 <!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 <!-- Mobile Menu -->
-<div class="mobile-menu" data-i18n="text_25" id="mobileMenu">
+<div class="mobile-menu" id="mobileMenu">
 <div class="mobile-menu-header">
 <h3 data-i18n="text_19">Menu</h3>
 <button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
@@ -509,7 +506,7 @@
 <span class="text-secondary font-medium" data-i18n="text_33" id="breadcrumbTitle">Loading...</span>
 </nav>
 <!-- Product Details -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16" data-i18n="text_35" id="productContent">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16" id="productContent">
 <!-- Loading State -->
 <div class="skeleton h-80"></div>
 <div>
@@ -521,9 +518,9 @@
 </div>
 <!-- Denominations Section -->
 <section class="mb-16" id="denominationsSection" style="display: none;">
-<div class="max-w-4xl" data-i18n="text_39">
+<div class="max-w-4xl">
 <h2 class="text-2xl font-bold text-secondary mb-8" data-i18n="text_37">Select Denominations</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-i18n="text_38" id="denominationsContainer">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="denominationsContainer">
 <!-- Denominations rendered via JS -->
 </div>
 <!-- Total Price Display -->
@@ -989,16 +986,6 @@
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>

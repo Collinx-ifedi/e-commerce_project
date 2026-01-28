@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
-<html lang="en">
-<head data-i18n="text_5">
+<html>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Privacy Policy - KeyVault</title>
@@ -15,9 +15,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<!-- Shared Translation Config -->
-<script src="/translate-config.js"></script>
-<!-- Google Translate API -->
 <script>
         tailwind.config = {
             theme: {
@@ -76,11 +73,11 @@
         html.dark header { background: #1E293B; border-bottom-color: #334155; }
     </style>
 </head>
-<body class="bg-background text-secondary min-h-screen flex flex-col font-sans" data-i18n="text_29" data-i18n-page="privacy">
+<body class="bg-background text-secondary min-h-screen flex flex-col font-sans" data-i18n-page="privacy">
 <!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_27">
+<div class="flex items-center justify-between h-16 gap-4">
 <!-- Logo -->
 <a class="flex items-center gap-3 flex-shrink-0" href="/">
 <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
@@ -96,12 +93,12 @@
 <i class="fas fa-search"></i>
 </button>
 </div>
-<div class="search-dropdown" data-i18n="text_10" id="searchDropdown">
+<div class="search-dropdown" id="searchDropdown">
 <!-- Search results populated via JS -->
 </div>
 </div>
 <!-- Desktop Items (Hidden on Mobile) -->
-<div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0" data-i18n="text_26">
+<div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
 <!-- Theme & Language Toggle -->
 <button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
 <i class="fas fa-moon"></i>
@@ -177,14 +174,14 @@
 <!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 <!-- Mobile Menu -->
-<div class="mobile-menu" data-i18n="text_61" id="mobileMenu">
+<div class="mobile-menu" id="mobileMenu">
 <div class="mobile-menu-header">
 <h3 data-i18n="text_30">Menu</h3>
 <button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
 <i class="fas fa-times"></i>
 </button>
 </div>
-<div class="mobile-menu-content" data-i18n="text_48">
+<div class="mobile-menu-content">
 <!-- Wallet Balance (Hidden by default, shown when logged in) -->
 <div class="hidden mb-4 pb-4 border-b border-gray-200" id="mobileWalletSection">
 <div class="flex items-center justify-between">
@@ -193,7 +190,7 @@
 <span class="font-semibold text-secondary" data-i18n="text_32">Wallet Balance</span>
 </div>
 <span class="text-sm font-bold text-primary" data-i18n="text_33" id="mobileWalletBalance">$0.00</span>
-</div>
+<div>
 <button class="mt-2 w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition" data-i18n="text_34" onclick="openFundingModal()">
 <i class="fas fa-plus mr-1"></i>Fund Wallet
   </button>
@@ -344,16 +341,6 @@
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>

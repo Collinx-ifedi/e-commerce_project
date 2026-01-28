@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
-<html lang="en">
-<head data-i18n="text_9">
+<html>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Order Checkout - KeyVault</title>
@@ -13,9 +13,6 @@
     </script>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Shared Translation Config -->
-<script src="/translate-config.js"></script>
-<!-- Google Translate API -->
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -396,12 +393,12 @@ iframe. {
 }
     </style>
 </head>
-<body data-i18n="text_23" data-i18n-page="checkout">
+<body data-i18n-page="checkout">
 <div class="progress-bar" id="progressBar"></div>
 <!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_14">
+<div class="flex items-center justify-between h-16 gap-4">
 <a class="flex items-center gap-3 flex-shrink-0" href="/">
 <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
 <i class="fas fa-key text-white text-lg"></i>
@@ -427,7 +424,7 @@ iframe. {
 <!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 <!-- Mobile Menu -->
-<div class="mobile-menu" data-i18n="text_21" id="mobileMenu">
+<div class="mobile-menu" id="mobileMenu">
 <div class="mobile-menu-header">
 <h3 data-i18n="text_17">Menu</h3>
 <button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
@@ -454,7 +451,7 @@ iframe. {
 </div>
 </div>
 <!-- Main Content -->
-<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-i18n="text_24">
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <!-- Step Indicator -->
 <div class="step-indicator">
 <div class="step completed">
@@ -472,7 +469,7 @@ iframe. {
 <span class="font-medium" data-i18n="text_27">Complete</span>
 </div>
 </div>
-<div class="grid grid-cols-1 lg:grid-cols-5 gap-8" data-i18n="text_45">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
 <!-- Payment Section -->
 <div class="lg:col-span-3">
 <div class="checkout-card">
@@ -499,7 +496,7 @@ iframe. {
 <div class="crypto-icons">
 <div class="crypto-icon"><i class="fab fa-bitcoin text-yellow-500"></i></div>
 <div class="crypto-icon"><i class="fab fa-ethereum text-blue-400"></i></div>
-<div class="crypto-icon text-green-500 text-xs font-bold" data-i18n="text_34">USDT</div>
+<div class="crypto-icon text-green-500 text-xs font-bold">USDT</div>
 </div>
 </div>
 <p class="text-sm text-gray-500 mt-1" data-i18n="text_35">Pay with Bitcoin, Ethereum, Litecoin, USDT &amp; 100+ cryptocurrencies</p>
@@ -549,7 +546,7 @@ iframe. {
 <div class="lg:col-span-2">
 <div class="checkout-card">
 <h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_45">Order Summary</h2>
-<div class="mb-6" data-i18n="text_46" id="orderItems">
+<div class="mb-6" id="orderItems">
 <!-- Items rendered via JS -->
 </div>
 <div class="space-y-3 mb-6">
@@ -901,16 +898,6 @@ iframe. {
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>
