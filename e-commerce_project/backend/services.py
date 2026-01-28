@@ -313,7 +313,7 @@ async def create_denomination_service(
 
     # 2. Create Denomination
     new_denom = Denomination(
-        denomination_id=denomination_id,
+        denomination_id=Denomination,
         label=label,
         price_usd=price_usd,
         discount_percent=discount_percent,
@@ -348,7 +348,7 @@ async def upload_denomination_codes_service(
     Bulk uploads codes to a specific denomination.
     Uses db.py helper to handle parsing and integrity checks.
     """
-    count = await add_denomination_codes_from_file(file_path, Denomination, db)
+    count = await add_denomination_codes_from_file(file_path, denomination_id, db)
     return count
 
 async def get_all_orders_service(db: AsyncSession, limit: int = 100):
