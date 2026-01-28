@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
-<html lang="en">
-<head data-i18n="text_9">
+<html>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Authentication - KeyVault</title>
@@ -13,9 +13,6 @@
     </script>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Shared Translation Config -->
-<script src="/translate-config.js"></script>
-<!-- Google Translate API -->
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -414,11 +411,11 @@
         html.dark .form-select { background: #334155; color: #E2E8F0; border-color: #475569; }
     </style>
 </head>
-<body data-i18n="text_10" data-i18n-page="auth">
+<body data-i18n-page="auth">
 <!-- Progress Bar -->
 <div class="progress-bar" id="progressBar"></div>
 <div class="auth-card">
-<div class="auth-header" data-i18n="text_11">
+<div class="auth-header">
 <!-- Logo -->
 <a class="inline-flex items-center gap-3 mb-6" href="/">
 <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
@@ -428,7 +425,7 @@
 <h1 class="text-2xl font-bold text-secondary" data-i18n="text_12">Welcome to KeyVault</h1>
 <p class="text-gray-500 mt-2" data-i18n="text_13">Sign in to access your digital keys and orders</p>
 </div>
-<div class="auth-body" data-i18n="text_53">
+<div class="auth-body">
 <!-- Tabs -->
 <div class="tab-container">
 <button class="tab-btn active" data-i18n="text_15" data-tab="login" onclick="switchTab('login')">Login</button>
@@ -969,16 +966,6 @@
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>
