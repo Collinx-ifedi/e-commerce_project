@@ -737,7 +737,7 @@
 
         const loadDenominations = async (productId) => {
             try {
-                const response = await api.get(`/api/products/${productId}/denominations`);
+                const response = await api.get(`/api/products/${productId}`);
                 const denominations = response.data || response || [];
                 renderDenominations(denominations);
             } catch (e) {
