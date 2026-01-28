@@ -13,9 +13,6 @@
     </script>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Shared Translation Config -->
-<script src="/translate-config.js"></script>
-<!-- Google Translate API -->
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -543,7 +540,7 @@
         }
     </style>
 </head>
-<body data-i18n="text_110" data-i18n-page="profile">
+<body data-i18n-page="profile">
 <div class="progress-bar" id="progressBar"></div>
 <!-- Navbar -->
 <nav class="navbar">
@@ -659,7 +656,6 @@
 <div class="profile-card mb-8">
 <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
 <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-3xl font-bold" id="userAvatar">
-                    U
                 </div>
 <div class="flex-1">
 <h1 class="text-2xl font-bold text-secondary" data-i18n="text_41" id="userName">User</h1>
@@ -746,7 +742,7 @@
 </div>
 <div class="profile-card">
 <h3 class="text-lg font-bold text-secondary mb-4" data-i18n="text_60">Recent Orders</h3>
-<div data-i18n="text_82" id="recentOrders">
+<div  id="recentOrders">
 <!-- Rendered via JS -->
 </div>
 </div>
@@ -775,7 +771,7 @@
 <th data-i18n="text_73">Action</th>
 </tr>
 </thead>
-<tbody data-i18n="text_82" id="ordersTableBody">
+<tbody id="ordersTableBody">
 <!-- Rendered via JS -->
 </tbody>
 </table>
@@ -804,7 +800,7 @@
 <th data-i18n="text_81">Description</th>
 </tr>
 </thead>
-<tbody data-i18n="text_82" id="transactionsTableBody">
+<tbody id="transactionsTableBody">
 <!-- Rendered via JS -->
 </tbody>
 </table>
@@ -884,7 +880,7 @@
 </button>
 </div>
 </div>
-<div class="p-6" data-i18n="text_106" id="orderModalContent">
+<div class="p-6" id="orderModalContent">
 <!-- Content rendered via JS -->
 </div>
 </div>
@@ -1500,16 +1496,6 @@
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>
