@@ -14,7 +14,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<script src="/translate-config.js"></script>
 <script>
         tailwind.config = {
             theme: {
@@ -148,7 +147,7 @@
         @media (max-width: 767px) { .hamburger-btn { display: flex; } .navbar-desktop-items { display: none; } }
     </style>
 </head>
-<body data-i18n="text_40" data-i18n-page="blog">
+<body  data-i18n-page="blog">
 <!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,7 +165,6 @@
 <button class="p-2 text-secondary hover:text-primary transition rounded-lg" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
 <i class="fas fa-moon"></i>
 </button>
-<div id="googleTranslate"></div>
 <div class="flex items-center gap-3" id="guestActions">
 <a class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition" data-i18n="text_28" href="/login">Login</a>
 <a class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition" data-i18n="text_29" href="/register">Register</a>
