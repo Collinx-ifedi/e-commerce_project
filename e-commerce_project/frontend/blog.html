@@ -1,24 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - KeyVault</title>
-    
-    <!-- Dark Mode Prevention Script -->
-    <script>
+<head data-i18n="text_3">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="text_2">Blog - KeyVault</title>
+<!-- Dark Mode Prevention Script -->
+<script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="/translate-config.js"></script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-    <script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<script src="/translate-config.js"></script>
+<script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -33,8 +30,7 @@
             }
         }
     </script>
-
-    <style>
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
         html, body { max-width: 100%; overflow-x: hidden; }
         body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
@@ -152,198 +148,186 @@
         @media (max-width: 767px) { .hamburger-btn { display: flex; } .navbar-desktop-items { display: none; } }
     </style>
 </head>
-<body>
-<div id="google_translate_element" style="display:none;"></div>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 gap-4">
-                <a href="/" class="flex items-center gap-3 flex-shrink-0">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <i class="fas fa-key text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
-                </a>
-
-                <!-- Desktop Items -->
-                <div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
-                    <a href="/" class="text-sm font-medium text-gray-600 hover:text-primary transition">Store</a>
-                    <a href="/blog.html" class="text-sm font-medium text-primary">Blog</a>
-                    <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg" onclick="toggleTheme()" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div id="googleTranslate"></div>
-                    <div id="guestActions" class="flex items-center gap-3">
-                        <a href="/login" class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition">Login</a>
-                        <a href="/register" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition">Register</a>
-                    </div>
-                    <div id="userActions" class="hidden items-center gap-4">
-                        <a href="/profile" class="text-sm font-medium text-secondary hover:text-primary transition">Profile</a>
-                    </div>
-                    <a href="/cart" class="relative p-2">
-                        <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-                        <span class="cart-badge" id="cartBadge">0</span>
-                    </a>
-                </div>
-
-                <!-- Hamburger Button (Mobile) -->
-                <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-header">
-            <h3>Menu</h3>
-            <button class="mobile-menu-close" id="mobileMenuClose">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="mobile-menu-content">
-            <a href="/" class="mobile-menu-item"><i class="fas fa-home"></i> Home</a>
-            <a href="/inbox.html" class="mobile-menu-item active">
-                <i class="fas fa-envelope"></i>
+<body data-i18n="text_40" data-i18n-page="blog">
+<!-- Navbar -->
+<nav class="navbar">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_12">
+<a class="flex items-center gap-3 flex-shrink-0" href="/">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-lg"></i>
+</div>
+<span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_41">KeyVault</span>
+</a>
+<!-- Desktop Items -->
+<div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
+<a class="text-sm font-medium text-gray-600 hover:text-primary transition" data-i18n="text_44" href="/">Store</a>
+<a class="text-sm font-medium text-primary" data-i18n="text_45" href="/blog.html">Blog</a>
+<button class="p-2 text-secondary hover:text-primary transition rounded-lg" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+<i class="fas fa-moon"></i>
+</button>
+<div id="googleTranslate"></div>
+<div class="flex items-center gap-3" id="guestActions">
+<a class="px-4 py-2 text-sm font-medium text-primary border-2 border-primary rounded-lg hover:bg-primary hover:text-white transition" data-i18n="text_28" href="/login">Login</a>
+<a class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition" data-i18n="text_29" href="/register">Register</a>
+</div>
+<div class="hidden items-center gap-4" id="userActions">
+<a class="text-sm font-medium text-secondary hover:text-primary transition" data-i18n="text_19" href="/profile">Profile</a>
+</div>
+<a class="relative p-2" href="/cart">
+<i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+<span class="cart-badge" id="cartBadge">0</span>
+</a>
+</div>
+<!-- Hamburger Button (Mobile) -->
+<button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
+<span></span>
+<span></span>
+<span></span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+<div class="mobile-menu-header">
+<h3 data-i18n="text_15">Menu</h3>
+<button class="mobile-menu-close" id="mobileMenuClose">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="mobile-menu-content">
+<a class="mobile-menu-item" data-i18n="text_16" href="/"><i class="fas fa-home"></i> Home</a>
+<a class="mobile-menu-item active" data-i18n="text_17" href="/inbox.html">
+<i class="fas fa-envelope"></i>
                 Inbox
-                <span id="mobileInboxBadge" class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
-            <a href="/cart" class="mobile-menu-item"><i class="fas fa-shopping-cart"></i> Cart</a>
-            <a href="/profile" class="mobile-menu-item"><i class="fas fa-user"></i> Profile</a>
-            <div class="mobile-menu-divider"></div>
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
-            </div>
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <i class="fas fa-globe"></i>
-                    <span style="font-weight: 500; font-size: 14px;">Language</span>
-                </div>
-                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
-                    <option value="en">English 🇺🇸</option>
-                    <option value="es">Español 🇪🇸</option>
-                    <option value="fr">Français 🇫🇷</option>
-                    <option value="ar">العربية 🇸🇦</option>
-                    <option value="zh-CN">中文 🇨🇳</option>
-                    <option value="ru">Русский 🇷🇺</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="mobile-menu-button-group" id="mobileAuthButtons">
-            <a href="/login" class="btn-outline">Login</a>
-            <a href="/register" class="btn-primary">Register</a>
-        </div>
-        <div class="mobile-menu-button-group hidden" id="mobileUserButtons">
-            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-blue-600 to-blue-700 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">KeyVault Blog</h1>
-            <p class="text-xl text-blue-100 max-w-2xl mx-auto">News, guides, and updates from the KeyVault team</p>
-        </div>
-    </section>
-
-    <!-- Blog Posts Grid -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- Loading Skeletons -->
-        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="blog-card">
-                <div class="skeleton h-48"></div>
-                <div class="p-6">
-                    <div class="skeleton h-4 w-1/3 mb-4"></div>
-                    <div class="skeleton h-6 w-full mb-3"></div>
-                    <div class="skeleton h-4 w-full mb-2"></div>
-                    <div class="skeleton h-4 w-2/3"></div>
-                </div>
-            </div>
-            <div class="blog-card">
-                <div class="skeleton h-48"></div>
-                <div class="p-6">
-                    <div class="skeleton h-4 w-1/3 mb-4"></div>
-                    <div class="skeleton h-6 w-full mb-3"></div>
-                    <div class="skeleton h-4 w-full mb-2"></div>
-                    <div class="skeleton h-4 w-2/3"></div>
-                </div>
-            </div>
-            <div class="blog-card">
-                <div class="skeleton h-48"></div>
-                <div class="p-6">
-                    <div class="skeleton h-4 w-1/3 mb-4"></div>
-                    <div class="skeleton h-6 w-full mb-3"></div>
-                    <div class="skeleton h-4 w-full mb-2"></div>
-                    <div class="skeleton h-4 w-2/3"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Blog Posts Container -->
-        <div id="blogPosts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" style="display: none;"></div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="text-center py-20" style="display: none;">
-            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-newspaper text-4xl text-gray-400"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-secondary mb-2">No Posts Yet</h3>
-            <p class="text-gray-500">Check back soon for exciting content!</p>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                            <i class="fas fa-key text-white text-lg"></i>
-                        </div>
-                        <span class="text-xl font-bold text-white">KeyVault</span>
-                    </div>
-                    <p class="text-gray-400 text-sm">Your trusted source for premium digital keys and gift cards.</p>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="/">Store</a></li>
-                        <li><a href="/blog.html">Blog</a></li>
-                        <li><a href="/profile">My Account</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Support</h4>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="/contact">Contact Us</a></li>
-                        <li><a href="/terms">Terms of Service</a></li>
-                        <li><a href="/privacy">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Connect</h4>
-                    <div class="flex gap-3">
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="Join our Discord"><i class="fab fa-discord"></i></a>
-                        <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" class="social-icon" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 pt-8 text-center text-sm">
-                <p>&copy; 2026 KeyVault. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
+                <span class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" id="mobileInboxBadge" style="display: none;"></span>
+<a class="mobile-menu-item" data-i18n="text_18" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+<a class="mobile-menu-item" data-i18n="text_19" href="/profile"><i class="fas fa-user"></i> Profile</a>
+<div class="mobile-menu-divider"></div>
+<div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+<i class="fas fa-moon"></i>
+<button data-i18n="text_20" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
+</div>
+<div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+<i class="fas fa-globe"></i>
+<span data-i18n="text_21" style="font-weight: 500; font-size: 14px;">Language</span>
+</div>
+<select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+<option data-i18n="text_22" value="en">English 🇺🇸</option>
+<option data-i18n="text_23" value="es">Español 🇪🇸</option>
+<option data-i18n="text_24" value="fr">Français 🇫🇷</option>
+<option data-i18n="text_25" value="ar">العربية 🇸🇦</option>
+<option data-i18n="text_26" value="zh-CN">中文 🇨🇳</option>
+<option data-i18n="text_27" value="ru">Русский 🇷🇺</option>
+</select>
+</div>
+</a></div>
+<div class="mobile-menu-button-group" id="mobileAuthButtons">
+<a class="btn-outline" data-i18n="text_28" href="/login">Login</a>
+<a class="btn-primary" data-i18n="text_29" href="/register">Register</a>
+</div>
+<div class="mobile-menu-button-group hidden" id="mobileUserButtons">
+<button class="btn-outline" data-i18n="text_30" onclick="logout()" style="width: 100%; cursor: pointer;">Logout</button>
+</div>
+</div>
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-blue-600 to-blue-700 py-16">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<h1 class="text-4xl md:text-5xl font-bold text-white mb-4" data-i18n="text_32">KeyVault Blog</h1>
+<p class="text-xl text-blue-100 max-w-2xl mx-auto" data-i18n="text_33">News, guides, and updates from the KeyVault team</p>
+</div>
+</section>
+<!-- Blog Posts Grid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-i18n="text_37">
+<!-- Loading Skeletons -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="loadingState">
+<div class="blog-card">
+<div class="skeleton h-48"></div>
+<div class="p-6">
+<div class="skeleton h-4 w-1/3 mb-4"></div>
+<div class="skeleton h-6 w-full mb-3"></div>
+<div class="skeleton h-4 w-full mb-2"></div>
+<div class="skeleton h-4 w-2/3"></div>
+</div>
+</div>
+<div class="blog-card">
+<div class="skeleton h-48"></div>
+<div class="p-6">
+<div class="skeleton h-4 w-1/3 mb-4"></div>
+<div class="skeleton h-6 w-full mb-3"></div>
+<div class="skeleton h-4 w-full mb-2"></div>
+<div class="skeleton h-4 w-2/3"></div>
+</div>
+</div>
+<div class="blog-card">
+<div class="skeleton h-48"></div>
+<div class="p-6">
+<div class="skeleton h-4 w-1/3 mb-4"></div>
+<div class="skeleton h-6 w-full mb-3"></div>
+<div class="skeleton h-4 w-full mb-2"></div>
+<div class="skeleton h-4 w-2/3"></div>
+</div>
+</div>
+</div>
+<!-- Blog Posts Container -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="blogPosts" style="display: none;"></div>
+<!-- Empty State -->
+<div class="text-center py-20" id="emptyState" style="display: none;">
+<div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+<i class="fas fa-newspaper text-4xl text-gray-400"></i>
+</div>
+<h3 class="text-2xl font-bold text-secondary mb-2" data-i18n="text_38">No Posts Yet</h3>
+<p class="text-gray-500" data-i18n="text_39">Check back soon for exciting content!</p>
+</div>
+</main>
+<!-- Footer -->
+<footer class="footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+<div>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-lg"></i>
+</div>
+<span class="text-xl font-bold text-white" data-i18n="text_41">KeyVault</span>
+</div>
+<p class="text-gray-400 text-sm" data-i18n="text_42">Your trusted source for premium digital keys and gift cards.</p>
+</div>
+<div>
+<h4 class="text-white font-semibold mb-4" data-i18n="text_43">Quick Links</h4>
+<ul class="space-y-3 text-sm">
+<li><a data-i18n="text_44" href="/">Store</a></li>
+<li><a data-i18n="text_45" href="/blog.html">Blog</a></li>
+<li><a data-i18n="text_46" href="/profile">My Account</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-semibold mb-4" data-i18n="text_47">Support</h4>
+<ul class="space-y-3 text-sm">
+<li><a data-i18n="text_48" href="/contact">Contact Us</a></li>
+<li><a data-i18n="text_49" href="/terms">Terms of Service</a></li>
+<li><a data-i18n="text_50" href="/privacy">Privacy Policy</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-semibold mb-4" data-i18n="text_51">Connect</h4>
+<div class="flex gap-3">
+<a class="social-icon" href="https://twitter.com" rel="noopener noreferrer" target="_blank" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+<a class="social-icon" href="https://discord.com" rel="noopener noreferrer" target="_blank" title="Join our Discord"><i class="fab fa-discord"></i></a>
+<a class="social-icon" href="https://telegram.org" rel="noopener noreferrer" target="_blank" title="Message us on Telegram"><i class="fab fa-telegram"></i></a>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-700 pt-8 text-center text-sm">
+<p data-i18n="text_52">© 2026 KeyVault. All rights reserved.</p>
+</div>
+</div>
+</footer>
+<script>
         const API_BASE = window.location.origin;
 
         // Theme Toggle
@@ -457,7 +441,7 @@
             localStorage.setItem('keyvault_language', langCode);
             
             // Trigger Google Translate
-            const element = document.querySelector('.goog-te-combo');
+            const element = document.querySelector('.');
             if (element) {
                 element.value = langCode;
                 element.dispatchEvent(new Event('change'));
@@ -496,5 +480,23 @@
             }
         });
     </script>
-</body>
+<div class="lang-mini">
+<script>
+    function toggleLangMini() {
+      var menu = document.getElementById('lang-mini-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+  </script>
+<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
+<div class="hidden" id="lang-mini-menu">
+<button onclick="i18n.setLanguage('en')">EN</button>
+<button onclick="i18n.setLanguage('fr')">FR</button>
+<button onclick="i18n.setLanguage('es')">ES</button>
+<button onclick="i18n.setLanguage('pt')">PT</button>
+<button onclick="i18n.setLanguage('de')">DE</button>
+<button onclick="i18n.setLanguage('ru')">RU</button>
+<button onclick="i18n.setLanguage('ar')">AR</button>
+</div>
+</div>
+<script src="i18n.js"></script></body>
 </html>

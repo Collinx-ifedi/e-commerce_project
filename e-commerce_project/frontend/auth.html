@@ -1,38 +1,30 @@
 <!DOCTYPE html>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication - KeyVault</title>
-    
-    <!-- Dark Mode Prevention Script -->
-    <script>
+<head data-i18n="text_9">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="text_2">Authentication - KeyVault</title>
+<!-- Dark Mode Prevention Script -->
+<script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Shared Translation Config -->
-    <script src="/translate-config.js"></script>
-    
-    <!-- Google Translate API -->
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Shared Translation Config -->
+<script src="/translate-config.js"></script>
+<!-- Google Translate API -->
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -51,8 +43,7 @@
             }
         }
     </script>
-
-    <style>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -423,174 +414,136 @@
         html.dark .form-select { background: #334155; color: #E2E8F0; border-color: #475569; }
     </style>
 </head>
-<body>
-    <!-- Progress Bar -->
-    <div class="progress-bar" id="progressBar"></div>
-
-    <div class="auth-card">
-        <div class="auth-header">
-            <!-- Logo -->
-            <a href="/" class="inline-flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                    <i class="fas fa-key text-white text-xl"></i>
-                </div>
-            </a>
-            <h1 class="text-2xl font-bold text-secondary">Welcome to KeyVault</h1>
-            <p class="text-gray-500 mt-2">Sign in to access your digital keys and orders</p>
-        </div>
-
-        <div class="auth-body">
-            <!-- Tabs -->
-            <div class="tab-container">
-                <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">Login</button>
-                <button class="tab-btn" data-tab="register" onclick="switchTab('register')">Register</button>
-            </div>
-
-            <!-- Login Form -->
-            <div class="tab-content active" id="loginContent">
-                <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <div class="form-input-icon">
-                            <i class="fas fa-envelope"></i>
-                            <input 
-                                type="email" 
-                                id="loginEmail" 
-                                class="form-input" 
-                                placeholder="you@example.com"
-                                required
-                            >
-                        </div>
-                        <p class="error-message" id="loginEmailError"></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="form-input-icon">
-                            <i class="fas fa-lock"></i>
-                            <input 
-                                type="password" 
-                                id="loginPassword" 
-                                class="form-input" 
-                                placeholder="Enter your password"
-                                required
-                            >
-                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword', this)">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <p class="error-message" id="loginPasswordError"></p>
-                    </div>
-
-                    <div class="flex items-center justify-between mb-6">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
-                            <span class="text-sm text-gray-600">Remember me</span>
-                        </label>
-                        <a href="#" class="text-sm text-primary font-medium hover:underline">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="loginBtn">
-                        <span>Sign In</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Register Form -->
-            <div class="tab-content" id="registerContent">
-                <form id="registerForm" onsubmit="handleRegister(event)">
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <div class="form-input-icon">
-                            <i class="fas fa-envelope"></i>
-                            <input 
-                                type="email" 
-                                id="registerEmail" 
-                                class="form-input" 
-                                placeholder="you@example.com"
-                                required
-                            >
-                        </div>
-                        <p class="error-message" id="registerEmailError"></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="form-input-icon">
-                            <i class="fas fa-lock"></i>
-                            <input 
-                                type="password" 
-                                id="registerPassword" 
-                                class="form-input" 
-                                placeholder="Create a password"
-                                required
-                                oninput="checkPasswordStrength()"
-                            >
-                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword', this)">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <ul class="password-requirements" id="passwordRequirements">
-                            <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
-                            <li id="req-upper"><i class="fas fa-circle"></i> One uppercase letter</li>
-                            <li id="req-number"><i class="fas fa-circle"></i> One number</li>
-                        </ul>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Country</label>
-                        <div class="form-input-icon">
-                            <i class="fas fa-globe"></i>
-                            <select id="registerCountry" class="form-select" required>
-                                <option value="">Select your country</option>
-                                <option value="US">United States</option>
-                                <option value="UK">United Kingdom</option>
-                                <option value="CA">Canada</option>
-                                <option value="AU">Australia</option>
-                                <option value="DE">Germany</option>
-                                <option value="FR">France</option>
-                                <option value="ES">Spain</option>
-                                <option value="IT">Italy</option>
-                                <option value="NL">Netherlands</option>
-                                <option value="BR">Brazil</option>
-                                <option value="MX">Mexico</option>
-                                <option value="JP">Japan</option>
-                                <option value="KR">South Korea</option>
-                                <option value="IN">India</option>
-                                <option value="AE">United Arab Emirates</option>
-                                <option value="SG">Singapore</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="termsCheckbox" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" required>
-                            <span class="text-sm text-gray-600">
-                                I agree to the <a href="/terms" class="text-primary hover:underline">Terms of Service</a> and <a href="/privacy" class="text-primary hover:underline">Privacy Policy</a>
-                            </span>
-                        </label>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="registerBtn">
-                        <span>Create Account</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Back to Home -->
-            <div class="text-center mt-8">
-                <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to Store
+<body data-i18n="text_10" data-i18n-page="auth">
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+<div class="auth-card">
+<div class="auth-header" data-i18n="text_11">
+<!-- Logo -->
+<a class="inline-flex items-center gap-3 mb-6" href="/">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-xl"></i>
+</div>
+</a>
+<h1 class="text-2xl font-bold text-secondary" data-i18n="text_12">Welcome to KeyVault</h1>
+<p class="text-gray-500 mt-2" data-i18n="text_13">Sign in to access your digital keys and orders</p>
+</div>
+<div class="auth-body" data-i18n="text_53">
+<!-- Tabs -->
+<div class="tab-container">
+<button class="tab-btn active" data-i18n="text_15" data-tab="login" onclick="switchTab('login')">Login</button>
+<button class="tab-btn" data-i18n="text_16" data-tab="register" onclick="switchTab('register')">Register</button>
+</div>
+<!-- Login Form -->
+<div class="tab-content active" id="loginContent">
+<form id="loginForm" onsubmit="handleLogin(event)">
+<div class="form-group">
+<label class="form-label" data-i18n="text_24">Email Address</label>
+<div class="form-input-icon">
+<i class="fas fa-envelope"></i>
+<input class="form-input" id="loginEmail" placeholder="you@example.com" required="" type="email"/>
+</div>
+<p class="error-message" id="loginEmailError"></p>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_25">Password</label>
+<div class="form-input-icon">
+<i class="fas fa-lock"></i>
+<input class="form-input" id="loginPassword" placeholder="Enter your password" required="" type="password"/>
+<button class="toggle-password" onclick="togglePassword('loginPassword', this)" type="button">
+<i class="fas fa-eye"></i>
+</button>
+</div>
+<p class="error-message" id="loginPasswordError"></p>
+</div>
+<div class="flex items-center justify-between mb-6">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-gray-600" data-i18n="text_20">Remember me</span>
+</label>
+<a class="text-sm text-primary font-medium hover:underline" data-i18n="text_21" href="#">Forgot password?</a>
+</div>
+<button class="btn-submit" id="loginBtn" type="submit">
+<span data-i18n="text_22">Sign In</span>
+<i class="fas fa-arrow-right"></i>
+</button>
+</form>
+</div>
+<!-- Register Form -->
+<div class="tab-content" id="registerContent">
+<form id="registerForm" onsubmit="handleRegister(event)">
+<div class="form-group">
+<label class="form-label" data-i18n="text_24">Email Address</label>
+<div class="form-input-icon">
+<i class="fas fa-envelope"></i>
+<input class="form-input" id="registerEmail" placeholder="you@example.com" required="" type="email"/>
+</div>
+<p class="error-message" id="registerEmailError"></p>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_25">Password</label>
+<div class="form-input-icon">
+<i class="fas fa-lock"></i>
+<input class="form-input" id="registerPassword" oninput="checkPasswordStrength()" placeholder="Create a password" required="" type="password"/>
+<button class="toggle-password" onclick="togglePassword('registerPassword', this)" type="button">
+<i class="fas fa-eye"></i>
+</button>
+</div>
+<ul class="password-requirements" id="passwordRequirements">
+<li data-i18n="text_26" id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
+<li data-i18n="text_27" id="req-upper"><i class="fas fa-circle"></i> One uppercase letter</li>
+<li data-i18n="text_28" id="req-number"><i class="fas fa-circle"></i> One number</li>
+</ul>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_29">Country</label>
+<div class="form-input-icon">
+<i class="fas fa-globe"></i>
+<select class="form-select" id="registerCountry" required="">
+<option data-i18n="text_30" value="">Select your country</option>
+<option data-i18n="text_31" value="US">United States</option>
+<option data-i18n="text_32" value="UK">United Kingdom</option>
+<option data-i18n="text_33" value="CA">Canada</option>
+<option data-i18n="text_34" value="AU">Australia</option>
+<option data-i18n="text_35" value="DE">Germany</option>
+<option data-i18n="text_36" value="FR">France</option>
+<option data-i18n="text_37" value="ES">Spain</option>
+<option data-i18n="text_38" value="IT">Italy</option>
+<option data-i18n="text_39" value="NL">Netherlands</option>
+<option data-i18n="text_40" value="BR">Brazil</option>
+<option data-i18n="text_41" value="MX">Mexico</option>
+<option data-i18n="text_42" value="JP">Japan</option>
+<option data-i18n="text_43" value="KR">South Korea</option>
+<option data-i18n="text_44" value="IN">India</option>
+<option data-i18n="text_45" value="AE">United Arab Emirates</option>
+<option data-i18n="text_46" value="SG">Singapore</option>
+<option data-i18n="text_47" value="OTHER">Other</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" id="termsCheckbox" required="" type="checkbox"/>
+<span class="text-sm text-gray-600" data-i18n="text_50">
+                                I agree to the <a class="text-primary hover:underline" data-i18n="text_49" href="/terms">Terms of Service</a> and <a class="text-primary hover:underline" data-i18n="text_51" href="/privacy">Privacy Policy</a>
+</span>
+</label>
+</div>
+<button class="btn-submit" id="registerBtn" type="submit">
+<span data-i18n="text_52">Create Account</span>
+<i class="fas fa-arrow-right"></i>
+</button>
+</form>
+</div>
+<!-- Back to Home -->
+<div class="text-center mt-8">
+<a class="text-sm text-gray-500 hover:text-primary transition" data-i18n="text_54" href="/">
+<i class="fas fa-arrow-left mr-2"></i> Back to Store
                 </a>
-            </div>
-        </div>
-    </div>
-
-    <script>
+</div>
+</div>
+</div>
+<script>
         // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
@@ -985,7 +938,7 @@
             localStorage.setItem('selectedLanguage', languageCode);
             
             // Update Google Translate
-            const googleTranslateCombo = document.querySelector('.goog-te-combo');
+            const googleTranslateCombo = document.querySelector('.');
             if (googleTranslateCombo) {
                 googleTranslateCombo.value = languageCode;
                 googleTranslateCombo.dispatchEvent(new Event('change'));
@@ -1009,5 +962,23 @@
             }
         });
     </script>
-</body>
+<div class="lang-mini">
+<script>
+    function toggleLangMini() {
+      var menu = document.getElementById('lang-mini-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+  </script>
+<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
+<div class="hidden" id="lang-mini-menu">
+<button onclick="i18n.setLanguage('en')">EN</button>
+<button onclick="i18n.setLanguage('fr')">FR</button>
+<button onclick="i18n.setLanguage('es')">ES</button>
+<button onclick="i18n.setLanguage('pt')">PT</button>
+<button onclick="i18n.setLanguage('de')">DE</button>
+<button onclick="i18n.setLanguage('ru')">RU</button>
+<button onclick="i18n.setLanguage('ar')">AR</button>
+</div>
+</div>
+<script src="i18n.js"></script></body>
 </html>

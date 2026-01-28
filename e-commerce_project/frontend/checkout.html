@@ -1,38 +1,30 @@
 <!DOCTYPE html>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Checkout - KeyVault</title>
-    
-    <!-- Dark Mode Prevention Script -->
-    <script>
+<head data-i18n="text_9">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="text_2">Order Checkout - KeyVault</title>
+<!-- Dark Mode Prevention Script -->
+<script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Shared Translation Config -->
-    <script src="/translate-config.js"></script>
-    
-    <!-- Google Translate API -->
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Shared Translation Config -->
+<script src="/translate-config.js"></script>
+<!-- Google Translate API -->
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -51,8 +43,7 @@
             }
         }
     </script>
-
-    <style>
+<style>
         * { 
             margin: 0; 
             padding: 0; 
@@ -373,7 +364,7 @@
    ================================ */
 
 /* Top banner iframe */
-.goog-te-banner-frame.skiptranslate {
+..skiptranslate {
     display: none !important;
 }
 
@@ -395,227 +386,204 @@ body {
 
 /* Hide Google branding widgets */
 .goog-logo-link,
-.goog-te-gadget {
+. {
     display: none !important;
 }
 
 /* Mobile Safari fix */
-iframe.goog-te-banner-frame {
+iframe. {
     visibility: hidden !important;
 }
     </style>
 </head>
-<body>
-<div id="google_translate_element" style="display:none;"></div>
-    <div class="progress-bar" id="progressBar"></div>
-
-  <!-- Navbar -->
-  <nav class="navbar">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between h-16 gap-4">
-  <a href="/" class="flex items-center gap-3 flex-shrink-0">
-  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-  <i class="fas fa-key text-white text-lg"></i>
-  </div>
-  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
-  </a>
-  
-  <!-- Desktop Badge (Hidden on Mobile) -->
-  <div class="navbar-desktop-items hidden md:flex items-center flex-shrink-0">
-  <div class="secure-badge">
-  <i class="fas fa-shield-alt"></i>
-  <span class="hidden sm:inline">Secure Checkout</span>
-  </div>
-  </div>
-
-  <!-- Hamburger Menu Button (Mobile Only) -->
-  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
-  <span></span>
-  <span></span>
-  <span></span>
-  </button>
-  </div>
-  </div>
-  </nav>
-
-  <!-- Mobile Menu Overlay -->
-  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-
-  <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-header">
-  <h3>Menu</h3>
-  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
-  <i class="fas fa-times"></i>
-  </button>
-  </div>
-  
-  <div class="mobile-menu-content">
-  <a href="/" class="mobile-menu-item">
-  <i class="fas fa-home"></i>
+<body data-i18n="text_23" data-i18n-page="checkout">
+<div class="progress-bar" id="progressBar"></div>
+<!-- Navbar -->
+<nav class="navbar">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_14">
+<a class="flex items-center gap-3 flex-shrink-0" href="/">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-lg"></i>
+</div>
+<span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_11">KeyVault</span>
+</a>
+<!-- Desktop Badge (Hidden on Mobile) -->
+<div class="navbar-desktop-items hidden md:flex items-center flex-shrink-0">
+<div class="secure-badge">
+<i class="fas fa-shield-alt"></i>
+<span class="hidden sm:inline" data-i18n="text_13">Secure Checkout</span>
+</div>
+</div>
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
+<span></span>
+<span></span>
+<span></span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" data-i18n="text_21" id="mobileMenu">
+<div class="mobile-menu-header">
+<h3 data-i18n="text_17">Menu</h3>
+<button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="mobile-menu-content">
+<a class="mobile-menu-item" data-i18n="text_18" href="/">
+<i class="fas fa-home"></i>
   Home
   </a>
-  <a href="/cart" class="mobile-menu-item">
-  <i class="fas fa-shopping-cart"></i>
+<a class="mobile-menu-item" data-i18n="text_25" href="/cart">
+<i class="fas fa-shopping-cart"></i>
   Cart
   </a>
-  <a href="/profile" class="mobile-menu-item">
-  <i class="fas fa-user"></i>
+<a class="mobile-menu-item" data-i18n="text_20" href="/profile">
+<i class="fas fa-user"></i>
   Profile
   </a>
-  </div>
-
-  <!-- Mobile Menu Buttons -->
-  <div class="mobile-menu-button-group">
-  <button onclick="history.back()" class="btn-outline" style="width: 100%; cursor: pointer;">Back</button>
-  </div>
-  </div>
-
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Step Indicator -->
-        <div class="step-indicator">
-            <div class="step completed">
-                <div class="step-number"><i class="fas fa-check"></i></div>
-                <span class="font-medium">Cart</span>
-            </div>
-            <div class="step-divider"></div>
-            <div class="step active">
-                <div class="step-number">2</div>
-                <span class="font-medium">Payment</span>
-            </div>
-            <div class="step-divider"></div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <span class="font-medium">Complete</span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <!-- Payment Section -->
-            <div class="lg:col-span-3">
-                <div class="checkout-card">
-                    <h2 class="text-xl font-bold text-secondary mb-6">Payment Method</h2>
-                    
-                    <div class="space-y-4" id="paymentOptions">
-                        <label class="payment-option" id="walletOption">
-                            <input type="radio" name="payment" value="wallet">
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-secondary flex items-center gap-2">
-                                        <i class="fas fa-wallet text-primary"></i>
+</div>
+<!-- Mobile Menu Buttons -->
+<div class="mobile-menu-button-group">
+<button class="btn-outline" data-i18n="text_22" onclick="history.back()" style="width: 100%; cursor: pointer;">Back</button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-i18n="text_24">
+<!-- Step Indicator -->
+<div class="step-indicator">
+<div class="step completed">
+<div class="step-number"><i class="fas fa-check"></i></div>
+<span class="font-medium" data-i18n="text_25">Cart</span>
+</div>
+<div class="step-divider"></div>
+<div class="step active">
+<div class="step-number">2</div>
+<span class="font-medium" data-i18n="text_26">Payment</span>
+</div>
+<div class="step-divider"></div>
+<div class="step">
+<div class="step-number">3</div>
+<span class="font-medium" data-i18n="text_27">Complete</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8" data-i18n="text_45">
+<!-- Payment Section -->
+<div class="lg:col-span-3">
+<div class="checkout-card">
+<h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_29">Payment Method</h2>
+<div class="space-y-4" id="paymentOptions">
+<label class="payment-option" id="walletOption">
+<input name="payment" type="radio" value="wallet"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-2" data-i18n="text_30">
+<i class="fas fa-wallet text-primary"></i>
                                         KeyVault Wallet
                                     </span>
-                                    <span class="text-sm font-bold text-primary" id="walletBalanceCheckout">$0.00</span>
-                                </div>
-                                <p class="text-sm text-gray-500 mt-1">Pay instantly from your wallet balance</p>
-                            </div>
-                        </label>
-
-                        <label class="payment-option selected">
-                            <input type="radio" name="payment" value="nowpayments" checked>
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-secondary">NowPayment</span>
-                                    <div class="crypto-icons">
-                                        <div class="crypto-icon"><i class="fab fa-bitcoin text-yellow-500"></i></div>
-                                        <div class="crypto-icon"><i class="fab fa-ethereum text-blue-400"></i></div>
-                                        <div class="crypto-icon text-green-500 text-xs font-bold">USDT</div>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-500 mt-1">Pay with Bitcoin, Ethereum, Litecoin, USDT & 100+ cryptocurrencies</p>
-                            </div>
-                        </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="binancepay">
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-secondary">Binance Pay</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #F3BA2F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">B</div>
-                                </div>
-                                <p class="text-sm text-gray-500 mt-1">Secure payment with QR code - powered by Binance</p>
-                            </div>
-                        </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="bybitpay">
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-secondary">Bybit Pay</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #F7931A; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">₿</div>
-                                </div>
-                                <p class="text-sm text-gray-500 mt-1">Fast crypto payments with QR code - by Bybit</p>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="mt-8 pt-8 border-t border-gray-100">
-                        <h3 class="font-semibold text-secondary mb-4">How it works</h3>
-                        <div class="space-y-3 text-sm text-gray-600">
-                            <div class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">1</div>
-                                <p>Click "Pay Securely" to generate your invoice</p>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">2</div>
-                                <p>Send the exact amount to the provided wallet address</p>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">3</div>
-                                <p>Your keys will be delivered instantly after confirmation</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Summary -->
-            <div class="lg:col-span-2">
-                <div class="checkout-card">
-                    <h2 class="text-xl font-bold text-secondary mb-6">Order Summary</h2>
-                    
-                    <div id="orderItems" class="mb-6">
-                        <!-- Items rendered via JS -->
-                    </div>
-
-                    <div class="space-y-3 mb-6">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <span id="subtotalAmount">$0.00</span>
-                        </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Processing Fee</span>
-                            <span class="text-success">Free</span>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-gray-100 pt-4 mb-6">
-                        <div class="flex justify-between">
-                            <span class="text-lg font-bold text-secondary">Total</span>
-                            <span class="text-2xl font-bold text-primary" id="totalAmount">$0.00</span>
-                        </div>
-                    </div>
-
-                    <button class="btn-pay" id="payBtn" onclick="processPayment()">
-                        <i class="fas fa-lock"></i>
-                        <span>Pay Securely</span>
-                    </button>
-
-                    <p class="text-center text-xs text-gray-400 mt-4">
-                        By completing this purchase you agree to our <a href="/terms" class="text-primary hover:underline">Terms of Service</a>
-                    </p>
-                </div>
-
-                <a href="/cart.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition mt-6">
-                    <i class="fas fa-arrow-left"></i>
+<span class="text-sm font-bold text-primary" data-i18n="text_52" id="walletBalanceCheckout">$0.00</span>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_32">Pay instantly from your wallet balance</p>
+</div>
+</label>
+<label class="payment-option selected">
+<input checked="" name="payment" type="radio" value="nowpayments"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_33">NowPayment</span>
+<div class="crypto-icons">
+<div class="crypto-icon"><i class="fab fa-bitcoin text-yellow-500"></i></div>
+<div class="crypto-icon"><i class="fab fa-ethereum text-blue-400"></i></div>
+<div class="crypto-icon text-green-500 text-xs font-bold" data-i18n="text_34">USDT</div>
+</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_35">Pay with Bitcoin, Ethereum, Litecoin, USDT &amp; 100+ cryptocurrencies</p>
+</div>
+</label>
+<label class="payment-option">
+<input name="payment" type="radio" value="binancepay"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_36">Binance Pay</span>
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #F3BA2F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">B</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_37">Secure payment with QR code - powered by Binance</p>
+</div>
+</label>
+<label class="payment-option">
+<input name="payment" type="radio" value="bybitpay"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_38">Bybit Pay</span>
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #F7931A; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">₿</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_39">Fast crypto payments with QR code - by Bybit</p>
+</div>
+</label>
+</div>
+<div class="mt-8 pt-8 border-t border-gray-100">
+<h3 class="font-semibold text-secondary mb-4" data-i18n="text_40">How it works</h3>
+<div class="space-y-3 text-sm text-gray-600">
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">1</div>
+<p data-i18n="text_41">Click "Pay Securely" to generate your invoice</p>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">2</div>
+<p data-i18n="text_42">Send the exact amount to the provided wallet address</p>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">3</div>
+<p data-i18n="text_43">Your keys will be delivered instantly after confirmation</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Order Summary -->
+<div class="lg:col-span-2">
+<div class="checkout-card">
+<h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_45">Order Summary</h2>
+<div class="mb-6" data-i18n="text_46" id="orderItems">
+<!-- Items rendered via JS -->
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between text-gray-600">
+<span data-i18n="text_47">Subtotal</span>
+<span data-i18n="text_52" id="subtotalAmount">$0.00</span>
+</div>
+<div class="flex justify-between text-gray-600">
+<span data-i18n="text_49">Processing Fee</span>
+<span class="text-success" data-i18n="text_50">Free</span>
+</div>
+</div>
+<div class="border-t border-gray-100 pt-4 mb-6">
+<div class="flex justify-between">
+<span class="text-lg font-bold text-secondary" data-i18n="text_51">Total</span>
+<span class="text-2xl font-bold text-primary" data-i18n="text_52" id="totalAmount">$0.00</span>
+</div>
+</div>
+<button class="btn-pay" id="payBtn" onclick="processPayment()">
+<i class="fas fa-lock"></i>
+<span data-i18n="text_53">Pay Securely</span>
+</button>
+<p class="text-center text-xs text-gray-400 mt-4" data-i18n="text_54">
+                        By completing this purchase you agree to our <a class="text-primary hover:underline" data-i18n="text_55" href="/terms">Terms of Service</a>
+</p>
+</div>
+<a class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition mt-6" data-i18n="text_56" href="/cart.html">
+<i class="fas fa-arrow-left"></i>
                     Back to Cart
                 </a>
-            </div>
-        </div>
-    </main>
-
-    <script>
+</div>
+</div>
+</main>
+<script>
         // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
@@ -902,7 +870,7 @@ iframe.goog-te-banner-frame {
             localStorage.setItem('selectedLanguage', languageCode);
             
             // Update Google Translate
-            const googleTranslateCombo = document.querySelector('.goog-te-combo');
+            const googleTranslateCombo = document.querySelector('.');
             if (googleTranslateCombo) {
                 googleTranslateCombo.value = languageCode;
                 googleTranslateCombo.dispatchEvent(new Event('change'));
@@ -926,5 +894,23 @@ iframe.goog-te-banner-frame {
   }
   });
   </script>
-</body>
+<div class="lang-mini">
+<script>
+    function toggleLangMini() {
+      var menu = document.getElementById('lang-mini-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+  </script>
+<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
+<div class="hidden" id="lang-mini-menu">
+<button onclick="i18n.setLanguage('en')">EN</button>
+<button onclick="i18n.setLanguage('fr')">FR</button>
+<button onclick="i18n.setLanguage('es')">ES</button>
+<button onclick="i18n.setLanguage('pt')">PT</button>
+<button onclick="i18n.setLanguage('de')">DE</button>
+<button onclick="i18n.setLanguage('ru')">RU</button>
+<button onclick="i18n.setLanguage('ar')">AR</button>
+</div>
+</div>
+<script src="i18n.js"></script></body>
 </html>

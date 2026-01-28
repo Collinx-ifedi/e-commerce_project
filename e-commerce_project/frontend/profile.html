@@ -1,38 +1,30 @@
 <!DOCTYPE html>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - KeyVault</title>
-    
-    <!-- Dark Mode Prevention Script -->
-    <script>
+<head data-i18n="text_9">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="text_2">My Profile - KeyVault</title>
+<!-- Dark Mode Prevention Script -->
+<script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Shared Translation Config -->
-    <script src="/translate-config.js"></script>
-    
-    <!-- Google Translate API -->
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Shared Translation Config -->
+<script src="/translate-config.js"></script>
+<!-- Google Translate API -->
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -52,8 +44,7 @@
             }
         }
     </script>
-
-    <style>
+<style>
         * { 
             margin: 0; 
             padding: 0; 
@@ -552,382 +543,359 @@
         }
     </style>
 </head>
-<body>
-    <div class="progress-bar" id="progressBar"></div>
-
-    <!-- Navbar -->
-  <nav class="navbar">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between h-16 gap-4">
-  <a href="/" class="flex items-center gap-3 flex-shrink-0">
-  <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-  <i class="fas fa-key text-white text-lg"></i>
-  </div>
-  <span class="text-xl font-bold text-secondary hidden sm:inline">KeyVault</span>
+<body data-i18n="text_110" data-i18n-page="profile">
+<div class="progress-bar" id="progressBar"></div>
+<!-- Navbar -->
+<nav class="navbar">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4" data-i18n="text_17">
+<a class="flex items-center gap-3 flex-shrink-0" href="/">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-lg"></i>
+</div>
+<span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_11">KeyVault</span>
+</a>
+<!-- Desktop Items (Hidden on Mobile) -->
+<div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
+<button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+<i class="fas fa-moon"></i>
+</button>
+<div class="flex items-center" id="googleTranslate" style="margin: 0 8px;"></div>
+<a class="text-sm text-gray-500 hover:text-primary transition" data-i18n="text_37" href="/">
+<i class="fas fa-store mr-2"></i>Store
   </a>
-  
-  <!-- Desktop Items (Hidden on Mobile) -->
-  <div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
-  <button id="themeToggle" class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" onclick="toggleTheme()" title="Toggle Dark Mode">
-  <i class="fas fa-moon"></i>
+<a class="text-sm text-gray-500 hover:text-primary transition" data-i18n="text_22" href="/blog.html">
+<i class="fas fa-newspaper mr-2"></i>Blog
+  </a>
+<a class="text-sm text-primary font-semibold" data-i18n="text_15" href="/profile.html">
+<i class="fas fa-user-circle mr-2"></i>Profile
+  </a>
+<button class="text-sm text-gray-500 hover:text-danger transition" data-i18n="text_38" onclick="logout()">
+<i class="fas fa-sign-out-alt mr-2"></i>Logout
   </button>
-  <div id="googleTranslate" class="flex items-center" style="margin: 0 8px;"></div>
-  
-  <a href="/" class="text-sm text-gray-500 hover:text-primary transition">
-  <i class="fas fa-store mr-2"></i>Store
-  </a>
-  <a href="/blog.html" class="text-sm text-gray-500 hover:text-primary transition">
-  <i class="fas fa-newspaper mr-2"></i>Blog
-  </a>
-  <a href="/profile.html" class="text-sm text-primary font-semibold">
-  <i class="fas fa-user-circle mr-2"></i>Profile
-  </a>
-  <button onclick="logout()" class="text-sm text-gray-500 hover:text-danger transition">
-  <i class="fas fa-sign-out-alt mr-2"></i>Logout
-  </button>
-  <a href="/cart" class="relative p-2">
-  <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-  <span class="cart-badge" id="cartBadge">0</span>
-  </a>
-  </div>
-  
-  <!-- Hamburger Menu Button (Mobile Only) -->
-  <button class="hamburger-btn md:hidden" id="hamburgerBtn" aria-label="Open menu">
-  <span></span>
-  <span></span>
-  <span></span>
-  </button>
-  </div>
-  </div>
-  </nav>
-
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-header">
-            <h3>Menu</h3>
-            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="mobile-menu-content">
-            <a href="/" class="mobile-menu-item">
-                <i class="fas fa-home"></i>
+<a class="relative p-2" href="/cart">
+<i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
+<span class="cart-badge" id="cartBadge">0</span>
+</a>
+</div>
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
+<span></span>
+<span></span>
+<span></span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" data-i18n="text_36" id="mobileMenu">
+<div class="mobile-menu-header">
+<h3 data-i18n="text_20">Menu</h3>
+<button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="mobile-menu-content">
+<a class="mobile-menu-item" data-i18n="text_21" href="/">
+<i class="fas fa-home"></i>
                 Home
             </a>
-            <a href="/blog.html" class="mobile-menu-item">
-                <i class="fas fa-newspaper"></i>
+<a class="mobile-menu-item" data-i18n="text_22" href="/blog.html">
+<i class="fas fa-newspaper"></i>
                 Blog
             </a>
-            <a href="/profile.html" class="mobile-menu-item">
-            <a href="/inbox.html" class="mobile-menu-item active">
-                <i class="fas fa-envelope"></i>
+<a class="mobile-menu-item" href="/profile.html">
+<a class="mobile-menu-item active" data-i18n="text_23" href="/inbox.html">
+<i class="fas fa-envelope"></i>
                 Inbox
-                <span id="mobileInboxBadge" class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" style="display: none;"></span>
-            <a href="/cart.html" class="mobile-menu-item">
-                <i class="fas fa-shopping-cart"></i>
+                <span class="ml-auto px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" id="mobileInboxBadge" style="display: none;"></span>
+<a class="mobile-menu-item" data-i18n="text_24" href="/cart.html">
+<i class="fas fa-shopping-cart"></i>
                 Cart
             </a>
-            <a href="#" onclick="switchTab('overview')" class="mobile-menu-item">
-                <i class="fas fa-th-large"></i>
+<a class="mobile-menu-item" data-i18n="text_48" href="#" onclick="switchTab('overview')">
+<i class="fas fa-th-large"></i>
                 Overview
             </a>
-            <a href="#" onclick="switchTab('orders')" class="mobile-menu-item">
-                <i class="fas fa-shopping-bag"></i>
+<a class="mobile-menu-item" data-i18n="text_26" href="#" onclick="switchTab('orders')">
+<i class="fas fa-shopping-bag"></i>
                 Orders
             </a>
-            <a href="#" onclick="switchTab('settings')" class="mobile-menu-item">
-                <i class="fas fa-cog"></i>
+<a class="mobile-menu-item" data-i18n="text_51" href="#" onclick="switchTab('settings')">
+<i class="fas fa-cog"></i>
                 Settings
             </a>
-
-            <div class="mobile-menu-divider"></div>
-
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
-                <i class="fas fa-moon"></i>
-                <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
-            </div>
-
-            <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <i class="fas fa-globe"></i>
-                    <span style="font-weight: 500; font-size: 14px;">Language</span>
-                </div>
-                <select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
-                    <option value="en">English 🇺🇸</option>
-                    <option value="es">Español 🇪🇸</option>
-                    <option value="fr">Français 🇫🇷</option>
-                    <option value="ar">العربية 🇸🇦</option>
-                    <option value="zh-CN">中文 🇨🇳</option>
-                    <option value="ru">Русский 🇷🇺</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Mobile Menu Buttons -->
-        <div class="mobile-menu-button-group">
-            <a href="/" class="btn-outline">Store</a>
-            <button onclick="logout()" class="btn-outline" style="width: 100%; cursor: pointer;">Logout</button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Profile Header -->
-        <div class="profile-card mb-8">
-            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-3xl font-bold" id="userAvatar">
+<div class="mobile-menu-divider"></div>
+<div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+<i class="fas fa-moon"></i>
+<button data-i18n="text_28" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
+</div>
+<div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+<i class="fas fa-globe"></i>
+<span data-i18n="text_29" style="font-weight: 500; font-size: 14px;">Language</span>
+</div>
+<select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
+<option data-i18n="text_30" value="en">English 🇺🇸</option>
+<option data-i18n="text_31" value="es">Español 🇪🇸</option>
+<option data-i18n="text_32" value="fr">Français 🇫🇷</option>
+<option data-i18n="text_33" value="ar">العربية 🇸🇦</option>
+<option data-i18n="text_34" value="zh-CN">中文 🇨🇳</option>
+<option data-i18n="text_35" value="ru">Русский 🇷🇺</option>
+</select>
+</div>
+</a></a></div>
+<!-- Mobile Menu Buttons -->
+<div class="mobile-menu-button-group">
+<a class="btn-outline" data-i18n="text_37" href="/">Store</a>
+<button class="btn-outline" data-i18n="text_38" onclick="logout()" style="width: 100%; cursor: pointer;">Logout</button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-i18n="text_85">
+<!-- Profile Header -->
+<div class="profile-card mb-8">
+<div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+<div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-3xl font-bold" id="userAvatar">
                     U
                 </div>
-                <div class="flex-1">
-                    <h1 class="text-2xl font-bold text-secondary" id="userName">User</h1>
-                    <p class="text-gray-500" id="userEmail">user@example.com</p>
-                    <p class="text-sm text-gray-400 mt-1">Member since <span id="memberSince">January 2026</span></p>
-                </div>
-                <div class="stat-card">
-                    <p class="text-sm text-gray-500 mb-1">Wallet Balance</p>
-                    <p class="text-3xl font-bold text-primary" id="walletBalance">$0.00</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tab-nav">
-            <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">
-                <i class="fas fa-th-large"></i>
-                <span>Overview</span>
-            </button>
-            <button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">
-                <i class="fas fa-shopping-bag"></i>
-                <span>Order History</span>
-            </button>
-            <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transactions</span>
-            </button>
-            <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </button>
-        </div>
-
-        <!-- Overview Tab -->
-        <div class="tab-content active" id="overviewContent">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="profile-card">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-shopping-bag text-xl text-primary"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold text-secondary" id="totalOrders">0</p>
-                            <p class="text-sm text-gray-500">Total Orders</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="profile-card">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                            <i class="fas fa-check-circle text-xl text-success"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold text-secondary" id="completedOrders">0</p>
-                            <p class="text-sm text-gray-500">Completed</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="profile-card">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-xl text-warning"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold text-secondary" id="totalSpent">$0.00</p>
-                            <p class="text-sm text-gray-500">Total Spent</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="profile-card bg-gradient-to-br from-blue-50 to-indigo-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4 flex-1">
-                            <div class="w-12 h-12 rounded-xl bg-blue-200 flex items-center justify-center">
-                                <i class="fas fa-wallet text-xl text-primary"></i>
-                            </div>
-                            <div>
-                                <p class="text-2xl font-bold text-primary" id="walletBalanceOverview">$0.00</p>
-                                <p class="text-sm text-gray-600">Wallet Balance</p>
-                            </div>
-                        </div>
-                        <button onclick="openFundWalletModal()" class="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition">
-                            <i class="fas fa-plus mr-1"></i>Fund
+<div class="flex-1">
+<h1 class="text-2xl font-bold text-secondary" data-i18n="text_41" id="userName">User</h1>
+<p class="text-gray-500" data-i18n="text_42" id="userEmail">user@example.com</p>
+<p class="text-sm text-gray-400 mt-1" data-i18n="text_43">Member since <span data-i18n="text_44" id="memberSince">January 2026</span></p>
+</div>
+<div class="stat-card">
+<p class="text-sm text-gray-500 mb-1" data-i18n="text_58">Wallet Balance</p>
+<p class="text-3xl font-bold text-primary" data-i18n="text_57" id="walletBalance">$0.00</p>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="tab-nav">
+<button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">
+<i class="fas fa-th-large"></i>
+<span data-i18n="text_48">Overview</span>
+</button>
+<button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">
+<i class="fas fa-shopping-bag"></i>
+<span data-i18n="text_49">Order History</span>
+</button>
+<button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">
+<i class="fas fa-exchange-alt"></i>
+<span data-i18n="text_50">Transactions</span>
+</button>
+<button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+<i class="fas fa-cog"></i>
+<span data-i18n="text_51">Settings</span>
+</button>
+</div>
+<!-- Overview Tab -->
+<div class="tab-content active" id="overviewContent">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="profile-card">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+<i class="fas fa-shopping-bag text-xl text-primary"></i>
+</div>
+<div>
+<p class="text-2xl font-bold text-secondary" id="totalOrders">0</p>
+<p class="text-sm text-gray-500" data-i18n="text_53">Total Orders</p>
+</div>
+</div>
+</div>
+<div class="profile-card">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+<i class="fas fa-check-circle text-xl text-success"></i>
+</div>
+<div>
+<p class="text-2xl font-bold text-secondary" id="completedOrders">0</p>
+<p class="text-sm text-gray-500" data-i18n="text_67">Completed</p>
+</div>
+</div>
+</div>
+<div class="profile-card">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
+<i class="fas fa-dollar-sign text-xl text-warning"></i>
+</div>
+<div>
+<p class="text-2xl font-bold text-secondary" data-i18n="text_57" id="totalSpent">$0.00</p>
+<p class="text-sm text-gray-500" data-i18n="text_56">Total Spent</p>
+</div>
+</div>
+</div>
+<div class="profile-card bg-gradient-to-br from-blue-50 to-indigo-50">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4 flex-1">
+<div class="w-12 h-12 rounded-xl bg-blue-200 flex items-center justify-center">
+<i class="fas fa-wallet text-xl text-primary"></i>
+</div>
+<div>
+<p class="text-2xl font-bold text-primary" data-i18n="text_57" id="walletBalanceOverview">$0.00</p>
+<p class="text-sm text-gray-600" data-i18n="text_58">Wallet Balance</p>
+</div>
+</div>
+<button class="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition" data-i18n="text_59" onclick="openFundWalletModal()">
+<i class="fas fa-plus mr-1"></i>Fund
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-card">
-                <h3 class="text-lg font-bold text-secondary mb-4">Recent Orders</h3>
-                <div id="recentOrders">
-                    <!-- Rendered via JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Orders Tab -->
-        <div class="tab-content" id="ordersContent">
-            <div class="profile-card">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-secondary">All Orders</h3>
-                    <select id="orderFilter" class="px-4 py-2 border border-gray-200 rounded-lg text-sm" onchange="filterOrders()">
-                        <option value="all">All Orders</option>
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="orders-table" id="ordersTable">
-                        <thead>
-                            <tr>
-                                <th>Order Ref</th>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTableBody">
-                            <!-- Rendered via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Transactions Tab -->
-        <div class="tab-content" id="transactionsContent">
-            <div class="profile-card">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-secondary">Wallet Transactions</h3>
-                    <div class="flex items-center gap-2">
-                        <button onclick="refreshTransactions()" class="px-4 py-2 text-primary hover:bg-blue-50 rounded-lg transition" title="Refresh transactions">
-                            <i class="fas fa-sync-alt"></i>
+</div>
+</div>
+</div>
+<div class="profile-card">
+<h3 class="text-lg font-bold text-secondary mb-4" data-i18n="text_60">Recent Orders</h3>
+<div data-i18n="text_82" id="recentOrders">
+<!-- Rendered via JS -->
+</div>
+</div>
+</div>
+<!-- Orders Tab -->
+<div class="tab-content" id="ordersContent">
+<div class="profile-card">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-secondary" data-i18n="text_64">All Orders</h3>
+<select class="px-4 py-2 border border-gray-200 rounded-lg text-sm" id="orderFilter" onchange="filterOrders()">
+<option data-i18n="text_64" value="all">All Orders</option>
+<option data-i18n="text_65" value="pending">Pending</option>
+<option data-i18n="text_66" value="paid">Paid</option>
+<option data-i18n="text_67" value="completed">Completed</option>
+<option data-i18n="text_68" value="cancelled">Cancelled</option>
+</select>
+</div>
+<div class="overflow-x-auto">
+<table class="orders-table" id="ordersTable">
+<thead>
+<tr>
+<th data-i18n="text_69">Order Ref</th>
+<th data-i18n="text_77">Date</th>
+<th data-i18n="text_79">Amount</th>
+<th data-i18n="text_80">Status</th>
+<th data-i18n="text_73">Action</th>
+</tr>
+</thead>
+<tbody data-i18n="text_82" id="ordersTableBody">
+<!-- Rendered via JS -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Transactions Tab -->
+<div class="tab-content" id="transactionsContent">
+<div class="profile-card">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-secondary" data-i18n="text_76">Wallet Transactions</h3>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 text-primary hover:bg-blue-50 rounded-lg transition" onclick="refreshTransactions()" title="Refresh transactions">
+<i class="fas fa-sync-alt"></i>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="orders-table" id="transactionsTable">
+<thead>
+<tr>
+<th data-i18n="text_77">Date</th>
+<th data-i18n="text_78">Type</th>
+<th data-i18n="text_79">Amount</th>
+<th data-i18n="text_80">Status</th>
+<th data-i18n="text_81">Description</th>
+</tr>
+</thead>
+<tbody data-i18n="text_82" id="transactionsTableBody">
+<!-- Rendered via JS -->
+</tbody>
+</table>
+</div>
+<div class="empty-state hidden" id="transactionsEmpty">
+<div class="empty-icon">
+<i class="fas fa-history text-2xl text-gray-400"></i>
+</div>
+<h3 class="text-lg font-semibold text-secondary mb-2" data-i18n="text_83">No Transactions Yet</h3>
+<p class="text-gray-500" data-i18n="text_84">Your wallet transaction history will appear here</p>
+</div>
+</div>
+</div>
+<!-- Settings Tab -->
+<div class="tab-content" id="settingsContent">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="profile-card">
+<h3 class="text-lg font-bold text-secondary mb-6" data-i18n="text_86">Profile Information</h3>
+<form id="profileForm" onsubmit="updateProfile(event)">
+<div class="form-group">
+<label class="form-label" data-i18n="text_87">Email Address</label>
+<input class="form-input" disabled="" id="settingsEmail" type="email"/>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_88">Full Name</label>
+<input class="form-input" id="settingsName" placeholder="Enter your full name" type="text"/>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_89">Country</label>
+<select class="form-input" id="settingsCountry">
+<option data-i18n="text_90" value="US">United States</option>
+<option data-i18n="text_91" value="UK">United Kingdom</option>
+<option data-i18n="text_92" value="CA">Canada</option>
+<option data-i18n="text_93" value="AU">Australia</option>
+<option data-i18n="text_94" value="DE">Germany</option>
+<option data-i18n="text_95" value="OTHER">Other</option>
+</select>
+</div>
+<button class="btn-primary" data-i18n="text_96" type="submit">Save Changes</button>
+</form>
+</div>
+<div class="profile-card">
+<h3 class="text-lg font-bold text-secondary mb-6" data-i18n="text_97">Security</h3>
+<form id="passwordForm" onsubmit="changePassword(event)">
+<div class="form-group">
+<label class="form-label" data-i18n="text_98">Current Password</label>
+<input class="form-input" id="currentPassword" placeholder="Enter current password" type="password"/>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_99">New Password</label>
+<input class="form-input" id="newPassword" placeholder="Enter new password" type="password"/>
+</div>
+<div class="form-group">
+<label class="form-label" data-i18n="text_100">Confirm New Password</label>
+<input class="form-input" id="confirmPassword" placeholder="Confirm new password" type="password"/>
+</div>
+<button class="btn-primary" data-i18n="text_101" type="submit">Update Password</button>
+</form>
+<div class="mt-8 pt-8 border-t border-gray-100">
+<h4 class="font-semibold text-danger mb-4" data-i18n="text_102">Danger Zone</h4>
+<button class="btn-danger" data-i18n="text_103" onclick="requestAccountDeletion()">
+<i class="fas fa-trash-alt mr-2"></i>Delete Account
                         </button>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="orders-table" id="transactionsTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsTableBody">
-                            <!-- Rendered via JS -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="empty-state hidden" id="transactionsEmpty">
-                    <div class="empty-icon">
-                        <i class="fas fa-history text-2xl text-gray-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-secondary mb-2">No Transactions Yet</h3>
-                    <p class="text-gray-500">Your wallet transaction history will appear here</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings Tab -->
-        <div class="tab-content" id="settingsContent">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="profile-card">
-                    <h3 class="text-lg font-bold text-secondary mb-6">Profile Information</h3>
-                    <form id="profileForm" onsubmit="updateProfile(event)">
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" id="settingsEmail" class="form-input" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" id="settingsName" class="form-input" placeholder="Enter your full name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Country</label>
-                            <select id="settingsCountry" class="form-input">
-                                <option value="US">United States</option>
-                                <option value="UK">United Kingdom</option>
-                                <option value="CA">Canada</option>
-                                <option value="AU">Australia</option>
-                                <option value="DE">Germany</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary">Save Changes</button>
-                    </form>
-                </div>
-
-                <div class="profile-card">
-                    <h3 class="text-lg font-bold text-secondary mb-6">Security</h3>
-                    <form id="passwordForm" onsubmit="changePassword(event)">
-                        <div class="form-group">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">New Password</label>
-                            <input type="password" id="newPassword" class="form-input" placeholder="Enter new password">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm new password">
-                        </div>
-                        <button type="submit" class="btn-primary">Update Password</button>
-                    </form>
-
-                    <div class="mt-8 pt-8 border-t border-gray-100">
-                        <h4 class="font-semibold text-danger mb-4">Danger Zone</h4>
-                        <button class="btn-danger" onclick="requestAccountDeletion()">
-                            <i class="fas fa-trash-alt mr-2"></i>Delete Account
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Order Detail Modal -->
-    <div class="order-modal-overlay" id="orderModal">
-        <div class="order-modal">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-secondary">Order Details</h2>
-                    <button onclick="closeOrderModal()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="p-6" id="orderModalContent">
-                <!-- Content rendered via JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-            <p>&copy; 2026 KeyVault. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Order Detail Modal -->
+<div class="order-modal-overlay" id="orderModal">
+<div class="order-modal">
+<div class="p-6 border-b border-gray-100">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-secondary" data-i18n="text_105">Order Details</h2>
+<button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" onclick="closeOrderModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+</div>
+<div class="p-6" data-i18n="text_106" id="orderModalContent">
+<!-- Content rendered via JS -->
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="footer mt-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+<p data-i18n="text_108">© 2026 KeyVault. All rights reserved.</p>
+</div>
+</footer>
+<script>
         // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
@@ -944,9 +912,7 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-  function googleTranslateElementInit() {
-  new google.translate.TranslateElement(
-  { pageLanguage: 'en', includedLanguages: 'en,es,fr,ar,zh-CN,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+  ,
   'googleTranslate'
   );
   }
@@ -1481,7 +1447,7 @@
       localStorage.setItem('keyvault_language', langCode);
       
       // Trigger Google Translate
-      const element = document.querySelector('.goog-te-combo');
+      const element = document.querySelector('.');
       if (element) {
           element.value = langCode;
           element.dispatchEvent(new Event('change'));
@@ -1524,10 +1490,26 @@
   }
   });
   </script>
-  
-  <!-- Google Translate API -->
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  <!-- Custom Translation Config -->
-  <script src="/translate-config.js"></script>
-</body>
+<!-- Google Translate API -->
+<!-- Custom Translation Config -->
+<script src="/translate-config.js"></script>
+<div class="lang-mini">
+<script>
+    function toggleLangMini() {
+      var menu = document.getElementById('lang-mini-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+  </script>
+<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
+<div class="hidden" id="lang-mini-menu">
+<button onclick="i18n.setLanguage('en')">EN</button>
+<button onclick="i18n.setLanguage('fr')">FR</button>
+<button onclick="i18n.setLanguage('es')">ES</button>
+<button onclick="i18n.setLanguage('pt')">PT</button>
+<button onclick="i18n.setLanguage('de')">DE</button>
+<button onclick="i18n.setLanguage('ru')">RU</button>
+<button onclick="i18n.setLanguage('ar')">AR</button>
+</div>
+</div>
+<script src="i18n.js"></script></body>
 </html>
