@@ -435,23 +435,22 @@
             const select = document.getElementById('mobileLanguageSelect');
             const langCode = select.value;
             
-            // Save preference
+            // Save preference to localStorage
             localStorage.setItem('keyvault_language', langCode);
             
-            // Trigger Google Translate
-            const element = document.querySelector('.');
-            if (element) {
-                element.value = langCode;
-                element.dispatchEvent(new Event('change'));
-            }
+            // Update document language
+            document.documentElement.lang = langCode;
             
             // Handle RTL for Arabic
             if (langCode === 'ar') {
                 document.documentElement.dir = 'rtl';
-                document.documentElement.lang = 'ar';
             } else {
                 document.documentElement.dir = 'ltr';
-                document.documentElement.lang = langCode;
+            }
+            
+            // Trigger i18n translation update
+            if (window.updatePageTranslations) {
+                window.updatePageTranslations();
             }
         }
         
@@ -485,16 +484,6 @@
       if (menu) menu.classList.toggle('hidden');
     }
   </script>
-<button aria-label="Language" onclick="toggleLangMini()">🌐</button>
-<div class="hidden" id="lang-mini-menu">
-<button onclick="i18n.setLanguage('en')">EN</button>
-<button onclick="i18n.setLanguage('fr')">FR</button>
-<button onclick="i18n.setLanguage('es')">ES</button>
-<button onclick="i18n.setLanguage('pt')">PT</button>
-<button onclick="i18n.setLanguage('de')">DE</button>
-<button onclick="i18n.setLanguage('ru')">RU</button>
-<button onclick="i18n.setLanguage('ar')">AR</button>
-</div>
 </div>
 <script src="i18n.js"></script></body>
 </html>

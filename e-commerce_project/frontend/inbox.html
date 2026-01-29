@@ -624,6 +624,32 @@
         ];
 
         // =========================================================
+        // MOBILE LANGUAGE SELECTOR
+        // =========================================================
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const langCode = select.value;
+            
+            // Save preference to localStorage
+            localStorage.setItem('keyvault_language', langCode);
+            
+            // Update document language
+            document.documentElement.lang = langCode;
+            
+            // Handle RTL for Arabic
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
+            }
+            
+            // Trigger i18n translation update
+            if (window.updatePageTranslations) {
+                window.updatePageTranslations();
+            }
+        }
+
+        // =========================================================
         // MOBILE MENU FUNCTIONALITY
         // =========================================================
         function initMobileMenu() {
