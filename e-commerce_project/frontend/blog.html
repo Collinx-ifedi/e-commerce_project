@@ -464,6 +464,32 @@
                 select.value = savedLang;
             }
         }
+        function changeLanguageFromSelect(select) {
+    const lang = select.options[select.selectedIndex].dataset.lang;
+
+    // save
+    localStorage.setItem("keyvault_language", lang);
+
+    // THIS is what makes translation happen
+    i18n.setLanguage(lang);
+
+    // RTL support
+    if (lang === "ar") {
+        document.documentElement.dir = "rtl";
+    } else {
+        document.documentElement.dir = "ltr";
+    }
+}
+
+// Load saved language on page load
+document.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem("keyvault_language") || "en";
+    const select = document.getElementById("mobileLanguageSelect");
+    if (select) {
+        select.value = saved;
+        i18n.setLanguage(saved);   // 👈 force translation on reload
+    }
+});
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
