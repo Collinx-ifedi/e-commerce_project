@@ -752,33 +752,38 @@
         };
 
         const loadProduct = async () => {
-            const productId = getProductId();
-            if (!productId) { window.location.href = '/'; return; }
+        const productId = getProductId();
+        if (!productId) { window.location.href = '/'; return; }
 
-            try {
-                const response = await api.get(`/api/products/${productId}`);
-                currentProduct = response.data || response || getMockProduct(productId);
-                renderProduct(currentProduct);
-                await loadDenominations(productId);
-            } catch (e) {
-                console.error('Error loading product:', e);
-                currentProduct = getMockProduct(productId);
-                renderProduct(currentProduct);
-                loadMockDenominations(productId);
-            }
-        };
+    try {
+        // Fetch everything in one go
+        const response = await api.get(`/api/products/${productId}`);
+        
+        // Ensure we are getting the nested data correctly
+        currentProduct = response.data || response;
 
-        const loadDenominations = async (productId) => {
-            try {
-                const response = await api.get(`/api/products/${productId}/denominations`);
-                const denominations = response.data || response || [];
-                renderDenominations(denominations);
-            } catch (e) {
-                console.error('Error loading denominations:', e);
-                const denominations = getMockDenominations(productId);
-                renderDenominations(denominations);
-            }
-        };
+        if (!currentProduct || currentProduct.error) {
+            throw new Error("Product not found");
+        }
+
+        renderProduct(currentProduct);
+
+        // Access the denominations array directly from the product object
+        if (currentProduct.denominations && Array.isArray(currentProduct.denominations)) {
+            renderDenominations(currentProduct.denominations);
+        } else {
+            console.warn("No denominations found for this product");
+            document.getElementById('denominationsSection').style.display = 'none';
+        }
+
+    } catch (e) {
+        console.error('Error loading product:', e);
+        // Fallback to mock only if API fails completely
+        currentProduct = getMockProduct(productId);
+        renderProduct(currentProduct);
+        renderDenominations(getMockDenominations(productId));
+    }
+};
 
         const renderDenominations = (denominations) => {
             if (!denominations || denominations.length === 0) {
