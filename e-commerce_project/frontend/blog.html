@@ -214,9 +214,9 @@
 <i class="fas fa-globe"></i>
 <span data-i18n="text_21" style="font-weight: 500; font-size: 14px;">Language</span>
 </div>
-<select id="mobileLanguageSelect"
+                <select id="mobileLanguageSelect"
         class="w-full mt-2 p-2 border rounded-lg text-sm bg-white"
-        onchange="setMobileLanguage(this.value)">
+        onchange="selectMobileLanguageFromSelect()">
   <option value="en" data-lang="en">English 🇺🇸</option>
   <option value="es" data-lang="es">Español 🇪🇸</option>
   <option value="fr" data-lang=">Français 🇫🇷</option>
@@ -464,32 +464,37 @@
                 select.value = savedLang;
             }
         }
-        function changeLanguageFromSelect(select) {
-    const lang = select.options[select.selectedIndex].dataset.lang;
 
-    // save
-    localStorage.setItem("keyvault_language", lang);
-
-    // THIS is what makes translation happen
-    i18n.setLanguage(lang);
-
-    // RTL support
-    if (lang === "ar") {
-        document.documentElement.dir = "rtl";
-    } else {
-        document.documentElement.dir = "ltr";
-    }
-}
-
-// Load saved language on page load
-document.addEventListener("DOMContentLoaded", () => {
-    const saved = localStorage.getItem("keyvault_language") || "en";
-    const select = document.getElementById("mobileLanguageSelect");
-    if (select) {
-        select.value = saved;
-        i18n.setLanguage(saved);   // 👈 force translation on reload
-    }
-});
+        // Language Selection Functions
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const langCode = select.value;
+            
+            if (window.i18n && window.i18n.setLanguage) {
+                window.i18n.setLanguage(langCode);
+            }
+            
+            localStorage.setItem('keyvault_language', langCode);
+            document.documentElement.lang = langCode;
+            
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
+            }
+        }
+        
+        function loadSavedMobileLanguage() {
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            const select = document.getElementById('mobileLanguageSelect');
+            if (select) {
+                select.value = savedLang;
+            }
+            document.documentElement.lang = savedLang;
+            if (savedLang === 'ar') {
+                document.documentElement.dir = 'rtl';
+            }
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
@@ -497,21 +502,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateCartBadge();
             await loadBlogPosts();
             loadSavedMobileLanguage();
-            
-            // Trigger translation after content is loaded
-            const savedLang = localStorage.getItem('keyvault_language') || 'en';
-            if (savedLang !== 'en') {
-                triggerGoogleTranslate(savedLang);
-            }
         });
     </script>
-<div class="lang-mini">
-<script>
-    function toggleLangMini() {
-      var menu = document.getElementById('lang-mini-menu');
-      if (menu) menu.classList.toggle('hidden');
-    }
-  </script>
-</div>
-<script src="i18n.js"></script></body>
+<script src="i18n.js"></script>
+</body>
 </html>

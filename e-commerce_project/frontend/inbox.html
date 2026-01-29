@@ -680,14 +680,41 @@
                 item.addEventListener('click', closeMenu);
             });
         }
+
+        // =========================================================
+        // MOBILE LANGUAGE SELECTOR
+        // =========================================================
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const langCode = select.value;
+            
+            if (window.i18n && window.i18n.setLanguage) {
+                window.i18n.setLanguage(langCode);
+            }
+            
+            localStorage.setItem('keyvault_language', langCode);
+            document.documentElement.lang = langCode;
+            
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
+            }
+        }
+        
+        // Load saved language on init
+        function loadSavedLanguage() {
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            const select = document.getElementById('mobileLanguageSelect');
+            if (select) {
+                select.value = savedLang;
+            }
+            document.documentElement.lang = savedLang;
+            if (savedLang === 'ar') {
+                document.documentElement.dir = 'rtl';
+            }
+        }
     </script>
-<div class="lang-mini">
-<script>
-    function toggleLangMini() {
-      var menu = document.getElementById('lang-mini-menu');
-      if (menu) menu.classList.toggle('hidden');
-    }
-  </script>
-</div>
-<script src="i18n.js"></script></body>
+<script src="i18n.js"></script>
+</body>
 </html>

@@ -800,7 +800,7 @@
                 selectedDenominations.set(denominations[0].id, {
                     id: denominations[0].id,
                     label: denominations[0].label,
-                    price: denominations[0].price
+                    price: denominations[0].price_usd
                 });
             }
 
@@ -810,14 +810,14 @@
                 const isOutOfStock = denom.stock_quantity <= 0;
                 return `
                     <div class="denomination-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'disabled' : ''}" 
-                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" 
+                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price_usd})" 
                          style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};">
                         <div class="p-6 border-2 rounded-lg transition ${isSelected ? 'border-primary bg-blue-50' : 'border-gray-200'} ${isOutOfStock ? 'opacity-50 bg-gray-50' : ''}">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-lg font-bold text-secondary">${denom.label}</span>
-                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" style="width: 20px; height: 20px; cursor: pointer;">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleDenomination('${denom.id}', '${denom.label}', ${denom.price_usd})" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
-                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
+                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price_usd)}</div>
                             <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">
                                 ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock_quantity})`}
                             </div>
