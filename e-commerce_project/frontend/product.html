@@ -752,38 +752,40 @@
         };
 
         const loadProduct = async () => {
-        const productId = getProductId();
-        if (!productId) { window.location.href = '/'; return; }
+            const productId = getProductId();
+            if (!productId) { window.location.href = '/'; return; }
 
-    try {
-        // Fetch everything in one go
-        const response = await api.get(`/api/products/${productId}`);
-        
-        // Ensure we are getting the nested data correctly
-        currentProduct = response.data || response;
+            try {
+                // Fetch everything in one go
+                const response = await api.get(`/api/products/${productId}`);
+                
+                // Ensure we are getting the nested data correctly
+                currentProduct = response.data || response;
 
-        if (!currentProduct || currentProduct.error) {
-            throw new Error("Product not found");
-        }
+                if (!currentProduct || currentProduct.error) {
+                    throw new Error("Product not found");
+                }
 
-        renderProduct(currentProduct);
+                renderProduct(currentProduct);
 
-        // Access the denominations array directly from the product object
-        if (currentProduct.denominations && Array.isArray(currentProduct.denominations)) {
-            renderDenominations(currentProduct.denominations);
-        } else {
-            console.warn("No denominations found for this product");
-            document.getElementById('denominationsSection').style.display = 'none';
-        }
+                // Access the denominations array directly from the product object
+                // Only use real denominations from API - NEVER override with mock
+                if (currentProduct.denominations && Array.isArray(currentProduct.denominations)) {
+                    renderDenominations(currentProduct.denominations);
+                } else {
+                    console.warn("No denominations found for this product");
+                    document.getElementById('denominationsSection').style.display = 'none';
+                }
 
-    } catch (e) {
-        console.error('Error loading product:', e);
-        // Fallback to mock only if API fails completely
-        currentProduct = getMockProduct(productId);
-        renderProduct(currentProduct);
-        renderDenominations(getMockDenominations(productId));
-    }
-};
+            } catch (e) {
+                console.error('Error loading product:', e);
+                // Fallback to mock ONLY for initial placeholder before API loads
+                currentProduct = getMockProduct(productId);
+                renderProduct(currentProduct);
+                // Do NOT use mock denominations if API is available - wait for real data
+                document.getElementById('denominationsSection').style.display = 'none';
+            }
+        };
 
         const renderDenominations = (denominations) => {
             if (!denominations || denominations.length === 0) {
@@ -992,11 +994,15 @@
   });
   }
 
-  // =========================================================
-  // INIT
-  // =========================================================
-  document.addEventListener('DOMContentLoaded', () => {
-  initMobileMenu();
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initMobileMenu();
+            checkAuthState(); // Check if user is logged in and update navbar
+            loadProduct();    // Load product from API
+            updateCartBadge(); // Update cart count on page load
+        });
   checkAuthState();
   updateCartBadge();
   loadProduct();
