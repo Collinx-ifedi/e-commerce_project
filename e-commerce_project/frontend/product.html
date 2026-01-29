@@ -780,7 +780,7 @@
         const loadDenominationsFromAPI = async (productId) => {
             try {
                 // Correct endpoint: GET /api/denominations/{product_id}
-                const response = await api.get(`/api/products/${productId}/denominations`);
+                const response = await api.get(`/api/denominations/${productId}`);
                 
                 // API returns a raw array, not nested in data object
                 const denominations = response.denominations || [];
