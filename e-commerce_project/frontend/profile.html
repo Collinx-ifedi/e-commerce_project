@@ -658,9 +658,9 @@
 <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-3xl font-bold" id="userAvatar">
                 </div>
 <div class="flex-1">
-<h1 class="text-2xl font-bold text-secondary" data-i18n="text_41" id="userName">User</h1>
-<p class="text-gray-500" data-i18n="text_42" id="userEmail">user@example.com</p>
-<p class="text-sm text-gray-400 mt-1" data-i18n="text_43">Member since <span data-i18n="text_44" id="memberSince">January 2026</span></p>
+<h1 class="text-2xl font-bold text-secondary" data-i18n="text_41" id="userName">Loading...</h1>
+<p class="text-gray-500" data-i18n="text_42" id="userEmail">Loading...</p>
+<p class="text-sm text-gray-400 mt-1" data-i18n="text_43">Member since <span data-i18n="text_44" id="memberSince">Loading...</span></p>
 </div>
 <div class="stat-card">
 <p class="text-sm text-gray-500 mb-1" data-i18n="text_58">Wallet Balance</p>
@@ -938,7 +938,14 @@
             mobileMenuOverlay.addEventListener('click', closeMenu);
 
             mobileMenuItems.forEach(item => {
-                item.addEventListener('click', closeMenu);
+                item.addEventListener('click', (e) => {
+                    // Don't close menu if clicking on select element or its children
+                    if (e.target.closest('select')) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    closeMenu();
+                });
             });
         }
   
@@ -1071,30 +1078,42 @@
         // LOAD USER DATA
         // =========================================================
         const loadUserData = async () => {
-            const user = JSON.parse(localStorage.getItem('user') || 'null');
-            
-            if (user) {
-                document.getElementById('userName').textContent = user.full_name || 'User';
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
-                document.getElementById('userAvatar').textContent = (user.full_name || user.email || 'U')[0].toUpperCase();
-                document.getElementById('settingsEmail').value = user.email;
-                document.getElementById('settingsName').value = user.full_name || '';
-                document.getElementById('settingsCountry').value = user.country || 'US';
-                
-                // Update wallet balance from API
-                try {
-                    const profileData = await api.get('/api/user/profile');
-                    if (profileData.balance_usd !== undefined) {
-                        document.getElementById('walletBalance').textContent = formatCurrency(profileData.balance_usd);
-                        document.getElementById('walletBalanceOverview').textContent = formatCurrency(profileData.balance_usd);
-                        // Update localStorage
-                        user.balance_usd = profileData.balance_usd;
-                        localStorage.setItem('user', JSON.stringify(user));
-                    }
-                } catch (error) {
-                    console.log('[v0] Could not fetch wallet balance:', error.message);
+            try {
+                // Always fetch user data from backend API
+                const response = await api.get('/api/user/profile');
+                const profile = response.data || response;
+
+                if (!profile || profile.error) {
+                    throw new Error("Failed to load profile");
                 }
+
+                // Populate all DOM elements from API response
+                document.getElementById('userName').textContent = profile.full_name || 'User';
+                document.getElementById('userEmail').textContent = profile.email;
+                document.getElementById('walletBalance').textContent = formatCurrency(profile.balance_usd || 0);
+                document.getElementById('walletBalanceOverview').textContent = formatCurrency(profile.balance_usd || 0);
+                document.getElementById('userAvatar').textContent = (profile.full_name || profile.email || 'U')[0].toUpperCase();
+                document.getElementById('settingsEmail').value = profile.email;
+                document.getElementById('settingsName').value = profile.full_name || '';
+                document.getElementById('settingsCountry').value = profile.country || 'US';
+
+                // Format created_at to "Month Year" format
+                if (profile.created_at) {
+                    const date = new Date(profile.created_at);
+                    const monthYear = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                    document.getElementById('memberSince').textContent = monthYear;
+                }
+
+                // Sync localStorage with API response
+                localStorage.setItem('user', JSON.stringify(profile));
+            } catch (error) {
+                console.error('[v0] Error loading profile:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Loading Profile',
+                    text: 'Failed to load your profile. Please refresh the page or try again later.'
+                });
+                return;
             }
 
             // Load orders

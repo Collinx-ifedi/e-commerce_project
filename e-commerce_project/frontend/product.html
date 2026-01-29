@@ -768,22 +768,40 @@
 
                 renderProduct(currentProduct);
 
-                // Access the denominations array directly from the product object
-                // Only use real denominations from API - NEVER override with mock
-                if (currentProduct.denominations && Array.isArray(currentProduct.denominations)) {
-                    renderDenominations(currentProduct.denominations);
-                } else {
-                    console.warn("No denominations found for this product");
-                    document.getElementById('denominationsSection').style.display = 'none';
-                }
+                // Fetch denominations from the correct endpoint
+                loadDenominationsFromAPI(productId);
 
             } catch (e) {
                 console.error('Error loading product:', e);
-                // Fallback to mock ONLY for initial placeholder before API loads
-                currentProduct = getMockProduct(productId);
-                renderProduct(currentProduct);
-                // Do NOT use mock denominations if API is available - wait for real data
-                document.getElementById('denominationsSection').style.display = 'none';
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load product. Please refresh the page.' });
+            }
+        };
+
+        const loadDenominationsFromAPI = async (productId) => {
+            try {
+                // Correct endpoint: GET /api/denominations/{product_id}
+                const response = await api.get(`/api/denominations/${productId}`);
+                
+                // API returns a raw array, not nested in data object
+                const denominations = Array.isArray(response) ? response : (response.data || []);
+                
+                if (!denominations || denominations.length === 0) {
+                    // Show "No denominations available" message
+                    document.getElementById('denominationsSection').style.display = 'none';
+                    const container = document.getElementById('denominationsContainer');
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748B;"><p style="font-size: 16px;">No denominations available</p></div>';
+                    return;
+                }
+
+                renderDenominations(denominations);
+            } catch (e) {
+                console.error('Error loading denominations:', e);
+                // Show error message instead of hiding section
+                document.getElementById('denominationsSection').style.display = 'block';
+                const container = document.getElementById('denominationsContainer');
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #EF4444;"><p style="font-size: 16px;">Failed to load denominations. Please refresh the page.</p></div>';
+            } finally {
+                hideLoader();
             }
         };
 
@@ -951,16 +969,7 @@
             { id: 3, name: 'Steam Wallet Card', platform: 'Steam', image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', short_description: 'Add funds to your Steam Wallet instantly for purchasing games and software.', description: '<p>Add funds to your Steam Wallet instantly. Use it to purchase games, software, hardware, and any other item on Steam.</p>' },
         ];
 
-        const getMockDenominations = (productId) => [
-            { id: `${productId}-1`, label: '50 UC', price: 9.99, in_stock: true, stock: 'Available' },
-            { id: `${productId}-2`, label: '100 UC', price: 19.99, in_stock: true, stock: 'Available' },
-            { id: `${productId}-3`, label: '250 UC', price: 49.99, in_stock: true, stock: 'Available' },
-        ];
-
-        const loadMockDenominations = (productId) => {
-            const denominations = getMockDenominations(productId);
-            renderDenominations(denominations);
-        };
+        // Removed mock denominations - only use real API data
 
   // =========================================================
   // MOBILE MENU FUNCTIONALITY
@@ -990,7 +999,14 @@
   mobileMenuOverlay.addEventListener('click', closeMenu);
 
   mobileMenuItems.forEach(item => {
-  item.addEventListener('click', closeMenu);
+  item.addEventListener('click', (e) => {
+    // Don't close menu if clicking on select element or its children
+    if (e.target.closest('select')) {
+      e.stopPropagation();
+      return;
+    }
+    closeMenu();
+  });
   });
   }
 

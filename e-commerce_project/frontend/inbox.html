@@ -677,7 +677,14 @@
             mobileMenuOverlay.addEventListener('click', closeMenu);
 
             mobileMenuItems.forEach(item => {
-                item.addEventListener('click', closeMenu);
+                item.addEventListener('click', (e) => {
+                    // Don't close menu if clicking on select element or its children
+                    if (e.target.closest('select')) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    closeMenu();
+                });
             });
         }
 
