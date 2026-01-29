@@ -209,21 +209,22 @@
 <i class="fas fa-moon"></i>
 <button data-i18n="text_20" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; flex: 1; text-align: left; color: inherit;">Dark Mode</button>
 </div>
-<div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
-<div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+<div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
 <i class="fas fa-globe"></i>
-<span data-i18n="text_21" style="font-weight: 500; font-size: 14px;">Language</span>
+<div class="mobile-language-selector flex-1">
+<button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+<span data-i18n="text_60" id="mobileLangLabel">English</span>
+<i class="fas fa-chevron-down"></i>
+</button>
+<div class="mobile-lang-dropdown" id="mobileLangDropdown">
+<button data-i18n="text_60" data-lang="en" onclick="i18n.setLanguage('en')">English 🇺🇸</button>
+<button data-i18n="text_61" data-lang="es" onclick="i18n.setLanguage('es')">Espanol 🇪🇸</button>
+<button data-i18n="text_62" data-lang="fr" onclick="i18n.setLanguage('fr')">Francais 🇫🇷</button>
+<button data-i18n="text_63" data-lang="ar" onclick="i18n.setLanguage('ar')">العربية 🇸🇦< /button>
+<button data-i18n="text_64" data-lang="zh-CN" onclick="i18n.setLanguage('zh-CN')">中文 🇨🇳</button>
+<button data-i18n="text_65" data-lang="ru" onclick="i18n.setLanguage('ru')">Русский 🇷🇺</button>
 </div>
-<select id="mobileLanguageSelect" onchange="selectMobileLanguageFromSelect()" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;">
-<option data-i18n="text_22" value="en">English 🇺🇸</option>
-<option data-i18n="text_23" value="es">Español 🇪🇸</option>
-<option data-i18n="text_24" value="fr">Français 🇫🇷</option>
-<option data-i18n="text_25" value="ar">العربية 🇸🇦</option>
-<option data-i18n="text_26" value="zh-CN">中文 🇨🇳</option>
-<option data-i18n="text_27" value="ru">Русский 🇷🇺</option>
-</select>
 </div>
-</a></div>
 <div class="mobile-menu-button-group" id="mobileAuthButtons">
 <a class="btn-outline" data-i18n="text_28" href="/login">Login</a>
 <a class="btn-primary" data-i18n="text_29" href="/register">Register</a>
