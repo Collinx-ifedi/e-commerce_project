@@ -618,7 +618,6 @@
 <div>
 <h4 class="text-white font-semibold mb-4" data-i18n="text_52">Support</h4>
 <ul class="space-y-3 text-sm">
-<li><a data-i18n="text_53" href="/faq">FAQ</a></li>
 <li><a data-i18n="text_54" href="/terms">Terms</a></li>
 </ul>
 </div>
@@ -711,7 +710,7 @@
     const price = Number(item.price_usd);
     const qty = Number(item.quantity);
     if (isNaN(price) || isNaN(qty)) return sum;
-    return sum + price_usd * qty;
+    return sum + price * qty;
   }, 0),
             getCount: () => cart.getItems().reduce((sum, item) => sum + item.quantity, 0),
             clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
@@ -754,7 +753,14 @@
             mobileMenuOverlay.addEventListener('click', closeMenu);
 
             mobileMenuItems.forEach(item => {
-                item.addEventListener('click', closeMenu);
+                item.addEventListener('click', (e) => {
+                    // Don't close menu if clicking on select element or its children
+                    if (e.target.closest('select')) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    closeMenu();
+                });
             });
         }
 
@@ -933,7 +939,7 @@
         // =========================================================
         // CHECKOUT
         // =========================================================
-        const proceedToCheckout = () => {
+        const proceedToCheckout = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
                 Swal.fire({
@@ -951,7 +957,44 @@
                 });
                 return;
             }
-            window.location.href = '/checkout.html';
+            
+            try {
+                const items = cart.getItems();
+                if (items.length === 0) {
+                    Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Please add items to your cart before checkout.' });
+                    return;
+                }
+
+                // Construct payload according to MultiProductOrderCreate schema
+                const payload = {
+                    items: items.map(item => ({
+                        denomination_id: item.id,
+                        quantity: item.quantity
+                    })),
+                    payment_method: "nowpayments"
+                };
+
+                showLoader();
+                const response = await api.post('/api/orders/checkout', payload);
+                hideLoader();
+
+                if (response.checkout_url) {
+                    // Redirect to checkout URL
+                    window.location.href = response.checkout_url;
+                } else {
+                    throw new Error('No checkout URL returned');
+                }
+            } catch (error) {
+                hideLoader();
+                console.error('Checkout error:', error);
+                const errorMessage = error.response?.data?.detail || error.message || 'Failed to proceed to checkout. Please try again.';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Checkout Error',
+                    text: errorMessage,
+                    confirmButtonColor: '#2563EB'
+                });
+            }
         };
 
         // =========================================================
