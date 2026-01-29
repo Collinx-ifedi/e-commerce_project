@@ -760,7 +760,7 @@
                 const response = await api.get(`/api/products/${productId}`);
                 
                 // Ensure we are getting the nested data correctly
-                currentProduct = response.data || response;
+                currentProduct = response;
 
                 if (!currentProduct || currentProduct.error) {
                     throw new Error("Product not found");
@@ -1022,7 +1022,6 @@
   checkAuthState();
   updateCartBadge();
   loadProduct();
-  });
 
   // Add CSS for denomination cards
   const style = document.createElement('style');
