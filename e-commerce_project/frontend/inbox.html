@@ -48,24 +48,13 @@
             min-width: 0;
         }
         
-        html, body {
-            height: 100%;
-        }
-        
         html,
         body {
             max-width: 100%;
             overflow-x: hidden;
         }
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #F8FAFC; 
-            color: #1E293B; 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
 
         .progress-bar {
             position: fixed; top: 0; left: 0; width: 0%; height: 3px;
@@ -290,31 +279,6 @@
         html.dark .inbox-card.unread { background: #1E3A5F; }
         html.dark .inbox-card-title { color: #F1F5F9; }
         html.dark .inbox-card-body { color: #CBD5E1; }
-        
-        html.dark .mobile-menu {
-            background: #0F172A;
-        }
-
-        html.dark .mobile-menu-item,
-        html.dark .mobile-menu-item span,
-        html.dark .mobile-menu-item i {
-            color: #E5E7EB;
-        }
-
-        html.dark .mobile-menu-close {
-            color: #E5E7EB;
-        }
-
-        html.dark #mobileLanguageSelect {
-            background: #1E293B;
-            color: #E5E7EB;
-            border-color: #334155;
-        }
-
-        html.dark #mobileLanguageSelect option {
-            background: #0F172A;
-            color: #E5E7EB;
-        }
     </style>
 </head>
 <body data-i18n-page="inbox">
@@ -420,7 +384,7 @@
 </div>
 </div>
 <!-- Main Content -->
-<main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <div class="mb-8">
 <h1 class="text-3xl font-bold text-secondary mb-2" data-i18n="text_37">Inbox</h1>
 <p class="text-gray-600" data-i18n="text_38">Messages from KeyVault Admin &amp; System</p>
@@ -664,16 +628,25 @@
         // =========================================================
         function selectMobileLanguageFromSelect() {
             const select = document.getElementById('mobileLanguageSelect');
-            const lang = select.value;
-
-            localStorage.setItem("keyvault_language", lang);
-
-            if (window.i18n && i18n.setLanguage) {
-                i18n.setLanguage(lang);
+            const langCode = select.value;
+            
+            // Save preference to localStorage
+            localStorage.setItem('keyvault_language', langCode);
+            
+            // Update document language
+            document.documentElement.lang = langCode;
+            
+            // Handle RTL for Arabic
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
             }
-
-            document.documentElement.lang = lang;
-            document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+            
+            // Trigger i18n translation update
+            if (window.updatePageTranslations) {
+                window.updatePageTranslations();
+            }
         }
 
         // =========================================================
@@ -704,32 +677,51 @@
             mobileMenuOverlay.addEventListener('click', closeMenu);
 
             mobileMenuItems.forEach(item => {
-                item.addEventListener('click', closeMenu);
+                item.addEventListener('click', (e) => {
+                    // Don't close menu if clicking on select element or its children
+                    if (e.target.closest('select')) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    closeMenu();
+                });
             });
         }
+
+        // =========================================================
+        // MOBILE LANGUAGE SELECTOR
+        // =========================================================
+        function selectMobileLanguageFromSelect() {
+            const select = document.getElementById('mobileLanguageSelect');
+            const langCode = select.value;
+            
+            if (window.i18n && window.i18n.setLanguage) {
+                window.i18n.setLanguage(langCode);
+            }
+            
+            localStorage.setItem('keyvault_language', langCode);
+            document.documentElement.lang = langCode;
+            
+            if (langCode === 'ar') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
+            }
+        }
+        
+        // Load saved language on init
+        function loadSavedLanguage() {
+            const savedLang = localStorage.getItem('keyvault_language') || 'en';
+            const select = document.getElementById('mobileLanguageSelect');
+            if (select) {
+                select.value = savedLang;
+            }
+            document.documentElement.lang = savedLang;
+            if (savedLang === 'ar') {
+                document.documentElement.dir = 'rtl';
+            }
+        }
     </script>
-<div class="lang-mini">
-<script>
-    function toggleLangMini() {
-      var menu = document.getElementById('lang-mini-menu');
-      if (menu) menu.classList.toggle('hidden');
-    }
-  </script>
-</div>
 <script src="i18n.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const saved = localStorage.getItem("keyvault_language") || "en";
-    const select = document.getElementById("mobileLanguageSelect");
-    if (select) select.value = saved;
-
-    if (window.i18n && i18n.setLanguage) {
-        i18n.setLanguage(saved);
-    }
-
-    document.documentElement.lang = saved;
-    document.documentElement.dir = (saved === "ar") ? "rtl" : "ltr";
-});
-</script>
 </body>
 </html>
