@@ -678,6 +678,8 @@
 };
 
         const API_BASE = window.location.origin;
+        
+        let languageInitialized = false;
 
 
         // =========================================================
@@ -717,6 +719,8 @@
         
         // Initialize language on page load
         function initializeLanguage() {
+            if (languageInitialized) return;   // 🛑 stops infinite reload
+            languageInitialized = true;
             const savedLanguage = localStorage.getItem('keyvault_language') || 'en';
             const select = document.getElementById('mobileLanguageSelect');
             
