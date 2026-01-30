@@ -29,10 +29,12 @@
             }
         }
     </script>
-<style>
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
-        html, body { max-width: 100%; overflow-x: hidden; }
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        html, body { max-width: 100%; overflow-x: hidden; height: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1 0 auto; }
+        footer { margin-top: auto; }
 
         .navbar { background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
         .cart-badge { position: absolute; top: -8px; right: -8px; background: #EF4444; color: white; font-size: 11px; font-weight: 600; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
@@ -93,9 +95,12 @@
         html.dark .navbar span { color: #E2E8F0; }
         html.dark #themeToggle { color: #E2E8F0 !important; }
         html.dark #themeToggle:hover { color: #60A5FA !important; background: #334155 !important; }
+        html.dark .navbar .fa-shopping-cart { color: #E2E8F0 !important; }
+        html.dark .navbar .fa-shopping-cart:hover { color: #60A5FA !important; }
         html.dark .blog-card { background: #1E293B; border: 1px solid #334155; }
         html.dark .blog-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5); }
         html.dark .author-badge { background: #1E40AF; color: #93C5FD; }
+        html.dark .cart-badge { border: 2px solid #1E293B; }
         html.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); }
         html.dark .footer { background: #0F172A; border-top: 1px solid #334155; }
         html.dark .social-icon { background: rgba(255, 255, 255, 0.1); }
