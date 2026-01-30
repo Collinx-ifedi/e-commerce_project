@@ -722,18 +722,24 @@
         };
 
         const checkAuthState = () => {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('access_token');
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             if (token && user) {
                 document.getElementById('guestActions').classList.add('hidden');
                 document.getElementById('userActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('flex');
                 document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
+                // Update mobile auth buttons
+                document.getElementById('mobileAuthButtons').classList.add('hidden');
+                document.getElementById('mobileUserButtons').classList.remove('hidden');
             } else {
                 // Ensure guest actions are visible when not logged in
                 document.getElementById('guestActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('hidden');
                 document.getElementById('userActions').classList.remove('flex');
+                // Update mobile auth buttons
+                document.getElementById('mobileAuthButtons').classList.remove('hidden');
+                document.getElementById('mobileUserButtons').classList.add('hidden');
             }
         };
 
