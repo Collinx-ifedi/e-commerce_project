@@ -50,11 +50,19 @@
         
         html,
         body {
+            height: 100%;
             max-width: 100%;
             overflow-x: hidden;
         }
         
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F8FAFC; 
+            color: #1E293B; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
         .progress-bar {
             position: fixed; top: 0; left: 0; width: 0%; height: 3px;
@@ -279,6 +287,31 @@
         html.dark .inbox-card.unread { background: #1E3A5F; }
         html.dark .inbox-card-title { color: #F1F5F9; }
         html.dark .inbox-card-body { color: #CBD5E1; }
+        
+        html.dark .mobile-menu {
+            background: #0F172A;
+        }
+
+        html.dark .mobile-menu-item,
+        html.dark .mobile-menu-item span,
+        html.dark .mobile-menu-item i {
+            color: #E5E7EB;
+        }
+
+        html.dark .mobile-menu-close {
+            color: #E5E7EB;
+        }
+
+        html.dark #mobileLanguageSelect {
+            background: #1E293B;
+            color: #E5E7EB;
+            border-color: #334155;
+        }
+
+        html.dark #mobileLanguageSelect option {
+            background: #0F172A;
+            color: #E5E7EB;
+        }
     </style>
 </head>
 <body data-i18n-page="inbox">
@@ -369,7 +402,6 @@
 <option data-lang="es" value="es">Español 🇪🇸</option>
 <option data-lang="fr" value="fr">Français 🇫🇷</option>
 <option data-lang="ar" value="ar">العربية 🇸🇦</option>
-<option data-lang="zh-CN" value="zh-CN">中文 🇨🇳</option>
 <option data-lang="ru" value="ru">Русский 🇷🇺</option>
 </select>
 </div>
@@ -384,7 +416,7 @@
 </div>
 </div>
 <!-- Main Content -->
-<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main class="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <div class="mb-8">
 <h1 class="text-3xl font-bold text-secondary mb-2" data-i18n="text_37">Inbox</h1>
 <p class="text-gray-600" data-i18n="text_38">Messages from KeyVault Admin &amp; System</p>
@@ -630,10 +662,9 @@
             const select = document.getElementById('mobileLanguageSelect');
             const langCode = select.value;
             
-            // Save preference to localStorage
+            // Save the selected language value BEFORE i18n updates
+            const selectedValue = langCode;
             localStorage.setItem('keyvault_language', langCode);
-            
-            // Update document language
             document.documentElement.lang = langCode;
             
             // Handle RTL for Arabic
@@ -644,9 +675,18 @@
             }
             
             // Trigger i18n translation update
-            if (window.updatePageTranslations) {
-                window.updatePageTranslations();
+            if (window.i18n && window.i18n.setLanguage) {
+                window.i18n.setLanguage(langCode);
             }
+            
+            // Restore the select value after i18n updates the DOM
+            // This prevents the option text from overwriting the selected value
+            setTimeout(() => {
+                const selectEl = document.getElementById('mobileLanguageSelect');
+                if (selectEl) {
+                    selectEl.value = selectedValue;
+                }
+            }, 10);
         }
 
         // =========================================================
@@ -687,27 +727,6 @@
                 });
             });
         }
-
-        // =========================================================
-        // MOBILE LANGUAGE SELECTOR
-        // =========================================================
-        function selectMobileLanguageFromSelect() {
-            const select = document.getElementById('mobileLanguageSelect');
-            const langCode = select.value;
-            
-            if (window.i18n && window.i18n.setLanguage) {
-                window.i18n.setLanguage(langCode);
-            }
-            
-            localStorage.setItem('keyvault_language', langCode);
-            document.documentElement.lang = langCode;
-            
-            if (langCode === 'ar') {
-                document.documentElement.dir = 'rtl';
-            } else {
-                document.documentElement.dir = 'ltr';
-            }
-        }
         
         // Load saved language on init
         function loadSavedLanguage() {
@@ -721,6 +740,9 @@
                 document.documentElement.dir = 'rtl';
             }
         }
+        
+        // Call loadSavedLanguage on page load
+        document.addEventListener('DOMContentLoaded', loadSavedLanguage, { once: true });
     </script>
 <script src="i18n.js"></script>
 </body>
