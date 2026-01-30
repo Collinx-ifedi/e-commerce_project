@@ -654,34 +654,6 @@
 </div>
 </footer>
 <script>
-
-         const api = {
-  post: async (url, body) => {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(API_BASE + url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw { response: { data: err } };
-    }
-
-    return res.json();
-  }
-};
-
-        const API_BASE = window.location.origin;
-        
-        let languageInitialized = false;
-
-
         // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
@@ -719,17 +691,12 @@
         
         // Initialize language on page load
         function initializeLanguage() {
-            if (languageInitialized) return;   // 🛑 stops infinite reload
-            languageInitialized = true;
             const savedLanguage = localStorage.getItem('keyvault_language') || 'en';
             const select = document.getElementById('mobileLanguageSelect');
             
+            // Set select value without triggering onchange
             if (select) {
                 select.value = savedLanguage;
-            }
-            
-            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
-                window.i18n.setLanguage(savedLanguage);
             }
             
             // Apply RTL layout for Arabic
@@ -928,7 +895,7 @@
                                 <img src="${item.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=200'}" 
                                      alt="${item.name}" 
                                      class="cart-item-image"
-                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=200'">
+                                     onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=200'">
                                 <div class="flex-1">
                                     <div class="flex items-start justify-between">
                                         <div>
@@ -1043,7 +1010,6 @@
                 };
 
                 showLoader();
-                
                 const response = await api.post('/api/orders/checkout', payload);
                 hideLoader();
 
