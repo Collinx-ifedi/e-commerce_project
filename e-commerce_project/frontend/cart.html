@@ -52,9 +52,21 @@
         body {
             max-width: 100%;
             overflow-x: hidden;
+            height: 100%;
         }
         
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F8FAFC; 
+            color: #1E293B; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main {
+            flex: 1;
+        }
 
         .progress-bar {
             position: fixed; top: 0; left: 0; width: 0%; height: 3px;
@@ -664,18 +676,44 @@
         function selectMobileLanguageFromSelect() {
             const select = document.getElementById('mobileLanguageSelect');
             const value = select.value;
-            if (window.google && window.google.translate && window.google.translate.TranslateElement) {
-                const element = document.querySelector('.');
-                if (element) {
-                    element.value = value;
-                    element.dispatchEvent(new Event('change'));
+            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+                window.i18n.setLanguage(value);
+                localStorage.setItem('keyvault_language', value);
+                
+                // Apply RTL layout for Arabic
+                if (value === 'ar') {
+                    document.documentElement.setAttribute('dir', 'rtl');
+                } else {
+                    document.documentElement.setAttribute('dir', 'ltr');
                 }
+            }
+        }
+        
+        // Initialize language on page load
+        function initializeLanguage() {
+            const savedLanguage = localStorage.getItem('keyvault_language') || 'en';
+            const select = document.getElementById('mobileLanguageSelect');
+            
+            if (select) {
+                select.value = savedLanguage;
+            }
+            
+            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+                window.i18n.setLanguage(savedLanguage);
+            }
+            
+            // Apply RTL layout for Arabic
+            if (savedLanguage === 'ar') {
+                document.documentElement.setAttribute('dir', 'rtl');
+            } else {
+                document.documentElement.setAttribute('dir', 'ltr');
             }
         }
         
         document.addEventListener('DOMContentLoaded', () => {
             updateThemeIcon();
             initMobileMenu();
+            initializeLanguage();
             checkAuthState();
             updateMobileAuthButtons();
             attachProfileDropdownListener();
