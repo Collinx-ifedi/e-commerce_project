@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -20,6 +20,9 @@
         body {
             max-width: 100%;
             overflow-x: hidden;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
         
         * {
@@ -42,8 +45,271 @@
             }
         }
     </script>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    flex-shrink: 0;
+  }
+  
+  .dark .navbar {
+    background: #1e293b;
+    border-bottom-color: #334155;
+  }
+  
+  .hamburger-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: #1e293b;
+  }
+  
+  .dark .hamburger-btn {
+    color: #f1f5f9;
+  }
+  
+  .hamburger-btn span {
+    width: 24px;
+    height: 2px;
+    background-color: #1e293b;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  
+  .dark .hamburger-btn span {
+    background-color: #f1f5f9;
+  }
+  
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 39;
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
+  .mobile-menu {
+    position: fixed;
+    left: 0;
+    top: 64px;
+    width: 100%;
+    max-width: 280px;
+    height: calc(100vh - 64px);
+    background: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 41;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+  }
+  
+  .dark .mobile-menu {
+    background: #1e293b;
+  }
+  
+  .mobile-menu.active {
+    transform: translateX(0);
+  }
+  
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .dark .mobile-menu-header {
+    border-bottom-color: #334155;
+  }
+  
+  .mobile-menu-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+  
+  .dark .mobile-menu-header h3 {
+    color: #f1f5f9;
+  }
+  
+  .mobile-menu-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #1e293b;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .dark .mobile-menu-close {
+    color: #f1f5f9;
+  }
+  
+  .mobile-menu-content {
+    padding: 16px;
+  }
+  
+  .mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #1e293b;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .dark .mobile-menu-item {
+    color: #f1f5f9;
+  }
+  
+  .mobile-menu-item:hover {
+    background-color: #f1f5f9;
+  }
+  
+  .dark .mobile-menu-item:hover {
+    background-color: #334155;
+  }
+  
+  .mobile-menu-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 18px;
+  }
+  
+  .mobile-menu-divider {
+    margin: 12px 0;
+  }
+  
+  .footer {
+    background: #1e293b;
+    color: #e2e8f0;
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+  
+  .dark .footer {
+    background: #0f172a;
+  }
+  
+  .footer a {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .dark .footer a {
+    color: #cbd5e1;
+  }
+  
+  .footer a:hover {
+    color: #2563EB;
+  }
+  
+  .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    transition: all 0.2s ease;
+  }
+  
+  .dark .social-icon {
+    color: #f1f5f9;
+  }
+  
+  .social-icon:hover {
+    background-color: #2563EB;
+    color: white;
+  }
+
+  /* Navbar text colors */
+  .navbar a,
+  .navbar button {
+    color: #1e293b;
+  }
+
+  .dark .navbar a,
+  .dark .navbar button {
+    color: #f1f5f9;
+  }
+
+  .navbar a:hover,
+  .navbar button:hover {
+    color: #2563EB;
+  }
+
+  /* Desktop language dropdown styling */
+  #desktopLangDropdown {
+    background: white;
+    color: #1e293b;
+  }
+
+  .dark #desktopLangDropdown {
+    background: #334155;
+    color: #f1f5f9;
+  }
+
+  #desktopLangDropdown button {
+    color: #1e293b;
+  }
+
+  .dark #desktopLangDropdown button {
+    color: #f1f5f9;
+  }
+
+  #desktopLangDropdown button:hover {
+    background-color: #f1f5f9;
+  }
+
+  .dark #desktopLangDropdown button:hover {
+    background-color: #475569;
+  }
+</style>
 </head>
-<body class="bg-background text-secondary min-h-screen flex flex-col" data-i18n-page="contact">
+<body class="bg-background text-secondary h-screen flex flex-col" data-i18n-page="contact">
 <!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,54 +368,53 @@
 <!-- Home Link -->
 <a class="mobile-menu-item" data-i18n="text_76" href="/">
 <i class="fas fa-home"></i>
-Home
+<span>Home</span>
 </a>
-<div class="mobile-menu-divider border-t border-gray-200 my-4"></div>
+
 <!-- Language Selector -->
-<div class="mobile-menu-item border-b-0 px-0 py-0">
+<div class="mobile-menu-item" style="padding: 0; border: none;">
+<button id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; width: 100%; background: none; border: none; cursor: pointer; color: inherit; font-size: 16px; font-weight: 500;">
 <i class="fas fa-globe"></i>
-<div class="flex-1">
-<button class="w-full text-left bg-transparent border-none cursor-pointer font-medium text-secondary" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
 <span data-i18n="text_51" id="mobileLangLabel">English</span>
-<i class="fas fa-chevron-down text-xs ml-2"></i>
+<i class="fas fa-chevron-down" style="margin-left: auto; font-size: 12px;"></i>
 </button>
-<div class="hidden flex flex-col gap-2 mt-2 pl-8" id="mobileLangDropdown">
-<button data-i18n="text_51" data-lang="en" onclick="i18n.setLanguage('en'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">English</button>
-<button data-i18n="text_52" data-lang="es" onclick="i18n.setLanguage('es'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Español</button>
-<button data-i18n="text_53" data-lang="fr" onclick="i18n.setLanguage('fr'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Français</button>
-<button data-i18n="text_54" data-lang="ar" onclick="i18n.setLanguage('ar'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">العربية</button>
-<button data-i18n="text_56" data-lang="ru" onclick="i18n.setLanguage('ru'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Русский</button>
+<div class="hidden" id="mobileLangDropdown" style="display: flex; flex-direction: column; gap: 8px; padding: 8px 16px 8px 48px; background: transparent;">
+<button data-i18n="text_51" data-lang="en" onclick="i18n.setLanguage('en'); toggleMobileLangDropdown()" style="background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; color: inherit; padding: 4px 0; transition: all 0.2s ease;">English</button>
+<button data-i18n="text_52" data-lang="es" onclick="i18n.setLanguage('es'); toggleMobileLangDropdown()" style="background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; color: inherit; padding: 4px 0; transition: all 0.2s ease;">Español</button>
+<button data-i18n="text_53" data-lang="fr" onclick="i18n.setLanguage('fr'); toggleMobileLangDropdown()" style="background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; color: inherit; padding: 4px 0; transition: all 0.2s ease;">Français</button>
+<button data-i18n="text_54" data-lang="ar" onclick="i18n.setLanguage('ar'); toggleMobileLangDropdown()" style="background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; color: inherit; padding: 4px 0; transition: all 0.2s ease;">العربية</button>
+<button data-i18n="text_56" data-lang="ru" onclick="i18n.setLanguage('ru'); toggleMobileLangDropdown()" style="background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; color: inherit; padding: 4px 0; transition: all 0.2s ease;">Русский</button>
 </div>
 </div>
-</div>
+
 <!-- Dark Mode Toggle -->
-<div class="mobile-menu-item border-b-0">
+<button class="mobile-menu-item" onclick="toggleTheme()" style="border: none; padding: 12px 16px;">
 <i class="fas fa-moon"></i>
-<button data-i18n="text_49" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
+<span data-i18n="text_49">Dark Mode</span>
+</button>
 </div>
 </div>
-</div>
-<main class="flex-grow py-12 px-4 bg-slate-50 dark:bg-slate-900">
-<div class="max-w-2xl mx-auto w-full">
-<div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-50">
+<main class="flex-grow py-8 md:py-12 px-4 bg-slate-50 dark:bg-slate-900 flex items-center justify-center w-full">
+<div class="max-w-2xl w-full h-full md:h-auto flex items-center">
+<div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 p-8 md:p-12 border border-slate-50 dark:border-slate-700 w-full">
 <div class="text-center mb-10">
-<h1 class="text-3xl font-extrabold text-slate-900 mb-3" data-i18n="text_61">Get in Touch</h1>
-<p class="text-slate-500" data-i18n="text_62">Have a question about your order? Our team is here to help you 24/7.</p>
+<h1 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-3" data-i18n="text_61">Get in Touch</h1>
+<p class="text-slate-500 dark:text-slate-400" data-i18n="text_62">Have a question about your order? Our team is here to help you 24/7.</p>
 </div>
 <form class="space-y-6" id="contactForm">
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div>
-<label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="text_63" for="name">Full Name</label>
-<input class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition" id="name" placeholder="John Doe" required="" type="text"/>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" data-i18n="text_63" for="name">Full Name</label>
+<input class="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 dark:focus:ring-blue-900 transition" id="name" placeholder="John Doe" required="" type="text"/>
 </div>
 <div>
-<label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="text_64" for="email">Email Address</label>
-<input class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition" id="email" placeholder="john@example.com" required="" type="email"/>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" data-i18n="text_64" for="email">Email Address</label>
+<input class="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 dark:focus:ring-blue-900 transition" id="email" placeholder="john@example.com" required="" type="email"/>
 </div>
 </div>
 <div>
-<label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="text_65" for="subject">Subject</label>
-<select class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition" id="subject">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" data-i18n="text_65" for="subject">Subject</label>
+<select class="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 dark:focus:ring-blue-900 transition" id="subject">
 <option data-i18n="text_66" value="Order Support">Order Support</option>
 <option data-i18n="text_67" value="Product Inquiry">Product Inquiry</option>
 <option data-i18n="text_68" value="Payment Issue">Payment Issue</option>
@@ -157,10 +422,10 @@ Home
 </select>
 </div>
 <div>
-<label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="text_70" for="message">Message</label>
-<textarea class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 transition resize-none" id="message" placeholder="Tell us how we can help..." required="" rows="5"></textarea>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" data-i18n="text_70" for="message">Message</label>
+<textarea class="w-full p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-blue-50 dark:focus:ring-blue-900 transition resize-none" id="message" placeholder="Tell us how we can help..." required="" rows="5"></textarea>
 </div>
-<button class="w-full bg-primary text-white font-bold py-5 rounded-2xl hover:bg-blue-700 transition transform active:scale-[0.98] shadow-xl shadow-blue-100 flex items-center justify-center gap-3" type="submit">
+<button class="w-full bg-primary dark:bg-blue-600 text-white font-bold py-5 rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-700 transition transform active:scale-[0.98] shadow-xl shadow-blue-100 dark:shadow-blue-900/30 flex items-center justify-center gap-3" type="submit">
 <i class="fas fa-paper-plane"></i>
 <span data-i18n="text_71">Send Email</span>
 </button>
@@ -177,14 +442,14 @@ Home
 <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
 <i class="fas fa-key text-white text-lg"></i>
 </div>
-<span class="text-xl font-bold text-white" data-i18n="text_73">KeyVault</span>
+<span class="text-xl font-bold text-white dark:text-slate-100" data-i18n="text_73">KeyVault</span>
 </div>
-<p class="text-gray-400 text-sm leading-relaxed" data-i18n="text_74">
+<p class="text-gray-400 dark:text-gray-500 text-sm leading-relaxed" data-i18n="text_74">
                         Your trusted source for premium digital keys and gift cards. Instant delivery, secure payments.
                     </p>
 </div>
 <div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_75">Quick Links</h4>
+<h4 class="text-white dark:text-slate-100 font-semibold mb-4" data-i18n="text_75">Quick Links</h4>
 <ul class="space-y-3 text-sm">
 <li><a data-i18n="text_76" href="/">Home</a></li>
 <li><a data-i18n="text_77" href="/?filter=featured">Featured</a></li>
@@ -193,7 +458,7 @@ Home
 </ul>
 </div>
 <div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_80">Support</h4>
+<h4 class="text-white dark:text-slate-100 font-semibold mb-4" data-i18n="text_80">Support</h4>
 <ul class="space-y-3 text-sm">
 <li><a data-i18n="text_81" href="/contact.html" onclick="scrollToContactForm(event)">Contact Us</a></li>
 <li><a data-i18n="text_82" href="/terms.html">Terms of Service</a></li>
@@ -201,7 +466,7 @@ Home
 </ul>
 </div>
 <div>
-<h4 class="text-white font-semibold mb-4" data-i18n="text_84">Connect With Us</h4>
+<h4 class="text-white dark:text-slate-100 font-semibold mb-4" data-i18n="text_84">Connect With Us</h4>
 <div class="flex gap-3">
 <a class="social-icon" href="https://twitter.com" rel="noopener noreferrer" target="_blank" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
 <a class="social-icon" href="https://discord.com" rel="noopener noreferrer" target="_blank" title="Join our Discord"><i class="fab fa-discord"></i></a>
@@ -209,7 +474,7 @@ Home
 <a class="social-icon" href="https://instagram.com" rel="noopener noreferrer" target="_blank" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
 </div>
 <div class="mt-6">
-<h5 class="text-white text-sm font-medium mb-2" data-i18n="text_85">We Accept</h5>
+<h5 class="text-white dark:text-slate-100 text-sm font-medium mb-2" data-i18n="text_85">We Accept</h5>
 <div class="flex gap-2 text-2xl">
 <i class="fab fa-bitcoin text-yellow-500"></i>
 <i class="fab fa-ethereum text-blue-400"></i>
@@ -218,38 +483,90 @@ Home
 </div>
 </div>
 </div>
-<div class="border-t border-gray-700 pt-8 text-center text-sm">
-<p data-i18n="text_87">© 2026 KeyVault. All rights reserved.</p>
+<div class="border-t border-gray-700 dark:border-gray-800 pt-8 text-center text-sm">
+<p class="text-gray-400 dark:text-gray-500" data-i18n="text_87">© 2026 KeyVault. All rights reserved.</p>
 </div>
 </div>
 </footer>
 <div class="lang-mini">
 <script>
-    function toggleDesktopLangDropdown(event) {
-      event.stopPropagation();
-      document.getElementById("desktopLangDropdown").classList.toggle("hidden");
+  // Mobile Menu Functions
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+
+  hamburgerBtn?.addEventListener('click', function() {
+    mobileMenu?.classList.add('active');
+    mobileMenuOverlay?.classList.add('active');
+  });
+
+  mobileMenuClose?.addEventListener('click', function() {
+    mobileMenu?.classList.remove('active');
+    mobileMenuOverlay?.classList.remove('active');
+  });
+
+  mobileMenuOverlay?.addEventListener('click', function() {
+    mobileMenu?.classList.remove('active');
+    mobileMenuOverlay?.classList.remove('active');
+  });
+
+  // Close menu when a link is clicked
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+  mobileMenuItems.forEach(item => {
+    if (item.tagName === 'A') {
+      item.addEventListener('click', function() {
+        mobileMenu?.classList.remove('active');
+        mobileMenuOverlay?.classList.remove('active');
+      });
     }
+  });
+
+  // Theme Toggle Function
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark');
     
-    function toggleMobileLangDropdown(event) {
-      event.stopPropagation();
-      document.getElementById("mobileLangDropdown").classList.toggle("hidden");
+    if (isDark) {
+      html.classList.remove('dark');
+      localStorage.theme = 'light';
+    } else {
+      html.classList.add('dark');
+      localStorage.theme = 'dark';
     }
+  }
+
+  // Language Dropdown Functions
+  function toggleDesktopLangDropdown(event) {
+    event.stopPropagation();
+    document.getElementById("desktopLangDropdown").classList.toggle("hidden");
+  }
+  
+  function toggleMobileLangDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById("mobileLangDropdown");
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+      dropdown.style.display = 'flex';
+    } else {
+      dropdown.style.display = 'none';
+    }
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(event) {
+    const desktopDropdown = document.getElementById('desktopLangDropdown');
+    const mobileDropdown = document.getElementById('mobileLangDropdown');
+    const desktopLangBtn = document.getElementById('desktopLangBtn');
+    const mobileLangBtn = document.getElementById('mobileLangBtn');
     
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-      const desktopDropdown = document.getElementById('desktopLangDropdown');
-      const mobileDropdown = document.getElementById('mobileLangDropdown');
-      const desktopLangBtn = document.getElementById('desktopLangBtn');
-      const mobileLangBtn = document.getElementById('mobileLangBtn');
-      
-      if (desktopLangBtn && !desktopLangBtn.contains(event.target) && desktopDropdown && !desktopDropdown.contains(event.target)) {
-        desktopDropdown.classList.add('hidden');
-      }
-      if (mobileLangBtn && !mobileLangBtn.contains(event.target) && mobileDropdown && !mobileDropdown.contains(event.target)) {
-        mobileDropdown.classList.add('hidden');
-      }
-    });
-  </script>
+    if (desktopLangBtn && !desktopLangBtn.contains(event.target) && desktopDropdown && !desktopDropdown.contains(event.target)) {
+      desktopDropdown.classList.add('hidden');
+    }
+    if (mobileLangBtn && !mobileLangBtn.contains(event.target) && mobileDropdown && !mobileDropdown.contains(event.target)) {
+      mobileDropdown.style.display = 'none';
+    }
+  });
+</script>
 </div>
 <script src="i18n.js"></script></body>
 </html>
