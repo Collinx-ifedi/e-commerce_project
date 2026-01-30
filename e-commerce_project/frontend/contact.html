@@ -55,82 +55,29 @@
 </div>
 <span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_73">KeyVault</span>
 </a>
-<!-- Search Bar (Always Visible, Responsive) -->
-<div class="flex-1 min-w-0 max-w-xl mx-2 md:mx-4 relative">
-<div class="relative">
-<input class="search-input w-full py-3 px-5 pr-12 rounded-xl text-sm" id="searchInput" placeholder="Search..." type="text"/>
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition flex-shrink-0">
-<i class="fas fa-search"></i>
-</button>
-</div>
-<div class="search-dropdown" data-i18n="text_10" id="searchDropdown">
-<!-- Search results populated via JS -->
-</div>
-</div>
 <!-- Desktop Items (Hidden on Mobile) -->
-<div class="navbar-desktop-items hidden md:flex items-center gap-4 flex-shrink-0">
-<!-- Theme & Language Toggle -->
+<div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
+<!-- Home Link -->
+<a class="text-sm text-secondary hover:text-primary transition" data-i18n="text_76" href="/">
+<i class="fas fa-home mr-2"></i>Home
+</a>
+<!-- Language Selector -->
+<div class="relative">
+<button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" id="desktopLangBtn" onclick="toggleDesktopLangDropdown(event)" title="Change Language">
+<i class="fas fa-globe"></i>
+</button>
+<div class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50" id="desktopLangDropdown">
+<button data-i18n="text_51" data-lang="en" onclick="i18n.setLanguage('en'); toggleDesktopLangDropdown()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100">English</button>
+<button data-i18n="text_52" data-lang="es" onclick="i18n.setLanguage('es'); toggleDesktopLangDropdown()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100">Español</button>
+<button data-i18n="text_53" data-lang="fr" onclick="i18n.setLanguage('fr'); toggleDesktopLangDropdown()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100">Français</button>
+<button data-i18n="text_54" data-lang="ar" onclick="i18n.setLanguage('ar'); toggleDesktopLangDropdown()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100">العربية</button>
+<button data-i18n="text_56" data-lang="ru" onclick="i18n.setLanguage('ru'); toggleDesktopLangDropdown()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary">Русский</button>
+</div>
+</div>
+<!-- Theme Toggle -->
 <button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
 <i class="fas fa-moon"></i>
 </button>
-<div class="flex items-center" id="googleTranslate"></div>
-<!-- Navigation Links -->
-<a class="text-sm text-gray-500 hover:text-primary transition" data-i18n="text_44" href="/blog.html">
-<i class="fas fa-newspaper mr-2"></i>Blog
-  </a>
-<!-- Guest State -->
-<div class="flex items-center gap-3" id="guestActions">
-<a class="btn-outline text-sm" data-i18n="text_58" href="/login">Login</a>
-<a class="btn-primary text-sm" data-i18n="text_59" href="/register">Register</a>
-</div>
-<!-- Logged In State (Hidden by default) -->
-<div class="hidden items-center gap-4" id="userActions">
-<div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-<i class="fas fa-wallet text-primary"></i>
-<div class="text-right">
-<p class="text-xs text-gray-600" data-i18n="text_32">Wallet Balance</p>
-<p class="text-sm font-bold text-primary" data-i18n="text_33" id="walletBalance">$0.00</p>
-</div>
-<button class="ml-3 px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition" onclick="openFundingModal()" title="Fund your wallet">
-<i class="fas fa-plus"></i>
-</button>
-</div>
-<div class="relative">
-<button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" id="profileBtn">
-<i class="fas fa-user text-gray-600"></i>
-</button>
-<div class="profile-dropdown" id="profileDropdown">
-<a class="profile-dropdown-item" href="/inbox.html">
-<i class="fas fa-envelope"></i>
-<span class="flex-1" data-i18n="text_42">Inbox</span>
-<span class="ml-2 px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" id="desktopInboxBadge" style="display: none;"></span>
-</a>
-<hr class="my-1"/>
-<a class="profile-dropdown-item" data-i18n="text_43" href="/profile">
-<i class="fas fa-user"></i>
-  My Profile
-  </a>
-<a class="profile-dropdown-item" data-i18n="text_45" href="/profile?tab=orders">
-<i class="fas fa-shopping-bag"></i>
-  Order History
-  </a>
-<a class="profile-dropdown-item" data-i18n="text_46" href="/profile?tab=settings">
-<i class="fas fa-cog"></i>
-  Settings
-  </a>
-<hr class="my-1"/>
-<button class="profile-dropdown-item danger w-full text-left" data-i18n="text_60" onclick="logout()">
-<i class="fas fa-sign-out-alt"></i>
-  Logout
-  </button>
-</div>
-</div>
-</div>
-<!-- Cart Icon -->
-<a class="relative p-2" href="/cart">
-<i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
-<span class="cart-badge" id="cartBadge">0</span>
-</a>
 </div>
 <!-- Hamburger Menu Button (Mobile Only) -->
 <button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
@@ -152,105 +99,38 @@
 </button>
 </div>
 <div class="mobile-menu-content">
-<!-- Wallet Balance (Hidden by default, shown when logged in) -->
-<div class="hidden mb-4 pb-4 border-b border-gray-200" id="mobileWalletSection">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<i class="fas fa-wallet text-primary text-lg"></i>
-<span class="font-semibold text-secondary" data-i18n="text_32">Wallet Balance</span>
-</div>
-<span class="text-sm font-bold text-primary" data-i18n="text_33" id="mobileWalletBalance">$0.00</span>
-</div>
-<button class="mt-2 w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition" data-i18n="text_34" onclick="openFundingModal()">
-<i class="fas fa-plus mr-1"></i>Fund Wallet
-  </button>
-</div>
-<!-- Guest Links -->
-<div id="mobileGuestLinks">
+<!-- Home Link -->
 <a class="mobile-menu-item" data-i18n="text_76" href="/">
 <i class="fas fa-home"></i>
-  Home
-  </a>
-<a class="mobile-menu-item" data-i18n="text_44" href="/blog.html">
-<i class="fas fa-newspaper"></i>
-  Blog
-  </a>
-<a class="mobile-menu-item" data-i18n="text_78" href="/?filter=trending">
-<i class="fas fa-fire"></i>
-  Trending
-  </a>
-<a class="mobile-menu-item" data-i18n="text_39" href="/?filter=all">
-<i class="fas fa-shopping-bag"></i>
-  Shop All
-  </a>
-<a class="mobile-menu-item" data-i18n="text_47" href="/cart">
-<i class="fas fa-shopping-cart"></i>
-  Cart
-  </a>
-</div>
-<!-- User Links (Hidden by default) -->
-<div class="hidden" id="mobileUserLinks">
-<a class="mobile-menu-item" href="/inbox.html">
-<i class="fas fa-envelope"></i>
-<span class="flex-1" data-i18n="text_42">Inbox</span>
-<span class="px-2 py-0.5 bg-danger text-white text-xs font-bold rounded-full" id="mobileInboxBadge" style="display: none;"></span>
+Home
 </a>
-<a class="mobile-menu-item" data-i18n="text_43" href="/profile">
-<i class="fas fa-user"></i>
-  My Profile
-  </a>
-<a class="mobile-menu-item" data-i18n="text_44" href="/blog.html">
-<i class="fas fa-newspaper"></i>
-  Blog
-  </a>
-<a class="mobile-menu-item" data-i18n="text_45" href="/profile?tab=orders">
-<i class="fas fa-shopping-bag"></i>
-  Order History
-  </a>
-<a class="mobile-menu-item" data-i18n="text_46" href="/profile?tab=settings">
-<i class="fas fa-cog"></i>
-  Settings
-  </a>
-<a class="mobile-menu-item" data-i18n="text_47" href="/cart.html">
-<i class="fas fa-shopping-cart"></i>
-  Cart
-  </a>
-</div>
 <div class="mobile-menu-divider border-t border-gray-200 my-4"></div>
-<!-- Theme & Language in Mobile Menu -->
+<!-- Language Selector -->
+<div class="mobile-menu-item border-b-0 px-0 py-0">
+<i class="fas fa-globe"></i>
+<div class="flex-1">
+<button class="w-full text-left bg-transparent border-none cursor-pointer font-medium text-secondary" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+<span data-i18n="text_51" id="mobileLangLabel">English</span>
+<i class="fas fa-chevron-down text-xs ml-2"></i>
+</button>
+<div class="hidden flex flex-col gap-2 mt-2 pl-8" id="mobileLangDropdown">
+<button data-i18n="text_51" data-lang="en" onclick="i18n.setLanguage('en'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">English</button>
+<button data-i18n="text_52" data-lang="es" onclick="i18n.setLanguage('es'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Español</button>
+<button data-i18n="text_53" data-lang="fr" onclick="i18n.setLanguage('fr'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Français</button>
+<button data-i18n="text_54" data-lang="ar" onclick="i18n.setLanguage('ar'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">العربية</button>
+<button data-i18n="text_56" data-lang="ru" onclick="i18n.setLanguage('ru'); toggleMobileLangDropdown()" class="text-left text-sm text-secondary hover:text-primary">Русский</button>
+</div>
+</div>
+</div>
+<!-- Dark Mode Toggle -->
 <div class="mobile-menu-item border-b-0">
 <i class="fas fa-moon"></i>
 <button data-i18n="text_49" onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
 </div>
-<div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
-<i class="fas fa-globe"></i>
-<div class="mobile-language-selector flex-1">
-<button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
-<span data-i18n="text_51" id="mobileLangLabel">English</span>
-<i class="fas fa-chevron-down"></i>
-</button>
-<div class="mobile-lang-dropdown" id="mobileLangDropdown">
-<button data-i18n="text_51" data-lang="en" onclick="i18n.setLanguage('en')">English</button>
-<button data-i18n="text_52" data-lang="es" onclick="i18n.setLanguage('es')">Espanol</button>
-<button data-i18n="text_53" data-lang="fr" onclick="i18n.setLanguage('fr')">Francais</button>
-<button data-i18n="text_54" data-lang="ar" onclick="i18n.setLanguage('ar')">العربية</button>
-<button data-i18n="text_55" data-lang="zh-CN" onclick="i18n.setLanguage('zh-CN')">中文</button>
-<button data-i18n="text_56" data-lang="ru" onclick="i18n.setLanguage('ru')">Русский</button>
 </div>
 </div>
-</div>
-</div>
-<!-- Mobile Menu Buttons -->
-<div class="mobile-menu-button-group" id="mobileAuthButtons">
-<a class="btn-outline" data-i18n="text_58" href="/login">Login</a>
-<a class="btn-primary" data-i18n="text_59" href="/register">Register</a>
-</div>
-<div class="mobile-menu-button-group hidden" id="mobileUserButtons">
-<button class="btn-outline" data-i18n="text_60" onclick="logout()" style="width: 100%; cursor: pointer;">Logout</button>
-</div>
-</div>
-<main class="flex-grow flex items-center justify-center py-12 px-4">
-<div class="max-w-xl w-full">
+<main class="flex-grow py-12 px-4 bg-slate-50 dark:bg-slate-900">
+<div class="max-w-2xl mx-auto w-full">
 <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-50">
 <div class="text-center mb-10">
 <h1 class="text-3xl font-extrabold text-slate-900 mb-3" data-i18n="text_61">Get in Touch</h1>
@@ -345,10 +225,30 @@
 </footer>
 <div class="lang-mini">
 <script>
-    function toggleLangMini() {
-      var menu = document.getElementById('lang-mini-menu');
-      if (menu) menu.classList.toggle('hidden');
+    function toggleDesktopLangDropdown(event) {
+      event.stopPropagation();
+      document.getElementById("desktopLangDropdown").classList.toggle("hidden");
     }
+    
+    function toggleMobileLangDropdown(event) {
+      event.stopPropagation();
+      document.getElementById("mobileLangDropdown").classList.toggle("hidden");
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      const desktopDropdown = document.getElementById('desktopLangDropdown');
+      const mobileDropdown = document.getElementById('mobileLangDropdown');
+      const desktopLangBtn = document.getElementById('desktopLangBtn');
+      const mobileLangBtn = document.getElementById('mobileLangBtn');
+      
+      if (desktopLangBtn && !desktopLangBtn.contains(event.target) && desktopDropdown && !desktopDropdown.contains(event.target)) {
+        desktopDropdown.classList.add('hidden');
+      }
+      if (mobileLangBtn && !mobileLangBtn.contains(event.target) && mobileDropdown && !mobileDropdown.contains(event.target)) {
+        mobileDropdown.classList.add('hidden');
+      }
+    });
   </script>
 </div>
 <script src="i18n.js"></script></body>

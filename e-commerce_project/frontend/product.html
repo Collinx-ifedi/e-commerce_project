@@ -256,6 +256,24 @@
             background: #1D4ED8;
         }
 
+        /* Dark mode icon and text color fixes */
+        html.dark #themeToggle {
+            color: #E5E7EB;
+        }
+
+        html.dark #profileBtn {
+            background: #1E293B;
+        }
+
+        html.dark #profileBtn i {
+            color: #E5E7EB;
+        }
+
+        html.dark .prose,
+        html.dark p.text-gray-600 {
+            color: #CBD5E1;
+        }
+
         /* Hide mobile elements on desktop */
         @media (min-width: 768px) {
             .hamburger-btn {
@@ -413,6 +431,31 @@
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .navbar { background: #1E293B; }
         html.dark .footer { background: #0F172A; }
+
+        html.dark .mobile-menu {
+            background: #0F172A;
+        }
+
+        html.dark .mobile-menu-item,
+        html.dark .mobile-menu-item span,
+        html.dark .mobile-menu-item i {
+            color: #E5E7EB;
+        }
+
+        html.dark .mobile-menu-close {
+            color: #E5E7EB;
+        }
+
+        html.dark #mobileLanguageSelect {
+            background: #1E293B;
+            color: #E5E7EB;
+            border-color: #334155;
+        }
+
+        html.dark #mobileLanguageSelect option {
+            background: #0F172A;
+            color: #E5E7EB;
+        }
     </style>
 </head>
 <body>
@@ -504,9 +547,19 @@
   <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
   </div>
 
-  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <div class="mobile-menu-item" style="border: none; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+  <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
   <i class="fas fa-globe"></i>
-  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  <span style="font-weight: 500; font-size: 14px;">Language</span>
+  </div>
+  <select id="mobileLanguageSelect" onchange="changeLanguageFromSelect(this)" style="width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; background: #F1F5F9; color: #1E293B; cursor: pointer;" data-lang="en">
+  <option value="en" data-lang="en">English 🇺🇸</option>
+  <option value="es" data-lang="es">Español 🇪🇸</option>
+  <option value="fr" data-lang="fr">Français 🇫🇷</option>
+  <option value="ar" data-lang="ar">العربية 🇸🇦</option>
+  <option value="zh-CN" data-lang="zh-CN">中文 🇨🇳</option>
+  <option value="ru" data-lang="ru">Русский 🇷🇺</option>
+  </select>
   </div>
   </div>
 
@@ -633,6 +686,21 @@
 
     <script>
         // =========================================================
+        // LANGUAGE SELECTION
+        // =========================================================
+        function changeLanguageFromSelect(select) {
+            const lang = select.value;
+            localStorage.setItem("keyvault_language", lang);
+
+            if (window.i18n && i18n.setLanguage) {
+                i18n.setLanguage(lang);
+            }
+
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+        }
+        
+        // =========================================================
         // DARK MODE & GOOGLE TRANSLATE
         // =========================================================
         function toggleTheme() {
@@ -660,7 +728,7 @@
         let selectedDenominations = new Map(); // denomination_id -> price
 
         const api = {
-            getToken: () => localStorage.getItem('access_token'),
+            getToken: () => localStorage.getItem('token'),
             getHeaders: () => {
                 const headers = { 'Content-Type': 'application/json' };
                 const token = api.getToken();
@@ -722,18 +790,12 @@
         };
 
         const checkAuthState = () => {
-            const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || 'null');
-            if (token && user) {
+            if (user) {
                 document.getElementById('guestActions').classList.add('hidden');
                 document.getElementById('userActions').classList.remove('hidden');
                 document.getElementById('userActions').classList.add('flex');
                 document.getElementById('walletBalance').textContent = formatCurrency(user.balance_usd || 0);
-            } else {
-                // Ensure guest actions are visible when not logged in
-                document.getElementById('guestActions').classList.remove('hidden');
-                document.getElementById('userActions').classList.add('hidden');
-                document.getElementById('userActions').classList.remove('flex');
             }
         };
 
@@ -765,7 +827,7 @@
                 const response = await api.get(`/api/products/${productId}`);
                 
                 // Ensure we are getting the nested data correctly
-                currentProduct = response;
+                currentProduct = response.data || response;
 
                 if (!currentProduct || currentProduct.error) {
                     throw new Error("Product not found");
@@ -773,15 +835,22 @@
 
                 renderProduct(currentProduct);
 
-                // Use denominations from the product response
-                const denominations = currentProduct.denominations || [];
-                renderDenominations(denominations);
+                // Access the denominations array directly from the product object
+                // Only use real denominations from API - NEVER override with mock
+                if (currentProduct.denominations && Array.isArray(currentProduct.denominations)) {
+                    renderDenominations(currentProduct.denominations);
+                } else {
+                    console.warn("No denominations found for this product");
+                    document.getElementById('denominationsSection').style.display = 'none';
+                }
 
             } catch (e) {
                 console.error('Error loading product:', e);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load product. Please refresh the page.' });
-            } finally {
-                hideLoader();
+                // Fallback to mock ONLY for initial placeholder before API loads
+                currentProduct = getMockProduct(productId);
+                renderProduct(currentProduct);
+                // Do NOT use mock denominations if API is available - wait for real data
+                document.getElementById('denominationsSection').style.display = 'none';
             }
         };
 
@@ -798,7 +867,7 @@
                 selectedDenominations.set(denominations[0].id, {
                     id: denominations[0].id,
                     label: denominations[0].label,
-                    price: denominations[0].price_usd
+                    price: denominations[0].price
                 });
             }
 
@@ -808,14 +877,14 @@
                 const isOutOfStock = denom.stock_quantity <= 0;
                 return `
                     <div class="denomination-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'disabled' : ''}" 
-                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price_usd})" 
+                         onclick="toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" 
                          style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'};">
                         <div class="p-6 border-2 rounded-lg transition ${isSelected ? 'border-primary bg-blue-50' : 'border-gray-200'} ${isOutOfStock ? 'opacity-50 bg-gray-50' : ''}">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-lg font-bold text-secondary">${denom.label}</span>
-                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleDenomination('${denom.id}', '${denom.label}', ${denom.price_usd})" style="width: 20px; height: 20px; cursor: pointer;">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleDenomination('${denom.id}', '${denom.label}', ${denom.price})" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
-                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price_usd)}</div>
+                            <div class="text-2xl font-bold text-primary mb-3">${formatCurrency(denom.price)}</div>
                             <div class="text-sm font-medium ${isOutOfStock ? 'text-danger' : 'text-success'}">
                                 ${isOutOfStock ? 'Out of Stock' : `In Stock (${denom.stock_quantity})`}
                             </div>
@@ -949,7 +1018,16 @@
             { id: 3, name: 'Steam Wallet Card', platform: 'Steam', image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', short_description: 'Add funds to your Steam Wallet instantly for purchasing games and software.', description: '<p>Add funds to your Steam Wallet instantly. Use it to purchase games, software, hardware, and any other item on Steam.</p>' },
         ];
 
-        // Removed mock denominations - only use real API data
+        const getMockDenominations = (productId) => [
+            { id: `${productId}-1`, label: '50 UC', price: 9.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-2`, label: '100 UC', price: 19.99, in_stock: true, stock: 'Available' },
+            { id: `${productId}-3`, label: '250 UC', price: 49.99, in_stock: true, stock: 'Available' },
+        ];
+
+        const loadMockDenominations = (productId) => {
+            const denominations = getMockDenominations(productId);
+            renderDenominations(denominations);
+        };
 
   // =========================================================
   // MOBILE MENU FUNCTIONALITY
@@ -980,14 +1058,20 @@
 
   mobileMenuItems.forEach(item => {
   item.addEventListener('click', (e) => {
-    // Don't close menu if clicking on select element or its children
-    if (e.target.closest('select')) {
-      e.stopPropagation();
-      return;
-    }
-    closeMenu();
+  // Prevent language select from closing menu when clicked
+  if (e.target.tagName !== 'SELECT' && !e.target.closest('select')) {
+  closeMenu();
+  }
   });
   });
+
+  // Prevent language select clicks from propagating to overlay
+  const langSelect = document.getElementById('mobileLanguageSelect');
+  if (langSelect) {
+  langSelect.addEventListener('click', (e) => {
+  e.stopPropagation();
+  });
+  }
   }
 
         // =========================================================
@@ -1002,6 +1086,7 @@
   checkAuthState();
   updateCartBadge();
   loadProduct();
+  });
 
   // Add CSS for denomination cards
   const style = document.createElement('style');
