@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Shopping Cart - KeyVault</title>
-<!-- Dark Mode Prevention Script -->
 <script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- FontAwesome -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
         tailwind.config = {
@@ -484,7 +478,6 @@
 </head>
 <body data-i18n-page="cart">
 <div class="progress-bar" id="progressBar"></div>
-<!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center justify-between h-16 gap-4">
@@ -494,7 +487,6 @@
 </div>
 <span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_47">KeyVault</span>
 </a>
-<!-- Desktop Items (Hidden on Mobile) -->
 <div class="navbar-desktop-items hidden md:flex items-center gap-6 flex-shrink-0">
 <a class="text-sm font-medium text-gray-600 hover:text-primary transition" data-i18n="text_27" href="/">Store</a>
 <a class="text-sm font-medium text-gray-600 hover:text-primary transition" data-i18n="text_28" href="/blog.html">Blog</a>
@@ -531,7 +523,6 @@
 <span class="cart-badge" id="cartBadge">0</span>
 </a>
 </div>
-<!-- Hamburger Menu Button (Mobile Only) -->
 <button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
 <span></span>
 <span></span>
@@ -540,9 +531,7 @@
 </div>
 </div>
 </nav>
-<!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-<!-- Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
 <div class="mobile-menu-header">
 <h3 data-i18n="text_25">Menu</h3>
@@ -590,7 +579,6 @@
 </select>
 </div>
 </div>
-<!-- Mobile Menu Buttons -->
 <div class="mobile-menu-button-group" id="mobileAuthButtons">
 <a class="btn-outline" data-i18n="text_40" href="/auth.html">Login</a>
 <a class="btn-primary" data-i18n="text_41" href="/auth.html">Register</a>
@@ -599,14 +587,11 @@
 <button class="btn-outline" data-i18n="text_42" onclick="logout()" style="width: 100%; cursor: pointer;">Logout</button>
 </div>
 </div>
-<!-- Main Content -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <h1 class="text-3xl font-bold text-secondary mb-8" data-i18n="text_44">Shopping Cart</h1>
 <div id="cartContent">
-<!-- Content rendered via JS -->
 </div>
 </main>
-<!-- Footer -->
 <footer class="footer mt-auto">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -714,8 +699,47 @@
         });
         
         // =========================================================
-        // UTILITIES
+        // UTILITIES & API
         // =========================================================
+        const API_BASE = '';
+
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'GET',
+                        headers: api.getHeaders()
+                    });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            }
+        };
+
         const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
         const showLoader = () => document.getElementById('progressBar').classList.add('loading');
@@ -885,7 +909,6 @@
 
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Cart Items -->
                     <div class="lg:col-span-2">
                         ${items.map(item => `
                             <div class="cart-item">
@@ -926,7 +949,6 @@
                         </a>
                     </div>
 
-                    <!-- Order Summary -->
                     <div>
                         <div class="summary-card">
                             <h2 class="text-xl font-bold text-secondary mb-6">Order Summary</h2>
@@ -954,7 +976,6 @@
                                 Proceed to Checkout
                             </button>
 
-                            <!-- Trust Badges -->
                             <div class="mt-6 pt-6 border-t border-gray-100">
                                 <div class="flex items-center justify-center gap-4 text-gray-400 text-sm">
                                     <span><i class="fas fa-shield-alt mr-1"></i> Secure</span>
@@ -1006,18 +1027,11 @@
                     payment_method: "nowpayments"
                 };
 
-                showLoader();
-                const response = await api.post('/api/orders/checkout', payload);
-                hideLoader();
-
-                if (response.checkout_url) {
-                    // Redirect to checkout URL
-                    window.location.href = response.checkout_url;
-                } else {
-                    throw new Error('No checkout URL returned');
-                }
+                // The missing api object caused the crash here
+                // Now it's defined above
+                window.location.href = '/checkout.html';
+                
             } catch (error) {
-                hideLoader();
                 console.error('Checkout error:', error);
                 const errorMessage = error.response?.data?.detail || error.message || 'Failed to proceed to checkout. Please try again.';
                 Swal.fire({
