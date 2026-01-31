@@ -699,10 +699,9 @@ iframe. {
         // =========================================================
         const checkAuth = () => {
             const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            console.log('[v0] Auth check - token exists:', !!token, 'user exists:', !!user);
+            console.log('[v0] Auth check - token exists:', !!token);
             
-            if (!token || !user) {
+            if (!token) {
                 console.log('[v0] User not authenticated, redirecting to login');
                 // Redirect to login with checkout as the redirect target
                 window.location.href = '/auth.html?redirect=/checkout.html';
