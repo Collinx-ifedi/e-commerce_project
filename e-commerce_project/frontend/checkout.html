@@ -718,6 +718,11 @@ iframe. {
             console.log('[v0] renderOrderSummary called');
             const items = cart.getItems();
             console.log('[v0] Items in cart:', items);
+            if (items.length > 0) {
+                console.log('[v0] First item structure:', items[0]);
+                console.log('[v0] First item price_usd:', items[0].price_usd);
+                console.log('[v0] First item quantity:', items[0].quantity);
+            }
             
             if (items.length === 0) {
                 console.log('[v0] Cart is empty, redirecting to cart page');
@@ -726,10 +731,13 @@ iframe. {
             }
 
             const container = document.getElementById('orderItems');
+            let manualTotal = 0;
             container.innerHTML = items.map(item => {
                 const itemPrice = parseFloat(item.price_usd) || 0;
                 const itemQty = parseInt(item.quantity) || 1;
                 const itemTotal = itemPrice * itemQty;
+                manualTotal += itemTotal;
+                console.log('[v0] Item calculation - price:', itemPrice, 'qty:', itemQty, 'total:', itemTotal, 'running total:', manualTotal);
                 const displayName = item.denomination_label ? `${item.product_name} - ${item.denomination_label}` : item.product_name;
                 return `
                 <div class="order-item">
@@ -746,10 +754,9 @@ iframe. {
             `;
             }).join('');
 
-            const total = cart.getTotal();
-            console.log('[v0] Setting total amounts to:', total);
-            document.getElementById('subtotalAmount').textContent = formatCurrency(total);
-            document.getElementById('totalAmount').textContent = formatCurrency(total);
+            console.log('[v0] Setting total amounts to:', manualTotal);
+            document.getElementById('subtotalAmount').textContent = formatCurrency(manualTotal);
+            document.getElementById('totalAmount').textContent = formatCurrency(manualTotal);
             
             // Update wallet balance and check if sufficient
             updateWalletDisplay();
@@ -853,7 +860,7 @@ iframe. {
 
                 // Special handling for wallet payment
                 if (paymentMethod === 'wallet') {
-                    const cartTotal = items.reduce((sum, item) => sum + (item.price_usd * item.quantity), 0);
+                    const cartTotal = items.reduce((sum, item) => sum + (parseFloat(item.price_usd) || 0) * (parseInt(item.quantity) || 1), 0);
                     const user = JSON.parse(localStorage.getItem('user') || 'null');
                     
                     if (!user || (user.balance_usd || 0) < cartTotal) {
