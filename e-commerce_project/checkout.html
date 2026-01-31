@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n="text_2">Order Checkout - KeyVault</title>
+<!-- Dark Mode Prevention Script -->
+<script>
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#1E293B',
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; min-height: 100vh; }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6); z-index: 9999;
+        }
+        .progress-bar.loading { animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        /* Mobile Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #2563EB;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(8px, -8px); }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80vw;
+            max-width: 320px;
+            background: #FFFFFF;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .mobile-menu.active { display: flex; flex-direction: column; }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+        }
+
+        .mobile-menu-overlay.active { display: block; }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-header h3 { font-size: 18px; font-weight: 600; color: #1E293B; }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1E293B;
+            padding: 0;
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-item {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1E293B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .mobile-menu-item:hover { color: #2563EB; }
+        .mobile-menu-item i { font-size: 18px; width: 24px; }
+
+        .mobile-menu-divider { height: 1px; background: #E2E8F0; margin: 16px 0; }
+
+        .mobile-menu-button-group {
+            padding: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-menu-button-group a {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-button-group .btn-outline {
+            background: #F1F5F9;
+            color: #1E293B;
+            border: 2px solid #E2E8F0;
+        }
+
+        .mobile-menu-button-group .btn-outline:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+
+        .mobile-menu-button-group .btn-primary {
+            background: #2563EB;
+            color: white;
+        }
+
+        .mobile-menu-button-group .btn-primary:hover { background: #1D4ED8; }
+
+        @media (min-width: 768px) {
+            .hamburger-btn { display: none !important; }
+            .mobile-menu { display: none !important; }
+            .mobile-menu-overlay { display: none !important; }
+            .navbar-desktop-items { display: flex !important; }
+        }
+
+        @media (max-width: 767px) {
+            .hamburger-btn { display: flex; }
+            .navbar-desktop-items { display: none; }
+        }
+
+        .checkout-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .order-item:last-child { border-bottom: none; }
+
+        .order-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .payment-option {
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .payment-option:hover { border-color: #CBD5E1; }
+        .payment-option.selected { border-color: #2563EB; background: #EFF6FF; }
+
+        .payment-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #2563EB;
+        }
+
+        .crypto-icons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .crypto-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #F8FAFC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 18px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-pay:hover { background: #1D4ED8; transform: translateY(-2px); }
+        .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-pay .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: #ECFDF5;
+            border-radius: 10px;
+            color: #10B981;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94A3B8;
+        }
+
+        .step.active { color: #2563EB; }
+        .step.completed { color: #10B981; }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step.active .step-number { background: #2563EB; color: white; }
+        .step.completed .step-number { background: #10B981; color: white; }
+
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: #E2E8F0;
+        }
+        
+        /* Dark Mode Styles */
+        html.dark body { background-color: #0F172A; color: #E2E8F0; }
+        html.dark .navbar { background: #1E293B; }
+        /* ================================
+   HIDE GOOGLE TRANSLATE UI
+   ================================ */
+
+/* Top banner iframe */
+..skiptranslate {
+    display: none !important;
+}
+
+/* Prevent page push-down */
+body {
+    top: 0px !important;
+}
+
+/* Google tooltip */
+.goog-tooltip {
+    display: none !important;
+}
+
+/* Google hover highlights */
+.goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+/* Hide Google branding widgets */
+.goog-logo-link,
+. {
+    display: none !important;
+}
+
+/* Mobile Safari fix */
+iframe. {
+    visibility: hidden !important;
+}
+    </style>
+</head>
+<body data-i18n-page="checkout">
+<div class="progress-bar" id="progressBar"></div>
+<!-- Navbar -->
+<nav class="navbar">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4">
+<a class="flex items-center gap-3 flex-shrink-0" href="/">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<i class="fas fa-key text-white text-lg"></i>
+</div>
+<span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_11">KeyVault</span>
+</a>
+<!-- Desktop Badge (Hidden on Mobile) -->
+<div class="navbar-desktop-items hidden md:flex items-center flex-shrink-0">
+<div class="secure-badge">
+<i class="fas fa-shield-alt"></i>
+<span class="hidden sm:inline" data-i18n="text_13">Secure Checkout</span>
+</div>
+</div>
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
+<span></span>
+<span></span>
+<span></span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+<div class="mobile-menu-header">
+<h3 data-i18n="text_17">Menu</h3>
+<button aria-label="Close menu" class="mobile-menu-close" id="mobileMenuClose">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="mobile-menu-content">
+<a class="mobile-menu-item" data-i18n="text_18" href="/">
+<i class="fas fa-home"></i>
+  Home
+  </a>
+<a class="mobile-menu-item" data-i18n="text_25" href="/cart">
+<i class="fas fa-shopping-cart"></i>
+  Cart
+  </a>
+<a class="mobile-menu-item" data-i18n="text_20" href="/profile">
+<i class="fas fa-user"></i>
+  Profile
+  </a>
+</div>
+<!-- Mobile Menu Buttons -->
+<div class="mobile-menu-button-group">
+<button class="btn-outline" data-i18n="text_22" onclick="history.back()" style="width: 100%; cursor: pointer;">Back</button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Step Indicator -->
+<div class="step-indicator">
+<div class="step completed">
+<div class="step-number"><i class="fas fa-check"></i></div>
+<span class="font-medium" data-i18n="text_25">Cart</span>
+</div>
+<div class="step-divider"></div>
+<div class="step active">
+<div class="step-number">2</div>
+<span class="font-medium" data-i18n="text_26">Payment</span>
+</div>
+<div class="step-divider"></div>
+<div class="step">
+<div class="step-number">3</div>
+<span class="font-medium" data-i18n="text_27">Complete</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+<!-- Payment Section -->
+<div class="lg:col-span-3">
+<div class="checkout-card">
+<h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_29">Payment Method</h2>
+<div class="space-y-4" id="paymentOptions">
+<label class="payment-option" id="walletOption">
+<input name="payment" type="radio" value="wallet"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-2" data-i18n="text_30">
+<i class="fas fa-wallet text-primary"></i>
+                                        KeyVault Wallet
+                                    </span>
+<span class="text-sm font-bold text-primary" data-i18n="text_52" id="walletBalanceCheckout">$0.00</span>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_32">Pay instantly from your wallet balance</p>
+</div>
+</label>
+<label class="payment-option selected">
+<input checked="" name="payment" type="radio" value="nowpayments"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_33">NowPayment</span>
+<div class="crypto-icons">
+<div class="crypto-icon"><i class="fab fa-bitcoin text-yellow-500"></i></div>
+<div class="crypto-icon"><i class="fab fa-ethereum text-blue-400"></i></div>
+<div class="crypto-icon text-green-500 text-xs font-bold">USDT</div>
+</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_35">Pay with Bitcoin, Ethereum, Litecoin, USDT &amp; 100+ cryptocurrencies</p>
+</div>
+</label>
+<label class="payment-option">
+<input name="payment" type="radio" value="binancepay"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_36">Binance Pay</span>
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #F3BA2F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">B</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_37">Secure payment with QR code - powered by Binance</p>
+</div>
+</label>
+<label class="payment-option">
+<input name="payment" type="radio" value="bybitpay"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary" data-i18n="text_38">Bybit Pay</span>
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #F7931A; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">₿</div>
+</div>
+<p class="text-sm text-gray-500 mt-1" data-i18n="text_39">Fast crypto payments with QR code - by Bybit</p>
+</div>
+</label>
+</div>
+<div class="mt-8 pt-8 border-t border-gray-100">
+<h3 class="font-semibold text-secondary mb-4" data-i18n="text_40">How it works</h3>
+<div class="space-y-3 text-sm text-gray-600">
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">1</div>
+<p data-i18n="text_41">Click "Pay Securely" to generate your invoice</p>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">2</div>
+<p data-i18n="text_42">Send the exact amount to the provided wallet address</p>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs flex-shrink-0">3</div>
+<p data-i18n="text_43">Your keys will be delivered instantly after confirmation</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Order Summary -->
+<div class="lg:col-span-2">
+<div class="checkout-card">
+<h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_45">Order Summary</h2>
+<div class="mb-6" id="orderItems">
+<!-- Items rendered via JS -->
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between text-gray-600">
+<span data-i18n="text_47">Subtotal</span>
+<span data-i18n="text_52" id="subtotalAmount">$0.00</span>
+</div>
+<div class="flex justify-between text-gray-600">
+<span data-i18n="text_49">Processing Fee</span>
+<span class="text-success" data-i18n="text_50">Free</span>
+</div>
+</div>
+<div class="border-t border-gray-100 pt-4 mb-6">
+<div class="flex justify-between">
+<span class="text-lg font-bold text-secondary" data-i18n="text_51">Total</span>
+<span class="text-2xl font-bold text-primary" data-i18n="text_52" id="totalAmount">$0.00</span>
+</div>
+</div>
+<button class="btn-pay" id="payBtn" onclick="processPayment()">
+<i class="fas fa-lock"></i>
+<span data-i18n="text_53">Pay Securely</span>
+</button>
+<p class="text-center text-xs text-gray-400 mt-4" data-i18n="text_54">
+                        By completing this purchase you agree to our <a class="text-primary hover:underline" data-i18n="text_55" href="/terms">Terms of Service</a>
+</p>
+</div>
+<a class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition mt-6" data-i18n="text_56" href="/cart.html">
+<i class="fas fa-arrow-left"></i>
+                    Back to Cart
+                </a>
+</div>
+</div>
+</main>
+<script>
+        // =========================================================
+        // DARK MODE & GOOGLE TRANSLATE
+        // =========================================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle("dark");
+            localStorage.theme = isDark ? "dark" : "light";
+        }
+        
+  // Note: googleTranslateElementInit is now defined in translate-config.js
+  
+  // =========================================================
+  // MOBILE MENU FUNCTIONALITY
+  // =========================================================
+  function initMobileMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+  const mobileMenuClose = document.getElementById('mobileMenuClose');
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+
+  hamburgerBtn.addEventListener('click', () => {
+  mobileMenu.classList.add('active');
+  mobileMenuOverlay.classList.add('active');
+  hamburgerBtn.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  });
+
+  const closeMenu = () => {
+  mobileMenu.classList.remove('active');
+  mobileMenuOverlay.classList.remove('active');
+  hamburgerBtn.classList.remove('active');
+  document.body.style.overflow = '';
+  };
+
+  mobileMenuClose.addEventListener('click', closeMenu);
+  mobileMenuOverlay.addEventListener('click', closeMenu);
+
+  mobileMenuItems.forEach(item => {
+  item.addEventListener('click', closeMenu);
+  });
+  }
+  
+  // =========================================================
+  // AUTH CHECK & UTILITIES
+  // =========================================================
+        const API_BASE = '';
+
+        const api = {
+            getToken: () => localStorage.getItem('token'),
+            getHeaders: () => {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = api.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                return headers;
+            },
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'GET',
+                        headers: api.getHeaders()
+                    });
+                    if (res.status === 401) { window.location.href = '/auth.html?redirect=/checkout.html'; throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            },
+            async post(endpoint, data) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'POST',
+                        headers: api.getHeaders(),
+                        body: JSON.stringify(data)
+                    });
+                    if (res.status === 401) { window.location.href = '/auth.html?redirect=/checkout.html'; throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            }
+        };
+
+        const showLoader = () => document.getElementById('progressBar').classList.add('loading');
+        const hideLoader = () => {
+            document.getElementById('progressBar').classList.remove('loading');
+            document.getElementById('progressBar').style.width = '0%';
+        };
+
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+        const cart = {
+            KEY: 'cart',
+            getItems: () => {
+                const items = JSON.parse(localStorage.getItem(cart.KEY) || '[]');
+                console.log('[v0] Cart items loaded:', items);
+                return items;
+            },
+            getTotal: () => {
+                const items = cart.getItems();
+                const total = items.reduce((sum, item) => {
+                    const itemPrice = parseFloat(item.price_usd) || 0;
+                    const itemQty = parseInt(item.quantity) || 1;
+                    return sum + (itemPrice * itemQty);
+                }, 0);
+                console.log('[v0] Cart total calculated:', total);
+                return total;
+            },
+            clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
+        };
+
+        // =========================================================
+        // CHECK AUTH ON LOAD
+        // =========================================================
+        let authCheckComplete = false;
+        
+        const checkAuth = () => {
+            const token = localStorage.getItem('token');
+            console.log('[v0] Auth check - token exists:', !!token);
+            console.log('[v0] Token value:', token);
+            
+            if (!token || token.trim() === '') {
+                console.log('[v0] User not authenticated, redirecting to login');
+                // Redirect to login with checkout as the redirect target
+                window.location.href = '/auth.html?redirect=/checkout.html';
+                return false;
+            }
+            console.log('[v0] User is authenticated');
+            authCheckComplete = true;
+            return true;
+        };
+
+        // =========================================================
+        // RENDER ORDER SUMMARY
+        // =========================================================
+        const renderOrderSummary = () => {
+            console.log('[v0] renderOrderSummary called');
+            const items = cart.getItems();
+            console.log('[v0] Items in cart:', items);
+            if (items.length > 0) {
+                console.log('[v0] First item structure:', items[0]);
+                console.log('[v0] First item price_usd:', items[0].price_usd);
+                console.log('[v0] First item quantity:', items[0].quantity);
+            }
+            
+            if (items.length === 0) {
+                console.log('[v0] Cart is empty, redirecting to cart page');
+                window.location.href = '/cart.html';
+                return;
+            }
+
+            const container = document.getElementById('orderItems');
+            let manualTotal = 0;
+            container.innerHTML = items.map(item => {
+                const itemPrice = parseFloat(item.price_usd) || 0;
+                const itemQty = parseInt(item.quantity) || 1;
+                const itemTotal = itemPrice * itemQty;
+                manualTotal += itemTotal;
+                console.log('[v0] Item calculation - price:', itemPrice, 'qty:', itemQty, 'total:', itemTotal, 'running total:', manualTotal);
+                const displayName = item.denomination_label ? `${item.product_name} - ${item.denomination_label}` : item.product_name;
+                return `
+                <div class="order-item">
+                    <img src="${item.product_image || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'}" 
+                         alt="${displayName}" 
+                         class="order-item-image"
+                         onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'">
+                    <div class="flex-1">
+                        <p class="font-medium text-secondary line-clamp-1">${displayName}</p>
+                        <p class="text-sm text-gray-500">Qty: ${itemQty}</p>
+                    </div>
+                    <span class="font-semibold text-secondary">${formatCurrency(itemTotal)}</span>
+                </div>
+            `;
+            }).join('');
+
+            console.log('[v0] Setting total amounts to:', manualTotal);
+            document.getElementById('subtotalAmount').textContent = formatCurrency(manualTotal);
+            document.getElementById('totalAmount').textContent = formatCurrency(manualTotal);
+            
+            // Update wallet balance and check if sufficient
+            updateWalletDisplay();
+        };
+
+        // =========================================================
+        // WALLET MANAGEMENT
+        // =========================================================
+        const updateWalletDisplay = async () => {
+            const userStr = localStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            const cartTotal = cart.getTotal();
+            const walletOption = document.getElementById('walletOption');
+            
+            console.log('[v0] Updating wallet display - user:', user, 'cartTotal:', cartTotal);
+            
+            if (!user) {
+                console.log('[v0] No user found, disabling wallet option');
+                walletOption.style.opacity = '0.5';
+                walletOption.style.pointerEvents = 'none';
+                document.getElementById('walletBalanceCheckout').textContent = 'Login required';
+                return;
+            }
+
+            try {
+                // Fetch latest wallet balance from API
+                const response = await api.get('/api/user/profile');
+                const balance = parseFloat(response.balance_usd) || 0;
+                
+                console.log('[v0] Wallet balance from API:', balance);
+                document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
+                
+                // Disable wallet option if insufficient balance
+                if (balance < cartTotal) {
+                    console.log('[v0] Insufficient balance');
+                    walletOption.style.opacity = '0.6';
+                    walletOption.style.pointerEvents = 'none';
+                    walletOption.title = 'Insufficient wallet balance';
+                } else {
+                    console.log('[v0] Sufficient balance');
+                    walletOption.style.opacity = '1';
+                    walletOption.style.pointerEvents = 'auto';
+                    walletOption.title = '';
+                }
+            } catch (error) {
+                console.log('[v0] Could not fetch wallet balance from API:', error.message);
+                // Fall back to stored user balance
+                const balance = parseFloat(user.balance_usd) || 0;
+                console.log('[v0] Using fallback balance from localStorage:', balance);
+                document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
+                
+                // Still check if balance is sufficient
+                if (balance < cartTotal) {
+                    walletOption.style.opacity = '0.6';
+                    walletOption.style.pointerEvents = 'none';
+                    walletOption.title = 'Insufficient wallet balance';
+                } else {
+                    walletOption.style.opacity = '1';
+                    walletOption.style.pointerEvents = 'auto';
+                    walletOption.title = '';
+                }
+            }
+        };
+
+        // =========================================================
+        // PAYMENT OPTION SELECTION
+        // =========================================================
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                option.querySelector('input').checked = true;
+            });
+        });
+
+        // =========================================================
+        // PROCESS PAYMENT
+        // =========================================================
+        const processPayment = async () => {
+            const btn = document.getElementById('payBtn');
+            const items = cart.getItems();
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            
+            if (items.length === 0) {
+                Swal.fire({ icon: 'error', title: 'Cart Empty', text: 'Your cart is empty.' });
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>Processing...</span>';
+
+            try {
+                // Prepare order data matching MultiProductOrderCreate schema
+                const orderData = {
+                    items: items.map(item => ({
+                        denomination_id: item.denomination_id || item.id,
+                        quantity: item.quantity
+                    })),
+                    payment_method: paymentMethod
+                };
+
+                // Special handling for wallet payment
+                if (paymentMethod === 'wallet') {
+                    const cartTotal = items.reduce((sum, item) => sum + (parseFloat(item.price_usd) || 0) * (parseInt(item.quantity) || 1), 0);
+                    const user = JSON.parse(localStorage.getItem('user') || 'null');
+                    
+                    if (!user || (user.balance_usd || 0) < cartTotal) {
+                        throw new Error('Insufficient wallet balance. Please add funds first.');
+                    }
+
+                    // Process wallet payment directly
+                    const response = await api.post('/api/orders/checkout', orderData);
+                    
+                    // For wallet, typically no redirect needed - just success
+                    cart.clear();
+                    updateCartBadge();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Payment Successful!',
+                        text: 'Your order has been processed. Check your email for details.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/profile?tab=orders';
+                    });
+                } else {
+                    // External payment gateway
+                    const response = await api.post('/api/orders/checkout', orderData);
+
+                    if (response.checkout_url) {
+                        // Clear cart and redirect to payment
+                        cart.clear();
+                        updateCartBadge();
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Created!',
+                            text: 'Redirecting to payment...',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = response.checkout_url;
+                        });
+                    } else {
+                        throw new Error('No checkout URL received');
+                    }
+                }
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Checkout Failed',
+                    text: error.message || 'Unable to process your order. Please try again.',
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Securely</span>';
+            }
+        };
+
+        // =========================================================
+        // LANGUAGE SELECTION
+        // =========================================================
+        const selectMobileLanguageFromSelect = () => {
+            const select = document.getElementById('mobileLanguageSelect');
+            if (!select) return;
+            
+            const selectedLanguage = select.value;
+            changeLanguage(selectedLanguage);
+        };
+
+        const changeLanguage = (languageCode) => {
+            // Store the selected language
+            localStorage.setItem('selectedLanguage', languageCode);
+            
+            // Update Google Translate
+            const googleTranslateCombo = document.querySelector('.');
+            if (googleTranslateCombo) {
+                googleTranslateCombo.value = languageCode;
+                googleTranslateCombo.dispatchEvent(new Event('change'));
+            }
+        };
+
+        // =========================================================
+        // CART BADGE UPDATE
+        // =========================================================
+        const updateCartBadge = () => {
+            const cartBadge = document.getElementById('cartBadge');
+            if (cartBadge) {
+                const count = cart.getItems().length;
+                cartBadge.textContent = count;
+                cartBadge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        };
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[v0] Checkout page DOMContentLoaded');
+            initMobileMenu();
+            
+            // First check if user is authenticated BEFORE rendering
+            const isAuthenticated = checkAuth();
+            console.log('[v0] Auth check returned:', isAuthenticated);
+            
+            // Only render if user is authenticated
+            // If not authenticated, checkAuth() will redirect
+            if (isAuthenticated) {
+                console.log('[v0] User authenticated, rendering order summary');
+                renderOrderSummary();
+                updateCartBadge();
+            } else {
+                console.log('[v0] User not authenticated, auth redirect initiated');
+                // Prevent any page content from being interactive while redirecting
+                document.body.style.opacity = '0.5';
+                document.body.style.pointerEvents = 'none';
+            }
+            
+            // Initialize language selection
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            const mobileSelect = document.getElementById('mobileLanguageSelect');
+            if (mobileSelect) {
+                mobileSelect.value = savedLanguage;
+            }
+        });
+  </script>
+<div class="lang-mini">
+<script>
+    function toggleLangMini() {
+      var menu = document.getElementById('lang-mini-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+  </script>
+</div>
+<script src="i18n.js"></script></body>
+</html>
