@@ -697,17 +697,21 @@ iframe. {
         // =========================================================
         // CHECK AUTH ON LOAD
         // =========================================================
+        let authCheckComplete = false;
+        
         const checkAuth = () => {
             const token = localStorage.getItem('token');
             console.log('[v0] Auth check - token exists:', !!token);
+            console.log('[v0] Token value:', token);
             
-            if (!token) {
+            if (!token || token.trim() === '') {
                 console.log('[v0] User not authenticated, redirecting to login');
                 // Redirect to login with checkout as the redirect target
                 window.location.href = '/auth.html?redirect=/checkout.html';
                 return false;
             }
             console.log('[v0] User is authenticated');
+            authCheckComplete = true;
             return true;
         };
 
@@ -917,6 +921,33 @@ iframe. {
                 btn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Securely</span>';
             }
         };
+        
+        const renderOrderSummary = () => {
+        const items = cart.getItems();
+        const orderItems = document.
+        getElementById("orderItems");
+        const subtotalEl = document.
+        getElementById("subtotalAmount");
+        const totalEl = document.
+        getElementById("totalAmount");
+        let total = 0;
+        orderItems.innerHTML = items.map(item => {
+        const price = Number(item.price_usd);
+        const qty = Number(item.quantity || 1);
+        const lineTotal = price * qty;
+        total += lineTotal;
+
+        return `
+            <div class="flex justify-between mb-3">
+                <span>${item.product_name} — ${item.denomination_label}</span>
+                <span>${formatCurrency(lineTotal)}</span>
+            </div>
+        `;
+    }).join("");
+
+    subtotalEl.textContent = formatCurrency(total);
+    totalEl.textContent = formatCurrency(total);
+};
 
         // =========================================================
         // LANGUAGE SELECTION
@@ -952,6 +983,8 @@ iframe. {
                 cartBadge.style.display = count > 0 ? 'flex' : 'none';
             }
         };
+        
+        
 
         // =========================================================
         // INIT
@@ -960,11 +993,21 @@ iframe. {
             console.log('[v0] Checkout page DOMContentLoaded');
             initMobileMenu();
             
-            // First check if user is authenticated
-            if (checkAuth()) {
+            // First check if user is authenticated BEFORE rendering
+            const isAuthenticated = checkAuth();
+            console.log('[v0] Auth check returned:', isAuthenticated);
+            
+            // Only render if user is authenticated
+            // If not authenticated, checkAuth() will redirect
+            if (isAuthenticated) {
                 console.log('[v0] User authenticated, rendering order summary');
                 renderOrderSummary();
                 updateCartBadge();
+            } else {
+                console.log('[v0] User not authenticated, auth redirect initiated');
+                // Prevent any page content from being interactive while redirecting
+                document.body.style.opacity = '0.5';
+                document.body.style.pointerEvents = 'none';
             }
             
             // Initialize language selection
