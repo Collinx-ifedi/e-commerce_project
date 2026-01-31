@@ -722,7 +722,7 @@
         };
 
         const checkAuthState = () => {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             if (token && user) {
                 document.getElementById('guestActions').classList.add('hidden');
@@ -1005,9 +1005,6 @@
             loadProduct();    // Load product from API
             updateCartBadge(); // Update cart count on page load
         });
-  checkAuthState();
-  updateCartBadge();
-  loadProduct();
 
   // Add CSS for denomination cards
   const style = document.createElement('style');
