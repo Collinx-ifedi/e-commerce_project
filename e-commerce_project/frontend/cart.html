@@ -669,8 +669,6 @@
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
         
-        // Note: googleTranslateElementInit is now defined in translate-config.js
-        
         // Mobile Language Selection
         function selectMobileLanguageFromSelect() {
             const select = document.getElementById('mobileLanguageSelect');
@@ -1002,7 +1000,7 @@
                 // Construct payload according to MultiProductOrderCreate schema
                 const payload = {
                     items: items.map(item => ({
-                        denomination_id: item.id,
+                        denomination_id: item.denomination_id || item.id,
                         quantity: item.quantity
                     })),
                     payment_method: "nowpayments"

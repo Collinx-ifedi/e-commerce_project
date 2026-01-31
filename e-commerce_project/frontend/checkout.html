@@ -785,7 +785,7 @@ iframe. {
                 // Prepare order data matching MultiProductOrderCreate schema
                 const orderData = {
                     items: items.map(item => ({
-                        denomination_id: item.id,
+                        denomination_id: item.denomination_id || item.id,
                         quantity: item.quantity
                     })),
                     payment_method: paymentMethod
