@@ -637,6 +637,19 @@ iframe. {
                 if (token) headers['Authorization'] = `Bearer ${token}`;
                 return headers;
             },
+            async get(endpoint) {
+                showLoader();
+                try {
+                    const res = await fetch(`${API_BASE}${endpoint}`, {
+                        method: 'GET',
+                        headers: api.getHeaders()
+                    });
+                    if (res.status === 401) { window.location.href = '/auth.html?redirect=/checkout.html'; throw new Error('Unauthorized'); }
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.detail || 'Request failed');
+                    return json;
+                } finally { hideLoader(); }
+            },
             async post(endpoint, data) {
                 showLoader();
                 try {
@@ -663,8 +676,21 @@ iframe. {
 
         const cart = {
             KEY: 'cart',
-            getItems: () => JSON.parse(localStorage.getItem(cart.KEY) || '[]'),
-            getTotal: () => cart.getItems().reduce((sum, item) => sum + (item.price_usd * item.quantity), 0),
+            getItems: () => {
+                const items = JSON.parse(localStorage.getItem(cart.KEY) || '[]');
+                console.log('[v0] Cart items loaded:', items);
+                return items;
+            },
+            getTotal: () => {
+                const items = cart.getItems();
+                const total = items.reduce((sum, item) => {
+                    const itemPrice = parseFloat(item.price_usd) || 0;
+                    const itemQty = parseInt(item.quantity) || 1;
+                    return sum + (itemPrice * itemQty);
+                }, 0);
+                console.log('[v0] Cart total calculated:', total);
+                return total;
+            },
             clear: () => { localStorage.removeItem(cart.KEY); window.dispatchEvent(new Event('cartUpdated')); }
         };
 
@@ -673,10 +699,16 @@ iframe. {
         // =========================================================
         const checkAuth = () => {
             const token = localStorage.getItem('token');
-            if (!token) {
+            const user = localStorage.getItem('user');
+            console.log('[v0] Auth check - token exists:', !!token, 'user exists:', !!user);
+            
+            if (!token || !user) {
+                console.log('[v0] User not authenticated, redirecting to login');
+                // Redirect to login with checkout as the redirect target
                 window.location.href = '/auth.html?redirect=/checkout.html';
                 return false;
             }
+            console.log('[v0] User is authenticated');
             return true;
         };
 
@@ -684,29 +716,39 @@ iframe. {
         // RENDER ORDER SUMMARY
         // =========================================================
         const renderOrderSummary = () => {
+            console.log('[v0] renderOrderSummary called');
             const items = cart.getItems();
+            console.log('[v0] Items in cart:', items);
             
             if (items.length === 0) {
+                console.log('[v0] Cart is empty, redirecting to cart page');
                 window.location.href = '/cart.html';
                 return;
             }
 
             const container = document.getElementById('orderItems');
-            container.innerHTML = items.map(item => `
+            container.innerHTML = items.map(item => {
+                const itemPrice = parseFloat(item.price_usd) || 0;
+                const itemQty = parseInt(item.quantity) || 1;
+                const itemTotal = itemPrice * itemQty;
+                const displayName = item.denomination_label ? `${item.product_name} - ${item.denomination_label}` : item.product_name;
+                return `
                 <div class="order-item">
-                    <img src="${item.image_url || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'}" 
-                         alt="${item.name}" 
+                    <img src="${item.product_image || 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'}" 
+                         alt="${displayName}" 
                          class="order-item-image"
                          onerror="this.src='https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100'">
                     <div class="flex-1">
-                        <p class="font-medium text-secondary line-clamp-1">${item.name}</p>
-                        <p class="text-sm text-gray-500">Qty: ${item.quantity}</p>
+                        <p class="font-medium text-secondary line-clamp-1">${displayName}</p>
+                        <p class="text-sm text-gray-500">Qty: ${itemQty}</p>
                     </div>
-                    <span class="font-semibold text-secondary">${formatCurrency(item.price_usd * item.quantity)}</span>
+                    <span class="font-semibold text-secondary">${formatCurrency(itemTotal)}</span>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             const total = cart.getTotal();
+            console.log('[v0] Setting total amounts to:', total);
             document.getElementById('subtotalAmount').textContent = formatCurrency(total);
             document.getElementById('totalAmount').textContent = formatCurrency(total);
             
@@ -718,11 +760,15 @@ iframe. {
         // WALLET MANAGEMENT
         // =========================================================
         const updateWalletDisplay = async () => {
-            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const userStr = localStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
             const cartTotal = cart.getTotal();
             const walletOption = document.getElementById('walletOption');
             
+            console.log('[v0] Updating wallet display - user:', user, 'cartTotal:', cartTotal);
+            
             if (!user) {
+                console.log('[v0] No user found, disabling wallet option');
                 walletOption.style.opacity = '0.5';
                 walletOption.style.pointerEvents = 'none';
                 document.getElementById('walletBalanceCheckout').textContent = 'Login required';
@@ -730,27 +776,42 @@ iframe. {
             }
 
             try {
-                // Fetch latest wallet balance
+                // Fetch latest wallet balance from API
                 const response = await api.get('/api/user/profile');
-                const balance = response.balance_usd || 0;
+                const balance = parseFloat(response.balance_usd) || 0;
                 
+                console.log('[v0] Wallet balance from API:', balance);
                 document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
                 
                 // Disable wallet option if insufficient balance
                 if (balance < cartTotal) {
+                    console.log('[v0] Insufficient balance');
                     walletOption.style.opacity = '0.6';
                     walletOption.style.pointerEvents = 'none';
                     walletOption.title = 'Insufficient wallet balance';
-                    walletOption.innerHTML = walletOption.innerHTML.replace('Pay instantly', `Pay instantly (Need $${(cartTotal - balance).toFixed(2)} more)`);
                 } else {
+                    console.log('[v0] Sufficient balance');
                     walletOption.style.opacity = '1';
                     walletOption.style.pointerEvents = 'auto';
                     walletOption.title = '';
                 }
             } catch (error) {
-                console.log('[v0] Could not fetch wallet balance:', error.message);
-                const balance = user.balance_usd || 0;
+                console.log('[v0] Could not fetch wallet balance from API:', error.message);
+                // Fall back to stored user balance
+                const balance = parseFloat(user.balance_usd) || 0;
+                console.log('[v0] Using fallback balance from localStorage:', balance);
                 document.getElementById('walletBalanceCheckout').textContent = formatCurrency(balance);
+                
+                // Still check if balance is sufficient
+                if (balance < cartTotal) {
+                    walletOption.style.opacity = '0.6';
+                    walletOption.style.pointerEvents = 'none';
+                    walletOption.title = 'Insufficient wallet balance';
+                } else {
+                    walletOption.style.opacity = '1';
+                    walletOption.style.pointerEvents = 'auto';
+                    walletOption.title = '';
+                }
             }
         };
 
@@ -875,21 +936,38 @@ iframe. {
         };
 
         // =========================================================
+        // CART BADGE UPDATE
+        // =========================================================
+        const updateCartBadge = () => {
+            const cartBadge = document.getElementById('cartBadge');
+            if (cartBadge) {
+                const count = cart.getItems().length;
+                cartBadge.textContent = count;
+                cartBadge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        };
+
+        // =========================================================
         // INIT
         // =========================================================
-  document.addEventListener('DOMContentLoaded', () => {
-  initMobileMenu();
-  if (checkAuth()) {
-  renderOrderSummary();
-  }
-  
-  // Initialize language selection
-  const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
-  const mobileSelect = document.getElementById('mobileLanguageSelect');
-  if (mobileSelect) {
-    mobileSelect.value = savedLanguage;
-  }
-  });
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[v0] Checkout page DOMContentLoaded');
+            initMobileMenu();
+            
+            // First check if user is authenticated
+            if (checkAuth()) {
+                console.log('[v0] User authenticated, rendering order summary');
+                renderOrderSummary();
+                updateCartBadge();
+            }
+            
+            // Initialize language selection
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            const mobileSelect = document.getElementById('mobileLanguageSelect');
+            if (mobileSelect) {
+                mobileSelect.value = savedLanguage;
+            }
+        });
   </script>
 <div class="lang-mini">
 <script>
