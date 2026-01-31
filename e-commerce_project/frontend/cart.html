@@ -1007,7 +1007,7 @@
                 };
 
                 showLoader();
-                const response = await api.post('/api/orders/checkout', payload);
+                const response = await api.post('/orders/checkout', payload);
                 hideLoader();
 
                 if (response.checkout_url) {

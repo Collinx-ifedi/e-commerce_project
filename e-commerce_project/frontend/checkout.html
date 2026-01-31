@@ -872,7 +872,7 @@ iframe. {
                     }
 
                     // Process wallet payment directly
-                    const response = await api.post('/api/orders/checkout', orderData);
+                    const response = await api.post('/orders/checkout', orderData);
                     
                     // For wallet, typically no redirect needed - just success
                     cart.clear();
@@ -889,7 +889,7 @@ iframe. {
                     });
                 } else {
                     // External payment gateway
-                    const response = await api.post('/api/orders/checkout', orderData);
+                    const response = await api.post('/orders/checkout', orderData);
 
                     if (response.checkout_url) {
                         // Clear cart and redirect to payment
