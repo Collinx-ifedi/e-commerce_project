@@ -920,34 +920,7 @@ iframe. {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-lock"></i><span>Pay Securely</span>';
             }
-        };
-        
-        const renderOrderSummary = () => {
-        const items = cart.getItems();
-        const orderItems = document.
-        getElementById("orderItems");
-        const subtotalEl = document.
-        getElementById("subtotalAmount");
-        const totalEl = document.
-        getElementById("totalAmount");
-        let total = 0;
-        orderItems.innerHTML = items.map(item => {
-        const price = Number(item.price_usd);
-        const qty = Number(item.quantity || 1);
-        const lineTotal = price * qty;
-        total += lineTotal;
-
-        return `
-            <div class="flex justify-between mb-3">
-                <span>${item.product_name} — ${item.denomination_label}</span>
-                <span>${formatCurrency(lineTotal)}</span>
-            </div>
-        `;
-    }).join("");
-
-    subtotalEl.textContent = formatCurrency(total);
-    totalEl.textContent = formatCurrency(total);
-};
+        };     
 
         // =========================================================
         // LANGUAGE SELECTION
