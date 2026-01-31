@@ -5,21 +5,16 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title data-i18n="text_2">Order Checkout - KeyVault</title>
-<!-- Dark Mode Prevention Script -->
 <script>
         if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
     </script>
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- FontAwesome -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
         tailwind.config = {
@@ -361,7 +356,7 @@
    ================================ */
 
 /* Top banner iframe */
-..skiptranslate {
+.skiptranslate {
     display: none !important;
 }
 
@@ -383,19 +378,18 @@ body {
 
 /* Hide Google branding widgets */
 .goog-logo-link,
-. {
+.goog-te-gadget {
     display: none !important;
 }
 
 /* Mobile Safari fix */
-iframe. {
+iframe.goog-te-banner-frame {
     visibility: hidden !important;
 }
     </style>
 </head>
 <body data-i18n-page="checkout">
 <div class="progress-bar" id="progressBar"></div>
-<!-- Navbar -->
 <nav class="navbar">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center justify-between h-16 gap-4">
@@ -405,14 +399,12 @@ iframe. {
 </div>
 <span class="text-xl font-bold text-secondary hidden sm:inline" data-i18n="text_11">KeyVault</span>
 </a>
-<!-- Desktop Badge (Hidden on Mobile) -->
 <div class="navbar-desktop-items hidden md:flex items-center flex-shrink-0">
 <div class="secure-badge">
 <i class="fas fa-shield-alt"></i>
 <span class="hidden sm:inline" data-i18n="text_13">Secure Checkout</span>
 </div>
 </div>
-<!-- Hamburger Menu Button (Mobile Only) -->
 <button aria-label="Open menu" class="hamburger-btn md:hidden" id="hamburgerBtn">
 <span></span>
 <span></span>
@@ -421,9 +413,7 @@ iframe. {
 </div>
 </div>
 </nav>
-<!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-<!-- Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
 <div class="mobile-menu-header">
 <h3 data-i18n="text_17">Menu</h3>
@@ -445,14 +435,11 @@ iframe. {
   Profile
   </a>
 </div>
-<!-- Mobile Menu Buttons -->
 <div class="mobile-menu-button-group">
 <button class="btn-outline" data-i18n="text_22" onclick="history.back()" style="width: 100%; cursor: pointer;">Back</button>
 </div>
 </div>
-<!-- Main Content -->
 <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-<!-- Step Indicator -->
 <div class="step-indicator">
 <div class="step completed">
 <div class="step-number"><i class="fas fa-check"></i></div>
@@ -470,7 +457,6 @@ iframe. {
 </div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-<!-- Payment Section -->
 <div class="lg:col-span-3">
 <div class="checkout-card">
 <h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_29">Payment Method</h2>
@@ -542,12 +528,10 @@ iframe. {
 </div>
 </div>
 </div>
-<!-- Order Summary -->
 <div class="lg:col-span-2">
 <div class="checkout-card">
 <h2 class="text-xl font-bold text-secondary mb-6" data-i18n="text_45">Order Summary</h2>
 <div class="mb-6" id="orderItems">
-<!-- Items rendered via JS -->
 </div>
 <div class="space-y-3 mb-6">
 <div class="flex justify-between text-gray-600">
@@ -684,7 +668,8 @@ iframe. {
             getTotal: () => {
                 const items = cart.getItems();
                 const total = items.reduce((sum, item) => {
-                    const itemPrice = parseFloat(item.price_usd) || 0;
+                    // Update: check price_usd, price, then amount
+                    const itemPrice = parseFloat(item.price_usd || item.price || item.amount) || 0;
                     const itemQty = parseInt(item.quantity) || 1;
                     return sum + (itemPrice * itemQty);
                 }, 0);
@@ -737,7 +722,8 @@ iframe. {
             const container = document.getElementById('orderItems');
             let manualTotal = 0;
             container.innerHTML = items.map(item => {
-                const itemPrice = parseFloat(item.price_usd) || 0;
+                // Update: check price_usd, price, then amount
+                const itemPrice = parseFloat(item.price_usd || item.price || item.amount) || 0;
                 const itemQty = parseInt(item.quantity) || 1;
                 const itemTotal = itemPrice * itemQty;
                 manualTotal += itemTotal;
@@ -864,7 +850,8 @@ iframe. {
 
                 // Special handling for wallet payment
                 if (paymentMethod === 'wallet') {
-                    const cartTotal = items.reduce((sum, item) => sum + (parseFloat(item.price_usd) || 0) * (parseInt(item.quantity) || 1), 0);
+                    // Update: check price_usd, price, then amount
+                    const cartTotal = items.reduce((sum, item) => sum + (parseFloat(item.price_usd || item.price || item.amount) || 0) * (parseInt(item.quantity) || 1), 0);
                     const user = JSON.parse(localStorage.getItem('user') || 'null');
                     
                     if (!user || (user.balance_usd || 0) < cartTotal) {
@@ -938,7 +925,7 @@ iframe. {
             localStorage.setItem('selectedLanguage', languageCode);
             
             // Update Google Translate
-            const googleTranslateCombo = document.querySelector('.');
+            const googleTranslateCombo = document.querySelector('.goog-te-combo');
             if (googleTranslateCombo) {
                 googleTranslateCombo.value = languageCode;
                 googleTranslateCombo.dispatchEvent(new Event('change'));
