@@ -779,7 +779,7 @@
         let selectedDenominations = new Map(); // denomination_id -> price
 
         const api = {
-            getToken: () => localStorage.getItem('token'),
+            getToken: () => localStorage.getItem('access_token'),
             getHeaders: () => {
                 const headers = { 'Content-Type': 'application/json' };
                 const token = api.getToken();
@@ -822,10 +822,9 @@
             saveItems: (items) => { localStorage.setItem(cart.KEY, JSON.stringify(items)); window.dispatchEvent(new Event('cartUpdated')); },
             addDenominations: (product, denominationIds) => {
                 const items = cart.getItems();
-                console.log('[v0] Adding denominations to cart. Current items:', items);
                 // Add denominations as separate cart items
                 denominationIds.forEach(denomId => {
-                    const cartItem = {
+                    items.push({
                         id: denomId.id, 
                         product_id: product.id,
                         product_name: product.name,
@@ -834,12 +833,9 @@
                         denomination_label: denomId.label,
                         price_usd: denomId.price,
                         quantity: 1
-                    };
-                    console.log('[v0] Adding item to cart:', cartItem);
-                    items.push(cartItem);
+                    });
                 });
                 cart.saveItems(items);
-                console.log('[v0] Cart items after adding:', cart.getItems());
                 Swal.fire({ icon: 'success', title: 'Added to Cart!', text: `${denominationIds.length} denomination(s) added to your cart.`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
             },
             getCount: () => cart.getItems().length
