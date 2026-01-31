@@ -231,28 +231,21 @@ function toggleTheme() {
     }
 }
 
-// Language Functions
-function toggleDesktopLangDropdown(event) {
+// Language Dropdown Functions
+  function toggleDesktopLangDropdown(event) {
     event.stopPropagation();
     document.getElementById("desktopLangDropdown").classList.toggle("hidden");
-}
-
-function toggleMobileLangDropdown(event) {
+  }
+  
+  function toggleMobileLangDropdown(event) {
     event.stopPropagation();
-    document.getElementById("mobileLangDropdown").classList.toggle("hidden");
-}
-
-function setLanguage(lang) {
-    localStorage.language = lang;
-    const labels = {
-        en: 'English',
-        es: 'Español',
-        fr: 'Français',
-        ar: 'العربية',
-        ru: 'Русский'
-    };
-    document.getElementById('mobileLangLabel').textContent = labels[lang] || lang;
-}
+    const dropdown = document.getElementById("mobileLangDropdown");
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+      dropdown.style.display = 'flex';
+    } else {
+      dropdown.style.display = 'none';
+    }
+  }
 
 // Mobile Menu Toggle
 document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
@@ -285,16 +278,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Initialize language label
-const languages = {
-    en: 'English',
-    es: 'Español',
-    fr: 'Français',
-    ar: 'العربية',
-    ru: 'Русский'
-};
-const currentLang = localStorage.language || 'en';
-document.getElementById('mobileLangLabel').textContent = languages[currentLang];
+
 </script>
 <!-- Mobile Menu Styles -->
 <style>
