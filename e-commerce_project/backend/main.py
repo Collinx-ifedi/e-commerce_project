@@ -13,6 +13,7 @@
 # - UPDATED: Messaging & User Moderation APIs
 # - AUTH FIX: Handles Unverified User Registration (HTTP 200 Resend)
 # - BUG FIX: Solved Lazy Loading (MissingGreenlet) errors in Product CRUD
+# - BUG FIX: Solved Lazy Loading (MissingGreenlet) errors in Order Admin List (delivered_codes)
 
 import os
 import shutil
@@ -192,7 +193,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KeyVault Backend",
-    version="2.8.0", # Updated version for Messaging/Moderation
+    version="2.8.1", # Updated version for Order Fix
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -580,14 +581,15 @@ async def get_admin_banners(db: AsyncSession = Depends(get_db), admin: Admin = D
 @admin_router.get("/orders", response_model=List[OrderResponse])
 async def get_admin_orders(limit: int = 50, db: AsyncSession = Depends(get_db), admin: Admin = Depends(get_current_admin)):
     try:
-        # CRITICAL FIX: OrderItem -> Denomination -> Product
+        # CRITICAL FIX: OrderItem -> Denomination -> Product AND Order.delivered_codes
         query = (
             select(Order)
             .options(
                 selectinload(Order.user),
                 selectinload(Order.items)
                 .selectinload(OrderItem.denomination)
-                .selectinload(Denomination.product)
+                .selectinload(Denomination.product),
+                selectinload(Order.delivered_codes) # Fixed: Eager load to prevent MissingGreenlet
             )
             .order_by(desc(Order.created_at))
             .limit(limit)
