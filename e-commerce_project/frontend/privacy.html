@@ -62,15 +62,15 @@
 </a>
 <!-- Language Selector -->
 <div class="relative">
-<button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700" id="desktopLangBtn" onclick="toggleDesktopLangDropdown(event)" title="Change Language">
+<button class="p-2 text-secondary hover:text-primary transition rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700" id="desktopLangBtn" onclick="toggleMobileLangDropdown(event)" title="Change Language">
 <i class="fas fa-globe"></i>
 </button>
-<div class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50 dark:bg-slate-800 dark:border-slate-700" id="desktopLangDropdown">
-<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="en" onclick="setLanguage('en'); toggleDesktopLangDropdown(event)">English</button>
-<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="es" onclick="setLanguage('es'); toggleDesktopLangDropdown(event)">Español</button>
-<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="fr" onclick="setLanguage('fr'); toggleDesktopLangDropdown(event)">Français</button>
-<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="ar" onclick="setLanguage('ar'); toggleDesktopLangDropdown(event)">العربية</button>
-<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700" data-lang="ru" onclick="setLanguage('ru'); toggleDesktopLangDropdown(event)">Русский</button>
+<div class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50 dark:bg-slate-800 dark:border-slate-700" id="mobileLangDropdown">
+<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="en" onclick="setLanguage('en'); toggleMobileLangDropdown()">English</button>
+<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="es" onclick="setLanguage('es'); toggleMobileLangDropdown()">Español</button>
+<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="fr" onclick="setLanguage('fr'); toggleMobileLangDropdown()">Français</button>
+<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary border-b border-gray-100 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700 dark:hover:bg-slate-700" data-lang="ar" onclick="setLanguage('ar'); toggleMobileLangDropdown()">العربية</button>
+<button class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-secondary dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700" data-lang="ru" onclick="setLanguage('ru'); toggleMobileLangDropdown()">Русский</button>
 </div>
 </div>
 <!-- Theme Toggle -->
@@ -231,21 +231,28 @@ function toggleTheme() {
     }
 }
 
-// Language Dropdown Functions
-  function toggleDesktopLangDropdown(event) {
+// Language Functions
+function toggleDesktopLangDropdown(event) {
     event.stopPropagation();
-    document.getElementById("desktopLangDropdown").classList.toggle("hidden");
-  }
-  
-  function toggleMobileLangDropdown(event) {
+    document.getElementById("MobileLangDropdown").classList.toggle("hidden");
+}
+
+function toggleMobileLangDropdown(event) {
     event.stopPropagation();
-    const dropdown = document.getElementById("mobileLangDropdown");
-    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
-      dropdown.style.display = 'flex';
-    } else {
-      dropdown.style.display = 'none';
-    }
-  }
+    document.getElementById("mobileLangDropdown").classList.toggle("hidden");
+}
+
+function setLanguage(lang) {
+    localStorage.language = lang;
+    const labels = {
+        en: 'English',
+        es: 'Español',
+        fr: 'Français',
+        ar: 'العربية',
+        ru: 'Русский'
+    };
+    document.getElementById('mobileLangLabel').textContent = labels[lang] || lang;
+}
 
 // Mobile Menu Toggle
 document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
@@ -278,7 +285,16 @@ document.addEventListener('click', function(event) {
     }
 });
 
-
+// Initialize language label
+const languages = {
+    en: 'English',
+    es: 'Español',
+    fr: 'Français',
+    ar: 'العربية',
+    ru: 'Русский'
+};
+const currentLang = localStorage.language || 'en';
+document.getElementById('mobileLangLabel').textContent = languages[currentLang];
 </script>
 <!-- Mobile Menu Styles -->
 <style>
