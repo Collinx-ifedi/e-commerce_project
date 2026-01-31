@@ -409,10 +409,123 @@
         }
         @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-top: 8px;
+            min-width: 200px;
+            max-width: calc(100vw - 20px);
+            display: none;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #1E293B;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .profile-dropdown-item:hover {
+            background: #F8FAFC;
+        }
+
+        .profile-dropdown-item.danger {
+            color: #EF4444;
+        }
+
+        /* Mobile Language Dropdown Styles */
+        .mobile-language-selector {
+            position: relative;
+        }
+        .mobile-lang-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mobile-lang-btn:hover {
+            border-color: #2563EB;
+        }
+        .mobile-lang-btn i {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .mobile-lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 6px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .mobile-lang-dropdown.active {
+            display: block;
+        }
+        .mobile-lang-dropdown button {
+            width: 100%;
+            padding: 10px 14px;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            transition: background 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .mobile-lang-dropdown button:last-child {
+            border-bottom: none;
+        }
+        .mobile-lang-dropdown button:hover {
+            background: #F8FAFC;
+        }
+        .mobile-lang-dropdown button.active {
+            background: #EFF6FF;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        
         /* Dark Mode Styles */
         html.dark body { background-color: #0F172A; color: #E2E8F0; }
         html.dark .navbar { background: #1E293B; }
         html.dark .footer { background: #0F172A; }
+        html.dark .profile-dropdown { background: #1E293B; }
+        html.dark .profile-dropdown-item { color: #E2E8F0; }
+        html.dark .profile-dropdown-item:hover { background: #334155; }
+        html.dark .mobile-lang-btn { background: #334155; border-color: #475569; color: #E2E8F0; }
+        html.dark .mobile-lang-dropdown { background: #1E293B; border-color: #475569; }
+        html.dark .mobile-lang-dropdown button { color: #E2E8F0; }
+        html.dark .mobile-lang-dropdown button:hover { background: #334155; }
     </style>
 </head>
 <body>
@@ -446,9 +559,35 @@
   <i class="fas fa-wallet"></i>
   <span id="walletBalance">$0.00</span>
   </a>
+  <div class="relative">
   <button id="profileBtn" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
   <i class="fas fa-user text-gray-600"></i>
   </button>
+  <div class="profile-dropdown" id="profileDropdown">
+  <a class="profile-dropdown-item" href="/inbox.html">
+  <i class="fas fa-envelope"></i>
+  <span class="flex-1">Inbox</span>
+  </a>
+  <hr class="my-1"/>
+  <a class="profile-dropdown-item" href="/profile">
+  <i class="fas fa-user"></i>
+  My Profile
+  </a>
+  <a class="profile-dropdown-item" href="/profile?tab=orders">
+  <i class="fas fa-shopping-bag"></i>
+  Order History
+  </a>
+  <a class="profile-dropdown-item" href="/profile?tab=settings">
+  <i class="fas fa-cog"></i>
+  Settings
+  </a>
+  <hr class="my-1"/>
+  <button class="profile-dropdown-item danger w-full text-left" onclick="logout()">
+  <i class="fas fa-sign-out-alt"></i>
+  Logout
+  </button>
+  </div>
+  </div>
   </div>
   <a href="/cart" class="relative p-2">
   <i class="fas fa-shopping-cart text-xl text-secondary hover:text-primary transition"></i>
@@ -501,12 +640,24 @@
 
   <div class="mobile-menu-item">
   <i class="fas fa-moon"></i>
-  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left;">Dark Mode</button>
+  <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; font-size: 16px; flex: 1; text-align: left; font-weight: 500;">Dark Mode</button>
   </div>
 
-  <div class="mobile-menu-item" style="border: none; padding: 12px 0;">
+  <div class="mobile-menu-item mobile-lang-wrapper border-b-0" style="padding: 12px 0; position: relative;">
   <i class="fas fa-globe"></i>
-  <div id="mobileGoogleTranslate" class="flex-1"></div>
+  <div class="mobile-language-selector flex-1">
+  <button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleMobileLangDropdown(event)">
+  <span id="mobileLangLabel">English</span>
+  <i class="fas fa-chevron-down"></i>
+  </button>
+  <div class="mobile-lang-dropdown" id="mobileLangDropdown">
+  <button data-lang="en" onclick="i18n.setLanguage('en')">English 🇺🇸</button>
+  <button data-lang="es" onclick="i18n.setLanguage('es')">Espanol 🇪🇸</button>
+  <button data-lang="fr" onclick="i18n.setLanguage('fr')">Francais 🇫🇷</button>
+  <button data-lang="ar" onclick="i18n.setLanguage('ar')">العربية 🇸🇦</button>
+  <button data-lang="ru" onclick="i18n.setLanguage('ru')">Русский 🇷🇺</button>
+  </div>
+  </div>
   </div>
   </div>
 
@@ -958,6 +1109,34 @@
         // Removed mock denominations - only use real API data
 
   // =========================================================
+  // PROFILE DROPDOWN FUNCTIONALITY
+  // =========================================================
+  function initProfileDropdown() {
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileBtn?.addEventListener('click', () => {
+      profileDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileBtn?.contains(e.target) && !profileDropdown?.contains(e.target)) {
+        profileDropdown?.classList.remove('active');
+      }
+    });
+  }
+
+  // =========================================================
+  // MOBILE LANGUAGE DROPDOWN
+  // =========================================================
+  function toggleMobileLangDropdown(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const dropdown = document.getElementById('mobileLangDropdown');
+    dropdown.classList.toggle('active');
+  }
+
+  // =========================================================
   // MOBILE MENU FUNCTIONALITY
   // =========================================================
   function initMobileMenu() {
@@ -984,16 +1163,8 @@
   mobileMenuClose.addEventListener('click', closeMenu);
   mobileMenuOverlay.addEventListener('click', closeMenu);
 
-  mobileMenuItems.forEach(item => {
-  item.addEventListener('click', (e) => {
-    // Don't close menu if clicking on select element or its children
-    if (e.target.closest('select')) {
-      e.stopPropagation();
-      return;
-    }
-    closeMenu();
-  });
-  });
+  // Don't close menu when clicking on menu items (only close on overlay click)
+  // This allows dropdowns and buttons to work properly
   }
 
         // =========================================================
@@ -1001,6 +1172,7 @@
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
             initMobileMenu();
+            initProfileDropdown();
             checkAuthState(); // Check if user is logged in and update navbar
             loadProduct();    // Load product from API
             updateCartBadge(); // Update cart count on page load
