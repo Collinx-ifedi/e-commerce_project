@@ -947,9 +947,13 @@
         function selectFooterLanguageFromSelect() {
             const select = document.getElementById('footerLanguageSelect');
             const value = select.value;
+            
+            // Save the selected value BEFORE i18n updates
+            const selectedValue = value;
+            localStorage.setItem('keyvault_language', value);
+            
             if (window.i18n && typeof window.i18n.setLanguage === 'function') {
                 window.i18n.setLanguage(value);
-                localStorage.setItem('keyvault_language', value);
                 
                 // Apply RTL layout for Arabic
                 if (value === 'ar') {
@@ -957,6 +961,14 @@
                 } else {
                     document.documentElement.setAttribute('dir', 'ltr');
                 }
+                
+                // Restore the select value after i18n updates the DOM
+                setTimeout(() => {
+                    const selectEl = document.getElementById('footerLanguageSelect');
+                    if (selectEl) {
+                        selectEl.value = selectedValue;
+                    }
+                }, 10);
             }
         }
         
