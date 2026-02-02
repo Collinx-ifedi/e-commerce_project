@@ -745,7 +745,26 @@
 </div>
 </div>
 </div>
-<div class="border-t border-gray-700 pt-8 text-center text-sm">
+<div class="border-t border-gray-700 pt-8">
+<div class="flex flex-col md:flex-row items-center justify-center gap-8 pb-8 mb-8 border-b border-gray-700">
+<!-- Inbox Link -->
+<a class="flex items-center gap-2 text-sm font-medium hover:text-primary transition" href="/inbox.html">
+<i class="fas fa-envelope"></i>
+<span>Inbox</span>
+</a>
+<!-- Language Selector -->
+<div class="flex items-center gap-3">
+<i class="fas fa-globe"></i>
+<select id="footerLanguageSelect" onchange="selectFooterLanguageFromSelect()" style="padding: 8px 12px; border: 1px solid #475569; border-radius: 8px; font-size: 14px; background: #334155; color: #E2E8F0; cursor: pointer;">
+<option value="en">English 🇺🇸</option>
+<option value="es">Español 🇪🇸</option>
+<option value="fr">Français 🇫🇷</option>
+<option value="ar">العربية 🇸🇦</option>
+<option value="ru">Русский 🇷🇺</option>
+</select>
+</div>
+</div>
+<div class="text-center text-sm">
 <p data-i18n="text_63">© 2026 KeyVault. All rights reserved.</p>
 </div>
 </div>
